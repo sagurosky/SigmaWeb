@@ -4,9 +4,9 @@ name: Build and Deploy SigmaWeb en AWS (ec2)
 # Define cuándo se ejecutará este workflow
 on:
   push:
-    branches: [ "main" ]  # Se activa con push a la rama main
+    branches: [ "master" ]  # Se activa con push a la rama main
   pull_request:
-    branches: [ "main" ]  # Opcional: también en PRs a main
+    branches: [ "master" ]  # Opcional: también en PRs a main
 
 # Permite ejecuciones manuales desde la interfaz de GitHub
 workflow_dispatch:
