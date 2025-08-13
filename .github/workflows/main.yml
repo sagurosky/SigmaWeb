@@ -10,7 +10,11 @@ on:
 
 # Permite ejecuciones manuales desde la interfaz de GitHub
 workflow_dispatch:
- 
+  inputs:            # Agrega esta sección
+    environment:
+      description: 'Entorno a desplegar'
+      required: false
+      default: 'production'
 
 # Conjunto de jobs que componen este workflow
 jobs:
