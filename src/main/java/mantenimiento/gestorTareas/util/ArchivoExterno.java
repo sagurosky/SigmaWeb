@@ -30,7 +30,7 @@ public class ArchivoExterno {
             System.err.println("Error cargando archivo de configuración externa: " + e.getMessage());
         }
     }
-    //DMS prueba CIII
+    //DMS prueba CIIII
     public static String getString(String key) {
         return properties.getProperty(key);
     }
