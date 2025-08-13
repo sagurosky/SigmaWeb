@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.tymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+
+    <head th:replace="plantillas/plantilla::head">
+        <title>Lista de tareas</title>
+        <meta charset="UTF-8"/>
+  
+    
+   
+
+    
+    
+    
+    </head>
+        
+    <body>
+        <header th:replace="plantillas/plantilla::header">lista de tareas</header>
+<style>
+    /* Define el estilo de las capas superpuestas */
+    .overlay {
+        position: absolute; /* Posición absoluta en relación con el contenedor */
+        background-color: rgba(0, 0, 255, 0.5); /* Color de fondo azul con 50% de opacidad */
+        pointer-events: none; /* Permite que los eventos de ratón pasen a través de la capa */
+        display: none; /* Por defecto, oculta la capa */
+    }
+    .overlayAlarma {
+        position: absolute; /* Posición absoluta en relación con el contenedor */
+        background-color: rgba(255, 0, 0, 0.5); /* Color de fondo rojo con 50% de opacidad */
+        pointer-events: none; /* Permite que los eventos de ratón pasen a través de la capa */
+        display: none; /* Por defecto, oculta la capa */
+    }
+</style>
+<div class="container">
+        <div style="position: relative;">
+            <img id="layoutImage" src="/recursos/layout.jpg" usemap="#workmap" />
+            <div id="overlayTorreAguaFria" class="overlay"></div> <!-- Capa superpuesta para torreAguaFria -->
+            <div id="overlayZonaReparacion" class="overlay"></div> <!-- Capa superpuesta para zonaDeReparacion -->
+            <div id="overlayLinea1" class="overlay"></div>
+            
+            <div id="overlayTorreAguaFriaAlarma" class="overlayAlarma"></div> <!-- Capa superpuesta para torreAguaFria -->
+            <div id="overlayZonaReparacionAlarma" class="overlayAlarma"></div> <!-- Capa superpuesta para zonaDeReparacion -->
+            <div id="overlayLinea1Alarma" class="overlayAlarma"></div>
+        </div>
+
+        <map name="workmap">
+            <area target="" alt="torreAguaFria" title="torreAguaFria" th:href="@{/torreAguaFria}"  coords="865,37,984,78" shape="rect" onmouseover="showOverlay('overlayTorreAguaFria', '865', '37', '984', '78')" onmouseout="hideOverlay('overlayTorreAguaFria')" />
+            <area target="" alt="zonaDeReparacion" title="zonaDeReparacion" th:href="@{/zonaReparacion}"  coords="45,267,108,363" shape="rect" onmouseover="showOverlay('overlayZonaReparacion', '45', '267', '108', '363')" onmouseout="hideOverlay('overlayZonaReparacion')" />
+            <!--<area target="" alt="linea1" title="linea1" href="linea1" coords="548,583,546,142,685,143,684,565,637,564,633,222,587,221,585,586" shape="poly" onmouseover="showOverlay('overlayLinea1', '548', '583', '546', '142','685','143','684','565','637','564','633','222','587','221','585','586')" onmouseout="hideOverlay('overlayLinea1')">-->
+            <area target="" alt="linea11" title="linea11" href="linea1" coords="684,566,635,221" shape="rect"onmouseover="showOverlay('overlayLinea1', '684', '566', '635', '221')" onmouseout="hideOverlay('overlayLinea1')"/>
+            <area target="" alt="linea12" title="linea12" href="linea1" coords="546,583,588,222" shape="rect"onmouseover="showOverlay('overlayLinea1', '546', '583', '588', '222')" onmouseout="hideOverlay('overlayLinea1')"/>
+            <area target="" alt="linea13" title="linea13" href="linea1" coords="546,143,685,221" shape="rect"onmouseover="showOverlay('overlayLinea1', '546', '143', '685', '221')" onmouseout="hideOverlay('overlayLinea1')"/>
+
+        
+        </map>
+</div>
+<script th:inline="javascript">
+    
+    var parpadearRojo =  [[${prueba}]];/* Aquí obtén el valor de la variable del modelo */
+    
+    function showOverlay(overlayId, left, top, right, bottom) {
+        var overlay = document.getElementById(overlayId);
+        var layoutImage = document.getElementById('layoutImage');
+        var layoutImageRect = layoutImage.getBoundingClientRect();
+        
+        overlay.style.left = layoutImageRect.left + parseInt(left)-396 + 'px';
+       
+        overlay.style.top = layoutImageRect.top + parseInt(top)-40 + 'px';
+      
+        overlay.style.width = (parseInt(right) - parseInt(left)) + 'px';
+       
+        overlay.style.height = (parseInt(bottom) - parseInt(top)) + 'px';
+      
+        overlay.style.display = 'block';
+        
+         console.log("alto: "+overlay.style.height+" ancho: "+ overlay.style.width);
+    }
+
+ 
+    function hideOverlay(overlayId) {
+        document.getElementById(overlayId).style.display = 'none'; // Oculta la capa superpuesta
+    }
+    
+    
+
+      function parpadearArea() {
+        var area = document.getElementById('overlayTorreAguaFriaAlarma');
+        if (parpadearRojo) {
+ //       if (true) {  
+            var count = 0;
+            var interval = setInterval(function() {
+                
+                
+                if (count % 2 == 0) {
+                    showOverlay('overlayTorreAguaFriaAlarma', '865', '37', '984', '78')
+                } else {
+                    hideOverlay('overlayTorreAguaFriaAlarma')// O el color de fondo original
+                }
+                count++;
+//                if (count == 6) { // Cambia el número 6 según la velocidad de parpadeo deseada
+//                    clearInterval(interval);
+//                    hideOverlay('overlayTorreAguaFriaAlarma')// Restablece el color de fondo original al final del parpadeo
+//                }
+                
+                
+            }, 500); // Cambia 500 a la velocidad de parpadeo deseada en milisegundos
+        }
+    }
+    
+    
+    window.onload = function() {
+        
+        parpadearArea();
+    };
+</script>
+
+
+       
+       
+       
+       
+        <footer th:replace="plantillas/plantilla::footer"></footer>
+    </body>
+</html>
