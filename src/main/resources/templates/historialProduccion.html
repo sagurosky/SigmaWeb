@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.tymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      xmlns:temporals="http://www.thymeleaf.org/extras/thymeleaf-temporals">
+
+
+    <!--<meta http-equiv="refresh" content="10">-->
+
+    <head th:replace="plantillas/plantilla::head">
+        <title>Lista de tareas</title>
+        <meta charset="UTF-8"/>
+    </head>
+    <style>
+        .grafico {
+            width: 100%;
+            /*min-height: 400px;*/
+        }
+        .hora {
+            margin-left: 10px; /* Agregar espacio a la izquierda de la hora */
+            font-weight: bold; /* Ejemplo de hacer la hora más destacada */
+            color: #333; /* Cambiar el color de la hora, si es necesario */
+            border:solid 1px;
+        }
+    </style>
+
+    <body>
+        <header th:replace="plantillas/plantilla::header">lista de tareas</header>
+         <div th:replace="plantillas/plantilla::notificaciones"></div>
+
+        
+        <!--------------------CDN datatables---------------------------->
+        <!-- CSS de DataTables -->
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+
+        <!-- jQuery -->
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+        <!-- JS de DataTables -->
+        <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+        <!--estilos para la tabla-->
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+        <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+        <!--------------------fin CDN datatables---------------------------->
+        
+        
+        
+        <script>
+            $(document).ready(function() {
+                $('#tabla').DataTable({
+                    // Opciones de configuración
+                    "paging": true,         // Activar paginación
+                    "searching": true,      // Activar barra de búsqueda
+                    "ordering": true,       // Activar ordenamiento de columnas
+                    "info": true,           // Mostrar información del estado
+                    "language": {
+                        "url": "https://cdn.datatables.net/plug-ins/1.13.6/i18n/Spanish.json"
+                    }
+                });
+            });
+        </script>
+
+
+
+        <div class="container ">
+            <br/><h2>Registro histórico</h2><br/>
+            <table id="tabla" class="table table-bordered table-hover table-sm "  >
+                <thead class="thead-light " >
+                    <tr > 
+                        <th >Numero de orden</th>
+                        <th >Producto</th>
+                        <th >Cantidad</th>
+                        <th >Linea</th>
+                        <th >Inicio</th>
+                        <th >Fin</th>
+                        <th >Detalle</th>
+                    </tr>
+                </thead>
+                <tbody >
+                    <tr th:each="orden: ${ordenesCerradas}">
+                        <td th:text="${orden.ordenDeTrabajo}">Numero de orden</td>
+                        <td th:text="${orden.producto.nombre}">Producto</td>
+                        <td th:text="${orden.cantidad}">Cantidad</td>
+                        <td th:text="${orden.linea}">Línea</td>
+                        <!--<td th:text="${orden.inicio}">linea</td>-->
+                        <td>
+                            <span th:text="${#temporals.format(orden.inicio, 'dd/MM/yyy')}"></span>
+                            <span th:text="${#temporals.format(orden.inicio, 'HH:mm')}" class="hora"></span>
+                        </td>
+                        <!--<td th:text="${orden.fin}">linea</td>-->
+                        <td>
+                            <span th:text="${#temporals.format(orden.fin, 'dd/MM/yyy')}"></span>
+                            <span th:text="${#temporals.format(orden.fin, 'HH:mm')}" class="hora"></span>
+                        </td>
+
+
+                        <td th:id="detalle+${orden.id}">
+                            <span><a href="#" data-toggle="modal" th:data-target="'#modalDetalle' + ${orden.id}" th:id="${orden.id}"  class="btn btn-primary" onclick="traerDatos(this.id)">Detalle</a></span>
+
+                            <div class="modal fade bd-example-modal-lg" th:id="'modalDetalle' + ${orden.id}" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                                <div class="modal-dialog modal-xl" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="exampleModalLabel">Informe: </h5>
+                                              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>    
+                                            <div class=''>                                                    
+                                                </div>
+                                                <div class='row'>
+                                                    <div class='col'>
+                                                         <label th:text="'Tiempo total: '"></label>
+                                                    </div>    
+                                                    <div class='col'>
+                                                        <label th:id="tiempoTotal+${orden.id}"></label>
+                                                    </div>    
+                                                    <div class='col'>
+                                                    </div>
+                                                </div>
+                                                <div class='row'>
+                                                    <div class='col'>
+                                                         <label th:text="'Tiempo de inactividad [min]: '"></label>
+                                                    </div>    
+                                                    <div class='col'>
+                                                        <label th:id="minutosInactiva+${orden.id}"></label>
+                                                    </div>    
+                                                    <div class='col'>
+                                                    </div>
+                                                </div>
+                                                <div class='row'>
+                                                    <div class='col'>
+                                                         <label th:text="'Cadencia teórica : '"></label>
+                                                    </div>    
+                                                    <div class='col'>
+                                                        <div class='row'> <label th:id="ratioTeorico+${orden.id}" ></label> </div>    
+                                                    </div>    
+                                                    <div class='col'>
+                                                    </div>
+                                                </div>
+                                                <div class='row'>
+                                                    <div class='col'>
+                                                         <label th:text="'Cadencia real : '"></label>
+                                                    </div>    
+                                                    <div class='col'>
+                                                        <!--<div class='row'> <label id="ratioMin"></label> </div>-->    
+                                                         <div class='row'><label th:id="ratioHr+${orden.id}"></label> </div>    
+                                                    </div>    
+                                                    <div class='col'>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class='row'>
+                                                    <div class='col'>
+                                                         <label th:text="'Cadencia efectiva: '" title="Cadencia con linea en funcionamiento (descontando detenciones)"></label>
+                                                    </div>    
+                                                    <div class='col'>
+                                                        <!--<div class='row'><label id="ratioEfectivoMin"></label>  </div>-->    
+                                                       <div class='row'> <label th:id="ratioEfectivoHr+${orden.id}"></label>  </div>    
+                                                    </div>    
+                                                    <div class='col'>
+                                                    </div>
+                                                </div>
+                                                
+                                            </div>    
+                                          
+                                        </div>
+                                        
+
+                                    </div>
+                                </div>
+                            </div>
+
+
+                       
+
+
+
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+        <section  class="py-4 mb-4 bg-light">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-2" >
+
+
+                        <a th:href="@{/produccion/}+${url}" class="btn btn-primary btn-block">
+                            Volver
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+        <script>
+            
+            
+           let datos = new Map();
+            
+            function traerDatos(id){
+                $.ajax({
+                    url: '/traerDatos/'+id,   // La URL del método en tu controlador
+                    type: 'GET',                  // Método HTTP  
+                    success: function(response) {
+
+                        // Convertir el objeto JSON a un Map
+                         datos = new Map(Object.entries(response));
+                        pisar(datos);
+
+                    },
+                    error: function(error) {
+                        console.error("Error en actualizacion de estados", error);
+                    }
+                });
+            }
+            
+            
+            
+            
+         function pisar(datos)
+         { 
+
+//           Object.entries(datos).forEach(function([key, value]) {
+//            let tiempoEnMinutos;
+//            if(key=="prod")
+//            {
+//                tiempoEnMinutos=Math.floor((new Date(value.fin)-new Date(value.inicio))/60000);
+//                document.getElementById("tiempoTotal").innerText=""+Math.floor(tiempoEnMinutos/60)+":"+tiempoEnMinutos%60+" hs";
+//                document.getElementById("ratioMin").innerText=""+(value.cantidad/tiempoEnMinutos).toFixed(2)+" unidades/min ";
+//                document.getElementById("ratioHr").innerText=""+(value.cantidad/(tiempoEnMinutos/60)).toFixed(2)+" unidades/hr";
+//            
+//            }
+//            
+//            if(key=="minutosInactiva")
+//            {
+//                document.getElementById("minutosInactiva").innerText=value;
+//                document.getElementById("ratioEfectivo").innerText=value;
+//                
+//            }
+//
+//                }); 
+            let prod=datos.get("prod");
+            let tiempoEnMinutos=Math.floor((new Date(prod.fin)-new Date(prod.inicio))/60000);
+            console.log("tiempo: "+tiempoEnMinutos);
+            document.getElementById("tiempoTotal"+prod.id).innerText=""+Math.floor(tiempoEnMinutos/60)+":"+tiempoEnMinutos%60+" hs";
+//            document.getElementById("ratioMin").innerText=""+(prod.cantidad/tiempoEnMinutos).toFixed(2)+" unidades/min ";
+            document.getElementById("ratioHr"+prod.id).innerText=""+(prod.cantidad/(tiempoEnMinutos/60)).toFixed(2)+" unidades/hr";
+            
+            let minutosInactiva=datos.get("minutosInactiva");
+            document.getElementById("minutosInactiva"+prod.id).innerText=minutosInactiva;
+//            document.getElementById("ratioEfectivoMin").innerText=""+(prod.cantidad/(tiempoEnMinutos-minutosInactiva)).toFixed(2)+" unidades/min ";
+            document.getElementById("ratioEfectivoHr"+prod.id).innerText=""+(prod.cantidad/((tiempoEnMinutos-minutosInactiva)/60)).toFixed(2)+" unidades/hr";
+           
+        
+            document.getElementById("ratioTeorico"+prod.id).innerText=""+datos.get("cadenciaTeorica")+" unidades/hr";
+            
+            
+    }
+            
+        </script>
+
+
+
+    </body>
+</html>

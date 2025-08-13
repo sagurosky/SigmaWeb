@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.tymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+
+    <head th:replace="plantillas/plantilla::head">
+        <title>Lista de tareas</title>
+        <meta charset="UTF-8"/>
+    </head>
+    <body>
+        <header th:replace="plantillas/plantilla::header">lista de tareas</header>
+         <div th:replace="plantillas/plantilla::notificaciones"></div>
+
+        <section  class="py-4 mb-4 bg-light">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-3" >
+                        <a th:href="@{tareas}" class="btn btn-primary btn-block">
+                              tareas
+                        </a>
+                    </div>
+                    <div class="col-md-3" sec:authorize="hasRole('ROLE_ADMIN')">
+                        <a th:href="@{gestionUsuarios}" class="btn btn-primary btn-block">
+                            Gestión de usuarios
+                        </a>
+                    </div>
+                    <div class="col-md-3" >
+                        <a th:href="@{layout}" class="btn btn-primary btn-block">
+                              Layout
+                        </a>
+                    </div>
+                </div>
+                <br/>
+                  <div class="row">
+                    <div class="col-md-3" >
+                        <a th:href="@{tareas}" class="btn btn-primary btn-block">
+                              pp
+                        </a>
+                    </div>
+                    <div class="col-md-3" sec:authorize="hasRole('ROLE_ADMIN')">
+                        <a th:href="@{gestionUsuarios}" class="btn btn-primary btn-block">
+                            pp
+                        </a>
+                    </div>
+                    <div class="col-md-3" >
+                        <a th:href="@{tareas}" class="btn btn-primary btn-block">
+                              pp
+                        </a>
+                    </div>
+                </div>
+                <br/>
+                  <div class="row">
+                    <div class="col-md-3" >
+                        <a th:href="@{tareas}" class="btn btn-primary btn-block">
+                              pp
+                        </a>
+                    </div>
+                    <div class="col-md-3" sec:authorize="hasRole('ROLE_ADMIN')">
+                        <a th:href="@{gestionUsuarios}" class="btn btn-primary btn-block">
+                            pp
+                        </a>
+                    </div>
+                    <div class="col-md-3" >
+                        <a th:href="@{tareas}" class="btn btn-primary btn-block">
+                              pp
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        
+        <footer th:replace="plantillas/plantilla::footer"></footer>
+    </body>
+</html>
