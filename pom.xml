@@ -15,6 +15,13 @@
     <description>Gestor de tareas para mantenimiento</description>
     <properties>
         <java.version>17</java.version>
+<<<<<<< HEAD
+=======
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+>>>>>>> 1.0.6
         <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
     </properties>
     <dependencies>
@@ -147,7 +154,34 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+<<<<<<< HEAD
             </plugin>
+=======
+                <!--
+                                <configuration>
+                                    <excludes>
+                                        <exclude>
+                                            <groupId>org.projectlombok</groupId>
+                                            <artifactId>lombok</artifactId>
+                                        </exclude>
+                                    </excludes>
+                                </configuration>
+                -->
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version> <!-- Versión actualizada -->
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <compilerArgs>
+                        <arg>-parameters</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+        
+>>>>>>> 1.0.6
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
