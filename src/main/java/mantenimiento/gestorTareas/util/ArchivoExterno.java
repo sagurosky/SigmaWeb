@@ -18,9 +18,9 @@ import java.util.Properties;
 @Slf4j
 public class ArchivoExterno {
 //DMS AWS
-//    private static final String CONFIG_PATH = "/media/sf_personal/sigmaweb/recursos/configuracion.properties";
+    private static final String CONFIG_PATH = "/media/sf_personal/sigmaweb/recursos/configuracion.properties";
 //DMS docker
-    private static final String CONFIG_PATH = "/app/recursos/configuracion.properties";
+//    private static final String CONFIG_PATH = "/app/recursos/configuracion.properties";
     private static final Properties properties = new Properties();
 
     static {
