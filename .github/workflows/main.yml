@@ -10,9 +10,13 @@ on:
 
 # Permite ejecuciones manuales desde la interfaz de GitHub
 workflow_dispatch:
-  inputs:            # Agrega esta sección
+  inputs:
+    logLevel:
+      description: 'Log level'     
+      required: false
+      default: 'warning'
     environment:
-      description: 'Entorno a desplegar'
+      description: 'Environment to deploy'
       required: false
       default: 'production'
 
