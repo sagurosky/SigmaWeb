@@ -14,7 +14,7 @@
     <name>gestorTareasV4</name>
     <description>Gestor de tareas para mantenimiento</description>
     <properties>
-        <java.version>17</java.version> <!-- Cambia de 11 a 17 -->
+        <java.version>17</java.version>
         <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
     </properties>
     <dependencies>
@@ -140,17 +140,7 @@
         
         
     </dependencies>
-    <profiles>
-        <profile>
-            <id>test</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <properties>
-                <skipTests>false</skipTests>
-            </properties>
-        </profile>
-    </profiles>
+
 
     <build>
         <plugins>
@@ -158,43 +148,18 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven-surefire-plugin.version}</version>
                 <configuration>
-                    <includes>
-                        <include>**/*Tests.java</include>
-                    </includes>
+                    <excludes>
+                        <exclude>**/Abstract*.java</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
-
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <!--              
-                                <configuration>
-                                    <excludes>
-                                        <exclude>
-                                            <groupId>org.projectlombok</groupId>
-                                            <artifactId>lombok</artifactId>
-                                        </exclude>
-                                    </excludes>
-                                </configuration>
-                -->    
-            </plugin>
-       
-        
-
-        
-        
         </plugins>
-        
-        
-        
-        
-        
-        
     </build>
 
 </project>
