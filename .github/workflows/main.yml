@@ -74,37 +74,22 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: ${{ secrets.EC2_PORT }}
           script: |
-            # 1. Detener aplicación existente
-            echo "Deteniendo aplicación existente..."
-            sudo pkill -f 'java -jar' || true
+            # 1. Detener servicio existente
+            echo "Deteniendo servicio sigmaweb..."
+            sudo systemctl stop sigmaweb || true
             
-            # 2. Esperar para asegurar que el proceso se detuvo
+            # 2. Copiar el nuevo JAR
+            echo "Copiando nuevo archivo JAR..."
+            sudo cp *.jar /home/ubuntu/gestortareas-1.0.jar
+            sudo chown ubuntu:ubuntu /home/ubuntu/gestortareas-1.0.jar
+            sudo chmod 500 /home/ubuntu/gestortareas-1.0.jar
+            
+            # 3. Reiniciar el servicio
+            echo "Reiniciando servicio sigmaweb..."
+            sudo systemctl daemon-reload
+            sudo systemctl restart sigmaweb
+            
+            # 4. Verificar estado
+            echo "Verificando estado del servicio..."
             sleep 5
-            
-            # 3. Mover el nuevo JAR
-            echo "Moviendo archivo JAR..."
-            sudo mv /home/ubuntu/app/*.jar /home/ubuntu/app/application.jar
-            
-            # 4. Crear directorio de logs si no existe
-            echo "Creando directorio de logs..."
-            sudo mkdir -p /home/ubuntu/app/logs
-            
-            # 5. Configurar permisos
-            echo "Configurando permisos..."
-            sudo chown -R ubuntu:ubuntu /home/ubuntu/app
-            sudo chmod 500 /home/ubuntu/app/application.jar
-            
-            # 6. Configurar variables de entorno para la conexión RDS
-            # (Se conectará directamente desde la EC2 al RDS)
-            echo "Iniciando aplicación..."
-            nohup java -jar /home/ubuntu/app/application.jar \
-              --spring.datasource.url=jdbc:mysql://${{ secrets.RDS_ENDPOINT }}:3306/${{ secrets.RDS_DB_NAME }}?useSSL=false \
-              --spring.datasource.username=${{ secrets.RDS_USERNAME }} \
-              --spring.datasource.password=${{ secrets.RDS_PASSWORD }} \
-              --server.port=8080 \
-              > /home/ubuntu/app/logs/app.log 2>&1 &
-            
-            # 7. Verificar que la aplicación se inició
-            echo "Verificando estado de la aplicación..."
-            sleep 10
-            pgrep -f 'java -jar' || echo "Error: La aplicación no se inició correctamente"
+            sudo systemctl status sigmaweb --no-pager
