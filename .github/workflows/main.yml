@@ -78,10 +78,11 @@ jobs:
             # 1. Detener servicio existente
             echo "Deteniendo servicio sigmaweb..."
             sudo systemctl stop sigmaweb || true
+            sleep 3  # Esperar para asegurar que se detuvo
             
-            # 2. Copiar el nuevo JAR
+            # 2. Copiar el nuevo JAR (CORRECCIÓN IMPORTANTE)
             echo "Copiando nuevo archivo JAR..."
-            sudo cp *.jar /home/ubuntu/gestortareas-1.0.jar
+            sudo cp -v *.jar /home/ubuntu/gestortareas-1.0.jar  # Ruta completa explícita
             sudo chown ubuntu:ubuntu /home/ubuntu/gestortareas-1.0.jar
             sudo chmod 500 /home/ubuntu/gestortareas-1.0.jar
             
@@ -90,7 +91,8 @@ jobs:
             sudo systemctl daemon-reload
             sudo systemctl restart sigmaweb
             
-            # 4. Verificar estado
+            # 4. Verificar estado y logs
             echo "Verificando estado del servicio..."
-            sleep 5
+            sleep 10  # Más tiempo para que la app inicie
             sudo systemctl status sigmaweb --no-pager
+            journalctl -u sigmaweb -n 50 --no-pager  # Ver logs detallados
