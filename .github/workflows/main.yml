@@ -1,4 +1,4 @@
-name: Build and Deploy SigmaWeb en AWS (ec2)
+name: Build and Deploy SigmaWeb en AWS (EC2)
 
 on:
   push:
@@ -65,7 +65,7 @@ jobs:
           source: "*.jar"
           target: "/home/ubuntu/app/"
 
-      - name: Prepare and restart application on EC2
+      - name: Replace JAR and restart service
         uses: appleboy/ssh-action@v0.1.3
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -76,9 +76,8 @@ jobs:
             APP_DIR="/home/ubuntu/app"
             DEST="$APP_DIR/gestortareas-1.0.jar"
 
-            # Buscar el nuevo .jar subido
+            # Buscar el nuevo JAR subido
             JAR_FILE=$(ls -1 $APP_DIR/*.jar | grep -v "gestortareas-1.0.jar" | head -n 1)
-
             if [ -z "$JAR_FILE" ]; then
               echo "❌ No se encontró ningún nuevo .jar en $APP_DIR"
               exit 1
@@ -95,4 +94,3 @@ jobs:
             sudo systemctl daemon-reload
             sudo systemctl restart sigmaweb
             sudo systemctl status sigmaweb --no-pager
-
