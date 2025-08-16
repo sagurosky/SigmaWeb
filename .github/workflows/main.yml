@@ -80,9 +80,10 @@ jobs:
             sudo systemctl stop sigmaweb || true
             sleep 3  # Esperar para asegurar que se detuvo
             
-            # 2. Copiar el nuevo JAR (CORRECCIÓN IMPORTANTE)
+            # 2. Copiar el nuevo JAR
             echo "Copiando nuevo archivo JAR..."
-            sudo cp -v *.jar /home/ubuntu/gestortareas-1.0.jar  # Ruta completa explícita
+            JAR_FILE=$(ls *.jar | head -n 1)
+            sudo cp -v "$JAR_FILE" /home/ubuntu/gestortareas-1.0.jar
             sudo chown ubuntu:ubuntu /home/ubuntu/gestortareas-1.0.jar
             sudo chmod 500 /home/ubuntu/gestortareas-1.0.jar
             
