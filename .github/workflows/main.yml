@@ -5,13 +5,12 @@ on:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
-  
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -32,7 +31,6 @@ jobs:
 
       - name: Build with Maven
         run: mvn clean package -DskipTests
-
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -78,26 +76,23 @@ jobs:
             APP_DIR="/home/ubuntu/app"
             DEST="$APP_DIR/gestortareas-1.0.jar"
 
-            # Buscar el nuevo .jar en la carpeta de destino
-            JAR_FILE=$(ls -1 $APP_DIR/*.jar 2>/dev/null | head -n 1)
+            # Buscar el nuevo .jar subido
+            JAR_FILE=$(ls -1 $APP_DIR/*.jar | grep -v "gestortareas-1.0.jar" | head -n 1)
 
             if [ -z "$JAR_FILE" ]; then
-              echo "❌ No se encontró ningún .jar en $APP_DIR"
+              echo "❌ No se encontró ningún nuevo .jar en $APP_DIR"
               exit 1
             fi
 
-            # Reemplazar JAR
+            # Reemplazar el JAR anterior
             echo "♻️ Reemplazando $DEST con $JAR_FILE"
             sudo mv -f "$JAR_FILE" "$DEST"
-
-            # Permisos y propietario
             sudo chown ubuntu:ubuntu "$DEST"
             sudo chmod 500 "$DEST"
 
-            # Reiniciar servicio
+            # Reiniciar el servicio
             echo "♻️ Reiniciando sigmaweb..."
             sudo systemctl daemon-reload
             sudo systemctl restart sigmaweb
             sudo systemctl status sigmaweb --no-pager
-      
-      
+
