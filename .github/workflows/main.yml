@@ -69,19 +69,31 @@ jobs:
 
       - name: Prepare and restart application on EC2
         run: |
-          cd /home/ubuntu/deploy
-          echo "Buscando un único archivo JAR..."
-          JAR_FILE=$(ls -1 *.jar | head -n 1)
+          # Carpeta donde se sube el .jar desde GitHub Actions
+          DEPLOY_DIR="/home/ubuntu"
+
+          cd "$DEPLOY_DIR"
+
+          # Buscar el primer .jar que haya (el nuevo subido)
+          JAR_FILE=$(ls -1 *.jar 2>/dev/null | head -n 1)
+
           if [ -z "$JAR_FILE" ]; then
-            echo "❌ No se encontró ningún archivo .jar"
+            echo "❌ No se encontró ningún archivo .jar en $DEPLOY_DIR"
             exit 1
           fi
-          echo "✅ Encontrado: $JAR_FILE"
-          sudo cp -v "$JAR_FILE" /home/ubuntu/gestortareas-1.0.jar
-          sudo chown ubuntu:ubuntu /home/ubuntu/gestortareas-1.0.jar
-          sudo chmod 500 /home/ubuntu/gestortareas-1.0.jar
 
-          echo "Reiniciando servicio..."
+          DEST="/home/ubuntu/gestortareas-1.0.jar"
+
+          # Reemplazar el JAR anterior
+          echo "♻️ Reemplazando $DEST con $JAR_FILE"
+          sudo mv -f "$JAR_FILE" "$DEST"
+
+          # Permisos y propietario
+          sudo chown ubuntu:ubuntu "$DEST"
+          sudo chmod 500 "$DEST"
+
+          echo "♻️ Reiniciando servicio sigmaweb..."
           sudo systemctl daemon-reload
           sudo systemctl restart sigmaweb
           sudo systemctl status sigmaweb --no-pager
+      
