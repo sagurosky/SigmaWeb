@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="plantillas/plantilla::head">
+        <meta charset="UTF-8"/>
+    </head>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+
+        /* CSS personalizado para el popover */
+        .popover-body {
+            color: #fff; /* Cambiar el color del texto */
+            background-color: #007bff; /* Cambiar el fondo */
+        }
+
+        .popover {
+            max-width: 500px; /* Ensanchar el popover */
+        }
+    </style>
+
+    <body>
+        <!--para que funcione el popover-->
+        <script>
+
+            $(function () {
+                $('[data-toggle="popover"]').popover({
+                    trigger: 'focus' // Permitir cerrar al hacer clic fuera
+                });
+            });
+
+        </script>
+        <header th:replace="plantillas/plantilla::header"></header>
+<!--        <div th:replace="plantillas/plantilla::menu"></div>-->
+         <div th:replace="plantillas/plantilla::notificaciones"></div>
+       
+
+        <body>
+
+            <form th:action="@{/guardarTecnicoEmpresa}" method="post" th:object="${tecnico}" enctype="multipart/form-data" class="was-validated">
+                <input type="hidden" th:field="*{usuario}"/>
+                <div class="container mt-5">
+                    <!--<h2 class="mb-4">Perfil Técnico</h2>-->
+
+                    <h4 class="mt-4">Datos empresa</h4>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="legajo">Legajo</label>
+                            <input type="text" th:field="*{legajo}"class="form-control" id="legajo">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="estado">Estado</label>
+                            <!--<input type="text" class="form-control" id="estado">-->
+                            <!--<select th:field="*{categoriaTecnica}" class="form-control" id="estado">-->
+                            <select th:field="*{estado}" class="form-control" id="estado"  required="true">
+                                <option value="0">Seleccione</option>
+                                <option value="activo">Activo</option>
+                                <option value="licencia médica">Licencia médica</option>
+                                <option value="vacaciones">Vacaciones</option>
+                                <option value="suspendido">Suspendido</option>
+                                <option value="baja">Baja</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="especialidad">Especialidad</label>
+                            <select  th:field="*{especialidad}"class="form-control"  required="true">
+                                <option value="0">Seleccione</option>
+                                <option value="mecánica">Mecánica</option>
+                                <option value="hidráulica">Hidráulica</option>
+                                <option value="neumática">Neumática</option>
+                                <option value="electrónica">Electrónica</option>
+                                <option value="programación">Programación</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="fechaIngresoPlanta">Fecha de ingreso a planta</label>
+                            <input type="date" th:field="*{fechaIngresoPlanta}"class="form-control" id="fechaIngresoPlanta" required="true">
+                        </div>
+
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="habilidades">Habilidades</label>&nbsp;&nbsp;<span><i class="fa-regular fa-circle-question custom-popover" tabindex="0" data-container="body" data-trigger="focus"data-toggle="popover"data-placement="right" data-content="Información breve relacionada al concepto del colaborador desde el punto de vista de sus superiores"></i></span>
+                            <input type="text" th:field="*{habilidades}"class="form-control" id="habilidades">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="promedioEvaluaciones">Promedio gral evaluaciones</label>&nbsp;&nbsp;<span><i class="fa-regular fa-circle-question custom-popover" tabindex="0" data-container="body" data-trigger="focus"data-toggle="popover"data-placement="right" data-content="Promedio obtenido del total de todas las calificaciones obtenidas por su desempeño, este campo es de sólo lectura"></i></span>
+                            <input type="text" th:field="*{promedioEvaluaciones}"class="form-control" id="promedioEvaluaciones" disabled='true'>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-12">
+                            <label for="proyectosDestacados">Proyectos destacados/Logros</label>&nbsp;&nbsp;<span><i class="fa-regular fa-circle-question custom-popover" tabindex="0" data-container="body" data-trigger="focus"data-toggle="popover"data-placement="right" data-content="Breve listado de los proyectos mas importantes o relevantes en los que el colaborador haya aportado"></i></span>
+                            <textarea class="form-control"th:field="*{proyectosDestacados}" id="proyectosDestacados"  ></textarea>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-12">
+                            <label for="notasAdicionales">Notas adicionales</label>
+                            <textarea class="form-control" th:field="*{notasAdicionales}" id="notasAdicionales"  ></textarea>
+                        </div>
+                    </div>
+
+
+
+
+
+
+
+
+
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+            </form>
+            </div>
+
+
+        </body>
+
+        <script>
+
+
+
+
+
+
+
+            // Función para actualizar el valor del progress y el span
+            function actualizarProgress(id) {
+                // Obtener el elemento del slider
+                var slider = document.getElementById(id);
+
+                // Obtener el elemento donde se mostrará el valor actual
+                var output = document.getElementById(id + "Valor");
+
+                // Mostrar el valor inicial al cargar la página
+                output.innerHTML = slider.value;
+
+                // Actualizar el valor mientras se mueve el slider
+                //                        slider.oninput = function () {
+                //                            output.innerHTML = this.value;
+                //                        };
+            }
+
+            // Seleccionar todos los elementos de progreso y actualizarlos
+            document.addEventListener('DOMContentLoaded', function () {
+                var progressElements = document.querySelectorAll('progress');
+
+                progressElements.forEach(function (progressElement) {
+                    actualizarProgress(progressElement.id);
+                });
+            });
+
+
+
+        </script>
+
+
+
+
+
+
+
+
+       
+
+
+        <!--//para que funcione el popover-->
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    </body>
+</html>

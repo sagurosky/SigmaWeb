@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="plantillas/plantilla::head">
+        <title>Modificar</title>
+        <meta charset="UTF-8"/>
+            
+    </head>
+    <body>
+        
+        <header th:replace="plantillas/plantilla::header"></header>
+        <div th:replace="plantillas/plantilla::menu"></div>
+        <div th:replace="plantillas/plantilla::notificaciones"></div>
+        <div id="crearTarea" >
+
+            <div class="modal-dialog modal-lg">
+
+                <div class="modal-content">
+                    <div class="modal-header bg-info text-white">
+                        <h5 class="modal-title" >Notificar detención</h5>
+                    </div> 
+                    <form th:action="@{/guardar}" method="post" th:object="${tarea}" enctype="multipart/form-data" class="form-group">
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <!--<label th:text="activo" for="activo"></label>-->
+                                <!--<input type="text" th:field="${tarea.activo.codigo}"class="form-control" required="true"/>-->
+
+                                <select th:field="*{activo}" class="form-control" hidden>
+                                    <option value="0">Seleccione</option>
+                                    <!--<option th:each="activo : ${activos}" th:value="${activo.id}" th:text="${activo.codigo}+', '+ ${activo.nombre}"></option>-->
+                                    <option th:each="activo : ${activos}" th:value="${activo.id}" th:text=" ${activo.nombre}" ></option>
+                                </select>
+
+                                <!--
+                                  <span th:if="${#fields.hasErrors('maquina')}" th:errors="*{maquina}"/>
+                                -->
+                            </div>
+                            <div class="form-group">
+                                <label  for="responsable">Departamento Responsable</label>
+                                <select th:field="*{departamentoResponsable}" th:id="responsable" onchange="mostrarCategoria()"class="form-control" required>
+                                    <option value="">Seleccione</option>
+                                    <option value="mantenimiento">Mantenimiento</option>
+                                    <option value="logistica">Logística</option>
+                                    <option value="calidad">Calidad</option>
+                                </select>
+
+                            </div>
+                            
+                            <div class="form-group" id="categoriaDiv">
+                                <label  for="categoria">Categoría técnica</label>
+                                <select th:field="*{categoriaTecnica}" th:id="categoria" class="form-control" >
+                                    <option value="0">Seleccione</option>
+                                    <option value="mecánica">Mecánica</option>
+                                    <option value="hidráulica">Hidráulica</option>
+                                    <option value="neumática">Neumática</option>
+                                    <option value="electrónica">Electrónica</option>
+                                    <option value="programación">Programación</option>
+                                </select>
+
+                            </div>
+                            
+                            <div class="form-group">
+                                <label  for="descripcion">Descripcion del problema</label>
+                                <input type="text" th:field="*{descripcion}"class="form-control" required="true"maxlength="1000"/>
+                            </div>
+                          <div class="form-group">
+                            <label for="afectaProduccionSelect">Afecta producción</label>
+                            <select class="form-control" id="afectaProduccionSelect" th:field="*{afectaProduccion}">
+                                <option value="si" th:selected="${afectaProduccion == 'si'}">Sí</option>
+                                <option value="no" th:selected="${afectaProduccion == 'no'}">No</option>
+                            </select>
+                        </div>
+
+<!--                            <div class="form-group">
+                                <label th:text="estado" for="estado"></label>
+                                <select  th:field="*{activo.estado}" class="form-control" id="dropDownList">
+                                    <option value="0">seleccione</option>
+                                    <option th:each="estado : ${estados}" th:value="${estado}" th:text="${estado}"></option>
+                                </select>
+                            </div>-->
+                            
+                            
+                            
+                            <!--<label >adjuntar imagen: </label><br/>-->
+                            <input type="file" text="Adjuntar imagen" name="file"  hidden/>
+                            <br/><br/>
+
+
+                            <div >
+                                <button class="btn btn-primary" type="submit" th:text="guardar"></button>
+                                
+                                
+                                <!--<a  class="btn btn-primary" th:href="@{/tareas}" th:text="*{activo.id}"></a>-->
+<!--                                <a th:if="*{activo==null}" class="btn btn-primary" th:href="@{/tareas}" th:text="regresar"></a>
+                                <a th:if="*{activo!=null}" class="btn btn-primary" th:href="@{/*{activo.nombre}}" th:text="regresar"></a>-->
+                            
+                                
+                                <a th:if="*{activo != null}" class="btn btn-primary" th:href="@{/activoReturn/}+ ${activo.id}" th:text="'Volver'"></a>
+                                
+                                <a th:if="*{activo == null}" class="btn btn-primary" th:href="@{/tareas}" th:text="'Regresar'"></a>
+                            </div>                        
+                        </div>
+                    </form>
+
+
+                </div>
+            </div>
+        </div>
+        
+         <script>
+               // muestra categoria tecnica cuando se sselecciona mantenimiento
+            $(document).ready(function(){
+                $("#categoriaDiv").hide();
+            });
+            
+            function mostrarCategoria()
+            {
+                if($("#responsable").val()=="mantenimiento")
+                   {
+                       $("#categoriaDiv").show(500);
+                   }else
+                   {
+                        $("#categoriaDiv").hide(500);
+                   }
+
+            }
+             </script>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+
+         
+         
+         
+        
+
+
+    </body>
+</html>

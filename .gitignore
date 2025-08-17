@@ -1,0 +1,7 @@
+target/
+logs/
+*.json
+*.key
+.idea/
+*.iml
+.env

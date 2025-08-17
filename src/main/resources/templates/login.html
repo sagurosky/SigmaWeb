@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="plantillas/plantilla::head">
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8"/>
+    </head>
+    <script
+        src="https://code.jquery.com/jquery-3.7.1.js"
+        integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+        crossorigin="anonymous">
+    </script>
+    <link rel="stylesheet" href="login.css">
+</head>
+<body>
+
+
+    
+    <div class="container">
+
+
+
+<div class="row">
+    <div class="col">
+     </div> 
+    
+<!--     <div class="col">
+        <div class="letters">
+            
+            <div class="letter">S</div>
+            <div class="letter">I</div>
+            <div class="letter">M</div>
+            <div class="letter">P</div>
+            <div class="letter">i</div>
+            <div class="letter">o</div>
+            <div class="letter">Web</div>
+        </div>
+        <div class="words">
+            <div class="word">Sistema</div>
+            <div class="word">Integral de</div>
+            <div class="word">Mantenimiento y</div>
+            <div class="word">Producción</div>
+            <div class="word">Industrial</div>
+            <div class="word">Optimizado</div>
+        </div>
+    </div>-->
+    
+    
+    
+<!--    <div class="col">
+        <div class="letters">
+            
+            <div class="letter">S</div>
+            <div class="letter">I</div>
+            <div class="letter">M</div>
+            <div class="letter">P</div>
+            <div class="letter">L</div>
+            <div class="letter">E</div>
+            <div class="letter">Web</div>
+        </div>
+        <div class="words">
+            <div class="word">Sistema</div>
+            <div class="word">Integral de</div>
+            <div class="word">Mantenimiento y</div>
+            <div class="word">Producción</div>
+            <div class="word">Ligero y</div>
+            <div class="word">Eficaz</div>
+        </div>
+    </div>-->
+
+ <div class="col">
+     
+      <img src="/recursos/logo.png" alt="Logo"
+           style="
+            position: absolute;
+            top: 50px;
+           right: 170px;
+           width: 150px;
+            z-index: 1000;
+             position: absolute;
+           ">
+
+        <div class="letters">
+            
+            <div class="letter">S</div>
+            <div class="letter">I</div>
+            <div class="letter">G</div>
+
+            <div class="letter" id="pp">M</div>
+
+            <div class="letter">A</div>
+            <div class="letter">Web</div>
+        </div>
+        <div class="words">
+            <div class="word">Sistema</div>
+            <div class="word">Integral de</div>
+            <div class="word">Gestión de</div>
+            <div class="word">Mantenimiento</div>
+        </div>
+    </div>
+
+    <div class="col">
+        
+     <div class="wrapper fadeInDown">
+        <br><br><br><br><br><br><br>
+                                 
+                <div id="formContent">
+                    <!-- Tabs Titles -->
+
+                    <!-- Icon -->
+                    <div class="fadeIn first">
+                        <h3>Login</h3>
+                    </div>
+
+                    <!-- Login Form -->
+                    <form method="POST" th:action="@{/login}" >
+                        <input type="text"  class="fadeIn second" name="username" placeholder="Usuario">
+                        <input type="password"  class="fadeIn third" name="password" placeholder="Contraseña">
+                        <input type="submit" class="fadeIn fourth" value="Login">
+                    </form>
+ 
+                                        <!-- Remind Passowrd -->
+                    <div id="formFooter">
+                        <a id="mensajeError" class="underlineHover" style="color:red;display:none">Usuario o contraseña incorrectos</a>
+                    </div>
+
+                </div>
+            </div>
+    </div>
+
+<script>
+   document.addEventListener("DOMContentLoaded", function () { 
+    const params = new URLSearchParams(window.location.search);
+
+        // Si la URL contiene ?error, mostrar el mensaje
+        if (params.has('error')) {
+            document.getElementById('mensajeError').style.display = 'block';
+        }
+    });
+
+
+</script>
+</div>
+
+
+        
+   
+        
+       
+    
+
+
+         
+
+    
+  
+
+
+    
+            
+            <br/><!-- comment -->
+           <br/>
+            <div class="container primerAdmin" >
+                <div class="row">
+                    <div class="col-md-6 mx-auto">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>Crear admin por primera vez</h4>
+                            </div>
+                                <div class="card-body">
+                                   <form method="POST" th:action="@{/generarAdmin}"th:object="${usuario}" >
+                                      <div class="form-group">
+                                          <label for="username">Username:</label>
+                                          <!--<input type="text" name="username"  th:field="*{username}"/>-->
+                                          <input type="text" name="username"  />
+                                      </div>
+                                      <div class="form-group">
+                                          <label for="password">Password:</label>
+                                          <!--<input type="password" name="password" th:field="*{password}"/>-->
+                                          <input type="password" name="password" />
+                                      </div>
+                                      <input type="submit" value="Login" class="btn btn-primary btn-block"/>
+                                  </form>
+                                </div>
+                               </div>
+                           </div>
+                        </div>
+                </div>
+<!--        <form id="recargarForm" action="/recargar-config" method="POST" style="display: none;"></form>-->
+        <a id="recargarForm" href="/recargar-config" method="GET" style="display: none;"></a>
+           <div class="credit">
+        <a href="http://www.freepik.com" target="_blank">Designed by starline / Freepik</a>
+    </div>
+
+    </div>
+        </section>
+      </body>
+    <script>
+        $(".primerAdmin").hide();
+        $("#pp").click(function(){
+<!--           $(".primerAdmin").show(); -->
+        });
+ document.getElementById("pp").addEventListener("click", function () {
+  //  document.getElementById("recargarForm").submit();
+  });
+
+    </script>
+</html>

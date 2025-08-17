@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.tymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      xmlns:temporals="http://www.thymeleaf.org/extras/thymeleaf-temporals">
+
+
+    <!--<meta http-equiv="refresh" id="metaRefresh" content="60">-->
+
+        <head th:replace="plantillas/plantilla::head">
+            <title>Lista de tareas</title>
+            <meta charset="UTF-8"/>
+        </head>
+
+        <body>
+            <header th:replace="plantillas/plantilla::header">lista de ordenes de trabajo</header>
+             <div th:replace="plantillas/plantilla::notificaciones"></div>
+           <div th:replace="plantillas/plantilla::menu"></div>
+<div th:replace="plantillas/plantilla::logo"></div>
+            <section  class="py-4 mb-4 bg-light">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-2" >
+                            <!--<a th:href="@{/sugerenciaPreventivo/}+${activo.id}" class="btn btn-primary btn-block" th:text="'Sugerencia de preventivo'">-->
+                              <a 
+                                         href="#" 
+                                         data-toggle="modal" 
+                                         th:data-target="'#myModal'" 
+                                         class="btn btn-primary ">Nueva carga</a>   
+                            <!--</a>-->
+                        </div>
+                        <div class="col-md-2" >
+                            <!--<a th:href="@{/sugerenciaPreventivo/}+${activo.id}" class="btn btn-primary btn-block" th:text="'Sugerencia de preventivo'">-->
+                              <a th:href="@{/historialOrdenes/}+${url}"
+                                         class="btn btn-primary ">Historial</a>   
+                            <!--</a>-->
+                        </div>
+                        <div class="col-md-2" >
+                            <!--<a th:href="@{/sugerenciaPreventivo/}+${activo.id}" class="btn btn-primary btn-block" th:text="'Sugerencia de preventivo'">-->
+                              <a th:href="@{/configuracionOrdenes/}+${url}"
+                                         class="btn btn-primary ">Configuración</a>   
+                            <!--</a>-->
+                        </div>
+
+                    </div>
+                    <div class="modal fade" th:id="'myModal'" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                                <div class="modal-dialog modal-lg" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="exampleModalLabel">Orden de trabajo nueva</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <form th:id="'cargaOrdenDeTrabajo'" th:action="@{/cargaOrdenDeTrabajo}"th:object="${produccion}" method="post" enctype="multipart/form-data" > 
+                                        <div class="modal-body">
+                                            <div class='row'> 
+                                                <div class="col">
+                                                    <label th:text="'Numero de orden'" ></label>   
+                                                </div>
+                                                <div class="col">
+                                                    <input type="number" th:field="*{ordenDeTrabajo}" class="form-control" oninput="reiniciarContador()"/>
+                                                </div>
+                                            </div>
+                                            <div class='row'> 
+                                                <div class="col">
+                                                    <label th:text="'Producto'" ></label>   
+                                                </div>
+                                                <div class="col">
+                                                    <!--<input type="text" th:field="*{producto}"class="form-control" oninput="reiniciarContador()"/>-->
+                                                    <select name="producto"class="form-control" onselect="reiniciarContador()">
+                                                     <option th:each="producto : ${productos}"
+                                                             th:value="${producto.id}"
+                                                             th:text="${producto.nombre}">
+                                                     </option>
+                                                     </select>
+                                                    
+                                                    
+                                                </div>
+                                            </div>
+                                            <div class='row'> 
+                                                <div class="col">
+                                                    <label th:text="'Cantidad'" ></label>   
+                                                </div>
+                                                <div class="col">
+                                                    <input type="number" th:field="*{cantidad}"class="form-control" oninput="reiniciarContador()"/>
+                                                </div>
+                                            </div>
+                                            <div class='row'> 
+                                                <div class="col">
+                                                    <label th:text="'Linea'" ></label>   
+                                                </div>
+                                                <div class="col">
+                                                    <!--<input type="text" th:field="*{linea}"class="form-control" oninput="reiniciarContador()"/>-->
+                                                    <select name="linea"class="form-control" onselect="reiniciarContador()">
+                                                     <option th:each="linea : ${lineas}"
+                                                             th:value="${linea.toString}"
+                                                             th:text="${linea}">
+                                                     </option>
+                                                     </select>
+                                                </div>
+                                            </div>
+                                            
+                                        </div>
+                                                 
+                                        <div class="modal-footer">
+                                            <input type="hidden" name="url" id="url" th:value="${url}">
+                                            <button class="btn btn-primary" th:type="submit">Guardar</button>
+                                        </div>
+                                             </form> 
+                                       
+                                    </div>
+                                </div>
+                            </div>
+                </div>
+            </section>
+
+            <div class="container ">
+                <table class="table table-bordered table-hover table-sm "  >
+                    <thead class="thead-light " >
+                        <tr > 
+                            <th >Numero de orden</th>
+                            <th >Estado</th>
+                            <th >Producto </th>
+                            <th >Cantidad</th>
+                            <th >Línea</th>
+                            <!--<th  sec:authorize="hasRole('ROLE_ADMIN')or hasRole('ROLE_MANT')">solicita</th>-->
+                            <th  sec:authorize="hasRole('ROLE_ADMIN')">Acción</th>
+                            <!--<th sec:authorize="hasRole('ROLE_ADMIN')or hasRole('ROLE_MANT')or hasRole('ROLE_TECNICO')">acción</th>-->
+
+                        </tr>
+                    </thead>
+                    <tbody >
+                        <tr th:each="orden : ${ordenesAbiertas}">
+                        <td th:text="${orden.ordenDeTrabajo}" >Orden de trabajo</td>
+                        <td sec:authorize="hasRole('ROLE_ADMIN')|| hasRole('ROLE_PROD')">
+                            <span  th:text="${orden.estado}">estado</span>     
+                        <span><a th:if="${orden.estado=='abierta'}" 
+                                 th:href="@{/cerrarOrdenDeTrabajo/}+ ${orden.id}+ '?url=' + ${url}"
+                                 class="btn btn-primary ">Cerrar</a>
+                        </span>
+                            
+                            
+                        </td>
+                        <td sec:authorize="not hasRole('ROLE_ADMIN') and not hasRole('ROLE_PROD')" th:text="${orden.estado}">estado </td>
+                        <td th:text="${orden.producto?.nombre}">producto</td>
+                        <td >
+                            <span style="display: flex; align-items: center; gap: 8px;">
+                            <label  th:text="${orden.cantidad}"th:if="${orden.estado!='abierta'}"  />
+                            
+                                <form th:action="@{/modificarCantidad/}+${orden.id}" method="post" th:object="${produccion}"  class="form-group"
+                                       style="display: inline-flex; align-items: center; gap: 8px;">
+                                    <input type="hidden" name="url" id="url" th:value="${url}">
+                                    <input th:if="${orden.estado=='abierta'}"type="text" th:value="${orden.cantidad}" th:id="cantidad" name="cantidad" class="form-control "style="width: 100px;"/>
+                                    <input th:if="${orden.estado=='abierta'}" type="submit" value="modificar"
+                                         class="btn btn-primary ">
+                                </form>
+                            
+                            </span>
+                            
+                        </td>
+                        <td th:text="${orden.linea}">linea</td>
+                        <td sec:authorize="hasRole('ROLE_ADMIN')"><a th:href="@{/eliminarOrden/}+${orden.id}+ '?url=' + ${url}" >Eliminar</a></td>
+                        
+
+                    </tr>
+                </tbody>
+            </table>
+                
+                
+                
+                
+        </div>
+         <section  class="py-4 mb-4 bg-light">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-2" >
+                        <a th:href="@{/}+${url}" class="btn btn-primary btn-block">
+                             Volver
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        
+      
+
+        
+        
+        
+
+
+        
+        
+        
+    </body>
+</html>

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="plantillas/plantilla::head">
+        <meta charset="UTF-8"/>
+    </head>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+
+        <!-- Bootstrap CSS -->
+        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+            <!-- jQuery -->
+            <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+            <!-- jQuery UI CSS -->
+            <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+                <!-- jQuery UI JS -->
+                <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+                    <style>
+
+                        /* CSS personalizado para el popover */
+                        .popover-body {
+                            color: #fff; /* Cambiar el color del texto */
+                            background-color: #007bff; /* Cambiar el fondo */
+                        }
+
+                        .popover {
+                            max-width: 500px; /* Ensanchar el popover */
+                        }
+                        .titulo{
+                             font-weight: bold;
+                        }
+                        
+                        
+                        
+                        
+                    </style>
+
+                    <body>
+                        <!--para que funcione el popover-->
+                        <script>
+
+//para cerrar el popover al hacer clic fuera
+                            $(function () {
+                                $('[data-toggle="popover"]').popover({
+                                    trigger: 'focus' // Permitir cerrar al hacer clic fuera
+                                });
+                            });
+
+                            
+
+
+                        </script>
+                        <header th:replace="plantillas/plantilla::header"></header>
+                        <div th:replace="plantillas/plantilla::menu"></div>
+                         <div th:replace="plantillas/plantilla::notificaciones"></div>
+
+                        <body>
+                            <div class="container mt-5">
+                                <h1 class="mb-4" style="text-align: center">Informe</h1>
+                                
+                                <div th:if="${informe.estadoInforme=='enRevision'}"class='card card-body'style="background-color: red">
+                                    <label>Observaciones a revisar</label>
+                                    <textArea readOnly="true" class="form-control" th:text="${informe.revision}"></textArea>
+                                </div>    
+                                
+                               <form th:action="@{/guardarInforme/}+${informe.id}" method="post" th:object="${informe}" enctype="multipart/form-data" class="">
+                                    <input type="hidden"  id="id" name="id" th:field="*{id}"  >
+                                    <!--<input type="text"  id="url" name="url" th:field="${url}"  >-->
+                                    <input type="hidden"  id="url1" name="url"   >
+                                <h4 class="mb-4">Datos intervencion </h4>
+                                    
+<!--                                    <div class="form-row">
+                                        <label for="acercaDeMi">Acerca de mi</label>&nbsp;&nbsp;<span><i class="fa-regular fa-circle-question custom-popover" tabindex="0" data-container="body" data-trigger="focus"data-toggle="popover"data-placement="right" data-content="Breve carta de presentación, por ejemplo:'soy técnico mecánico con [número] años de experiencia en el mantenimiento y reparación de maquinaria industrial. Me especializo en el diagnóstico y solución de problemas mecánicos, así como en la implementación de programas de mantenimiento preventivo.' "></i></span>
+                                    </div> 
+
+                                    <textarea class="form-control" id="acercaDeMi" th:field="*{acercaDeMi}"></textarea>   -->
+
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label class="titulo">Activo</label>
+                                            <input type="text" class="form-control" id="activo"th:field="${tarea.activo.nombre}" readonly="true" >
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label class="titulo">Categoría</label>
+                                            <input type="text" class="form-control" id="categoria"th:field="${tarea.categoriaTecnica}"  readonly="true" >
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="card bg-light col-md-6">
+                                             <div class="row  card-body ">
+                                                 <div class="col-4">
+                                                    <label class="titulo"  >Interventores: </label>
+                                                 </div>
+                                                 <div class="col-8">
+                                                    <div th:each="asignacion : ${tarea.asignaciones}">
+                                                        <div th:text="${asignacion.tecnico.apellido} + ' ' + ${asignacion.tecnico.nombre}">
+                                                        </div>
+                                                    </div>
+                                                 </div>
+                                             </div>    
+                                        </div>
+                                        
+                                        <div class="form-group col-md-6">
+<!--                                            <label for="especialidad">Edad</label>
+                                            <input type="text" class="form-control" id="edad"th:field="*{edad}" disabled="true">-->
+                                        </div>
+                                    </div>
+                                    <br>
+
+                                    <div class="form-row">
+<!--                                        <div class="form-group col-md-6">
+                                            <label for="telefono">Teléfono</label>
+                                            <input type="text" class="form-control" id="telefono"th:field="*{telefono}">
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label for="email">email</label>
+                                            <input type="email" class="form-control" id="email"th:field="*{email}">
+                                        </div>-->
+                                   <div class="form-row">
+                                       <label class="titulo">Descripción inicial del solicitador: </label>&nbsp;<span class="titulo" th:text="${tarea.solicita}"></span>&nbsp;&nbsp;<span><i class="fa-regular fa-circle-question custom-popover" tabindex="0" data-container="body" data-trigger="focus"data-toggle="popover"data-placement="right" data-content="Descripción inicial del cliente interno al momento de dar aviso de la detención del activo"></i></span>
+                                    </div> 
+
+                                    <textarea class="form-control" id="descripciónInicial" th:text="${tarea.descripcion}"readonly="true"></textarea>   
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label class="titulo">Departamento responsable</label>
+                                            <input type="text" class="form-control" id="responsable"th:field="${tarea.departamentoResponsable}"readonly="true">
+                                        </div>
+
+                                    </div>
+
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label class="titulo">Tiempo detenido</label>&nbsp;&nbsp;<span><i class="fa-regular fa-circle-question custom-popover" tabindex="0" data-container="body" data-trigger="focus"data-toggle="popover"data-placement="right" data-content="Tiempo total de activo detenido hasta su liberación"></i></span>
+                                           <input type="text" class="form-control" id="tiempoDetenido" th:value="${tiempoDetenido}"readonly="true">
+                                        </div>
+                                    </div>
+                                    
+
+                                    <br>
+                                        <h4 class="mt-4">Informe</h4>
+                                        <div class="form-row">
+                                            <label for="descripcionInforme">Descripción</label>&nbsp;&nbsp;<span><i class="fa-regular fa-circle-question custom-popover" tabindex="0" data-container="body" data-trigger="focus"data-toggle="popover"data-placement="right" data-content="Descripción del problema desde el punto de vista del interventor "></i></span>
+                                        </div> 
+
+                                        <textarea class="form-control" id="descripcionInforme" th:field="*{descripcion}"></textarea>
+                                        
+                                        <div class="form-row">
+                                            <label for="acciones">Acciones</label>&nbsp;&nbsp;<span><i class="fa-solid fa-circle-exclamation custom-popover" tabindex="0" data-container="body" data-trigger="focus"data-toggle="popover"data-placement="right" data-content="Acciones para la resolución, este campo es muy importante!, intente ser claro y objetivo con la información que llevó a la solución del problema "></i></span>
+                                        </div> 
+
+                                        <textarea class="form-control" id="acciones" th:field="*{acciones}"></textarea>
+                                        
+                                        <div class="form-row">
+                                            <label for="pruebas">Pruebas realizadas</label>&nbsp;&nbsp;<span><i class="fa-regular fa-circle-question custom-popover" tabindex="0" data-container="body" data-trigger="focus"data-toggle="popover"data-placement="right" data-content="Pruebas realizadas para comprobar el buen funcionamiento luego de la intervención, ej: se realizaron 5 ciclos en vacío y dos con producto "></i></span>
+                                        </div> 
+
+                                        <textarea class="form-control" id="pruebas" th:field="*{pruebas}"></textarea>
+                                        
+                                         <div class="form-row">
+<!--                                            <div class="form-group col-md-6">
+                                                <label for="materiales">materiales/repuestos</label></span>
+                                               <input type="text" class="form-control" id="materiales">
+                                            </div>-->
+                                        
+                                            <div class="form-group col-md-6">
+                                                <label for="estado">Estado final</label>
+                                                <select class="form-control" id="estado"th:field="*{estadoFinal}"required="true">
+                                                    <option value="reparado">Reparado</option>
+                                                    <option value="en observacion">En observación</option>
+                                                    <option value="paliativo">Paliativo</option>
+                                                    <option value="irreparable">Irreparable</option>
+                                                </select>
+                                            </div>
+                                        </div>    
+                                    <br>
+                                        <h4 class="mt-4">Evaluación de causa raíz</h4>           
+                                    <br>      
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label for="causaRaiz">Causa Raíz</label>&nbsp;&nbsp;<span><i class="fa-regular fa-circle-question custom-popover" tabindex="0" data-container="body" data-trigger="focus"data-toggle="popover"data-placement="right" data-content="Si está clara la causa raiz indíquela en este campo, de lo contrario apóyese de los siguientes campos para obtener una aproximación"></i></span>
+                                           <input type="text" class="form-control" id="causaRaiz" th:field="*{causaRaiz}">
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                         <div class="form-group col-md-6">    
+                                            <label for="categoríaCausaRaiz">Categoría de la causa raíz</label>
+                                            <select class="form-control" id="categoríaCausaRaiz"th:field="*{categoriaCausaRaiz}"required="true">
+                                                <option value="No determinada">No determinada</option>
+                                                <option value="Humano">Humano</option>
+                                                <option value="Técnico">Técnico</option>
+                                                <option value="Ambiental">Ambiental</option>
+                                                <option value="Organizacional">Organizacional</option>
+                                                <option value="Suministros">Suministros</option>
+                                                <option value="Diseño">Diseño</option>
+                                                <option value="Operacional">Operacional</option>
+                                                <option value="Software">Software</option>
+                                                <option value="Formación/conocimientos">Formación/conocimientos</option>
+                                                <option value="Comunicación">Comunicación</option>
+                                                <option value="Económico/presupuestario">Económico/presupuestario</option>
+                                                <option value="Energía/suministro">Energía/suministro</option>
+                                            </select>
+                                         </div>
+                                    </div>
+                                        
+                                        
+                                    <div class='card card-body'>    
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        <h5>Analisis de los 5 por qué&nbsp;&nbsp;<span><i class="fa-regular fa-circle-question custom-popover" tabindex="0" data-container="body" data-trigger="focus"data-toggle="popover"data-placement="right" 
+                                                                               data-content='Método de los "5 por qué"
+                                                                                                Pregunta "¿Por qué?" al problema y
+                                                                                                Responde con la causa inmediata del problema.
+                                                                                                Pregunta "¿Por qué?" a la respuesta obtenida y
+                                                                                                Profundiza en la causa subyacente del primer "por qué".
+                                                                                                Repite el proceso al menos 5 veces.
+                                                                                                Después de 5 preguntas, deberías haberte aproximado a la causa fundamental que originó el problema.
+                                                                                                '></i></span></h5>
+                                        <label for="pregunta1">¿Por qué?</label>
+                                        <input type="text" class="form-control" id="pregunta1" th:field="*{pregunta1}">
+
+                                        <label for="pregunta2">¿Por qué?</label>
+                                        <input type="text" class="form-control" id="pregunta2" th:field="*{pregunta2}">
+
+                                        <label for="pregunta3">¿Por qué?</label>
+                                        <input type="text" class="form-control" id="pregunta3" th:field="*{pregunta3}">
+
+                                        <label for="pregunta4">¿Por qué?</label>
+                                        <input type="text" class="form-control" id="pregunta4" th:field="*{pregunta4}">
+
+                                        <label for="pregunta5">¿Por qué?</label>
+                                        <input type="text" class="form-control" id="pregunta5" th:field="*{pregunta5}">
+                                    </div>    
+                                        <br>
+                                        
+                                    <label for="seguimiento">Requiere seguimiento</label>
+                                    <input type="text" class="form-control" id="seguimiento" th:field="*{seguimiento}">
+                                  
+                                    <label for="recomendaciones">Recomendaciones</label>&nbsp;&nbsp;<span><i class="fa-regular fa-circle-question custom-popover" tabindex="0" data-container="body" data-trigger="focus"data-toggle="popover"data-placement="right" data-content="Recomendaciones a seguir para evitar reincidencia"></i></span>
+                                    <input type="text" class="form-control" id="recomendaciones" th:field="*{recomendaciones}">
+                                      <br>
+                                    <input th:if="${tarea.informe.estadoInforme!='aprobado'}" sec:authorize="hasRole('ROLE_TECNICO')"type='submit' class="btn btn-primary"value='Guardar'/>    `
+                                        
+                                    </form>
+                                
+                                <div sec:authorize="hasRole('ROLE_MANT')" th:if="${informe.estadoInforme=='noAprobado'||informe.estadoInforme=='enRevision'}">
+                                        <form th:action="@{/enviarARevision/}+${informe.id}" method="post" th:object="${informe}" enctype="multipart/form-data" class="card card-body">
+                                            <input type="hidden"  id="id" name="id" th:field="*{id}"  />
+                                            <input type="hidden"  id="url" name="url"   />
+                                            <div class='row'>
+                                                <label for="seguimiento">Observaciones a corregir</label>
+                                                <textArea  class="form-control" id="revision" th:field="*{revision}"></textArea>
+                                            </div>
+                                            <input type='submit' class="btn btn-primary"value='Enviar a revisión'/>    `
+                                        </form>
+                                </div>
+                                
+                                
+                            </div>
+                            
+                            <section  class="py-4 mb-4 bg-light">
+                               <div class="container">
+                                   <div class="row">
+                                       <div class="col-md-2" >
+                                           <a th:href="@{/informes/}" class="btn btn-primary btn-block">
+                                                Volver
+                                           </a>
+                                       </div>
+
+                                   </div>
+                               </div>
+                           </section>
+  
+                        </body>
+
+                                          
+
+
+
+
+
+
+
+
+                                            <script>
+                                                
+                                                
+                                                
+                                                const url = new URL(window.location.href);
+
+//                                                console.log(url);
+//                                                console.log(url.searchParams.get('url'));
+                                                document.getElementById('url').value =url.searchParams.get('url');
+                                                document.getElementById('url1').value =url.searchParams.get('url');
+                                                
+                                                
+                                                
+                                                
+                                                
+                                                
+                                                
+                                               
+
+
+                                            </script>
+
+
+                                            <!--//para que funcione el popover-->
+                                            <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+                                            </html>

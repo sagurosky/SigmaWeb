@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="plantillas/plantilla::head">
+        <title>Gestor de mantenimiento</title>
+    </head>
+    <body>
+        <header th:replace="plantillas/plantilla::header"></header>
+        <div th:replace="plantillas/plantilla::menu"></div>
+         <div th:replace="plantillas/plantilla::notificaciones"></div>
+
+
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title" >Editar tarea  </h5>
+                </div> 
+                <form th:action="@{/guardarEdicion}" method="post" th:object="${tarea}" class="was-validated">
+                    
+                    <div class="modal-body">
+                        <div sec:authorize="hasRole('ROLE_ADMIN')">
+                            <input type="hidden" th:field="${tarea.id}"/>
+                            <input type="hidden" th:field="${tarea.solicita}"/>
+                            <label th:text="activo" for="activo"></label>
+                            <select th:field="*{activo}" class="form-control" >
+                                <option value="0">Seleccione</option>
+                                <option th:each="activo : ${activos}" th:value="${activo.id}" th:text="${activo.nombre}"></option>
+                            </select>
+                            <br/>
+                            <label th:text="Descripcion" for="descripcion"></label>
+                            <input type="text" th:field="*{descripcion}"class="form-control" required="true"/>
+                            <!--<span th:if="${#fields.hasErrors('descripcion')}" th:errors="*{descripcion}"/>-->
+                            <br/>
+                            <label th:text="'Estado activo'" for="estado"></label>
+                            <select  th:field="*{activo.estado}" class="form-control" id="dropDownList">
+                                <option value="0">Seleccione</option>
+                                <option th:each="estado : ${estados}" th:value="${estado}" th:text="${estado}"></option>
+                            </select>
+                             <br/>
+                              <label th:text="'Estado tarea'" for="estado"></label>
+                            <select  th:field="*{estado}" class="form-control" id="dropDownList">
+                                <option value="0">Seleccione</option>
+                                <option th:each="estado : ${estadosTareas}" th:value="${estado}" th:text="${estado}"></option>
+                            </select>
+                               <br/>
+                            <div class="form-group">
+                                <label  for="responsable">Departamento Responsable</label>
+                                <select th:field="*{departamentoResponsable}" th:id="responsable" onchange="mostrarCategoria()"class="form-control" >
+                                    <option value="0">Seleccione</option>
+                                    <option value="mantenimiento">Mantenimiento</option>
+                                    <option value="logistica">Logística</option>
+                                    <option value="calidad">Calidad</option>
+                                </select>
+
+                            </div>
+                            
+                            <div class="form-group" id="categoriaDiv">
+                                <label  for="categoria">categoría técnica</label>
+                                <select th:field="*{categoriaTecnica}" th:id="categoria" class="form-control" >
+                                    <option value="0">Seleccione</option>
+                                    <option value="mecánica">Mecánica</option>
+                                    <option value="hidráulica">Hidráulica</option>
+                                    <option value="neumática">Neumática</option>
+                                    <option value="electrónica">Electrónica</option>
+                                    <option value="programación">Programación</option>
+                                </select>
+
+                            </div>
+                             <br/>
+                                <label th:text="'Motivo de demora en asignación'"/>
+                                            <textArea th:field="*{motivoDemoraAsignacion}"  class="form-control"></textArea>
+                               
+                            
+                            <br/>
+                            <label th:text="'Motivo de demora en cierre'"/>
+                                            <textArea th:field="*{motivoDemoraCierre}"  class="form-control"></textArea>
+                               
+                            
+                            <br/>
+                            <div>
+                                <label for="tecnicos"  >Técnicos</label>
+
+                                <select id="tecnicos" name="tecnicosIds" multiple class="form-control">
+                                    <option th:each="tecnico : ${todosLosTecnicos}" 
+                                            th:value="${tecnico.id}" 
+                                            th:text="${tecnico.apellido} + ' ' + ${tecnico.nombre}"
+                                             th:selected="${#lists.contains(idsTecnicosAsignados, tecnico.id)}">
+                                    </option>
+                                </select>
+
+                            </div>
+
+                            <input type="hidden"  th:field="*{momentoDetencion}" />
+                            <input type="hidden"  th:field="*{momentoAsignacion}" />
+                            <input type="hidden"  th:field="*{momentoLiberacion}" />
+                            <input type="hidden"  th:field="*{momentoCierre}" />
+                            <input type="hidden"  th:field="*{evaluacion}" />
+                            
+                            
+                            
+                            <input type="submit" th:value="Guardar" class="btn btn-primary "/>
+                            <a th:href="@{/tareas}" th:text="regresar" class="btn btn-primary "></a>
+                        </div>    
+                </form>
+            </div>     
+        </div>
+    </body>
+</html>

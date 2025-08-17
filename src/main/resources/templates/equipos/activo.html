@@ -1,0 +1,1143 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+    <head  th:replace="plantillas/plantilla::head">
+        <title>Gestor de mantenimiento</title>
+
+    </head>
+    <style>
+        .grafico {
+            width: 100%;
+            min-height: 400px;
+        }
+/*        .col{
+            border:solid 1px;
+        }*/
+    </style>
+    <body>
+        <!--<div th:replace="plantillas/plantilla::head"></div>-->
+        <header th:replace="plantillas/plantilla::header">lista de tareas</header>
+         <div th:replace="plantillas/plantilla::notificaciones"></div>
+        <div th:replace="plantillas/plantilla::menu"></div>
+<div th:replace="plantillas/plantilla::logo"></div>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <div class="container ">
+            <h2 th:text="${activo.nombre}"></h2>
+            <div class="row align-items-center">
+<!--                 <div class="col ">
+                 </div>-->
+                <div class="col text-center">
+                    <img th:src="${linkFoto}" onerror="this.src='/recursos/logo.png'" usemap="#workmap" width="600" height="600" style="max-width: 100%; height: auto;" />
+
+
+                </div>
+                <div class="col ">
+                    <div class='row   '>
+                        
+                        <div class='col '>
+                            <h4>Estado de activo:</h4>
+                        </div>
+                        <div class='col'>
+
+                            <h4 > 
+                                <span  th:if="${activo.estado=='detenida'}" th:text="'Detenido'" style="background-color:red" ></span>
+                                <span  th:if="${activo.estado=='operativa'}" th:text="'Operativo'" style="background-color:greenyellow"  ></span>
+                                <span  th:if="${activo.estado=='liberada'}" th:text="'Liberado'" style="background-color:greenyellow" ></span>
+                                <span  th:if="${activo.estado=='disponible'}" th:text=" ${activo.estado}" style="background-color:orange" ></span>
+                                <span  th:if="${activo.estado=='operativa condicionada'}" th:text=" ${activo.estado}" style="background-color:lightcoral" >
+                                  </span>
+
+
+
+                               
+                                
+                            </h4>
+                            <div th:if="${activo.estado=='operativa condicionada'}">
+                                <form th:action="@{/cerrarCondicionada/}+ ${activo.id}" method="post" th:object="${activo}"  >
+                                    <div class='row'style="text-align: center">
+                                        <div >
+                                            <input type='submit' value="cancelar/cerrar" class="btn btn-primary "/>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                               
+                        </div>
+                         
+                              
+                        
+                    </div>
+                     
+                    
+                    <div class='row'>
+                        <div class='col'></div>
+                        <div class='col'>
+                            <span  sec:authorize="hasRole('ROLE_ADMIN')" >
+
+                                <form th:action="@{/cambiarEstado/}+ ${activo.id}" method="post"th:id="formCambiarEstado" th:object="${activo}" enctype="multipart/form-data" >
+                                    <div class="form-floating">  
+                                        <select  th:field="*{estado}" class="form-select"  aria-label="Forzar estado" onchange=" document.getElementById('formCambiarEstado').submit()">
+                                            <option th:each="estado : ${estados}" th:value="${estado}" th:text="${estado}"></option>
+                                        </select>
+                                        <label >Forzar estado</label>
+                                        <i class="fa-solid fa-circle-exclamation" title="Los cambios aquí efectuados pueden provocar errores en los cálculos de los indicadores"></i>
+                                    </div>
+                                </form>    
+                            </span>
+                           
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    <div th:if="${tarea==null}">
+                     <div sec:authorize="hasRole('ROLE_PROD') and not hasRole('ROLE_ADMIN') " th:if="${activo.estado!='detenida'}" class='row card card-body'>
+                       <form th:action="@{/ponerADisponibilidad/}+ ${activo.id}" method="post"th:id="formCambiarEstadoProd" th:object="${activo}" enctype="multipart/form-data" >
+                         <div class='row'>
+                             <h3 style="text-align: center">Poner a disponibilidad:</h3>
+                         
+                         </div>  
+                        <div class='row'>
+                             <div class='col '>
+                                 Indique hasta cuándo el activo estará disponible
+                           </div>
+                            <div class='col '>
+                              <!--<input type="date" class="form-control" id="fechaNacimiento"th:field="*{fechaNacimiento}" required="true">-->
+                              <input type="datetime-local"th:field="*{disponibilidadHasta}" class="form-control" id="disponibilidadHasta" name="disponibilidadHasta">
+                                  <label style="color: red" hidden="true" id="errorDisponibilidad">Debe ingresar un valor mayor al actual</label>
+                                  
+                           </div>
+                        </div>
+                          <div th:if="${activo.estado=='disponible'}"> 
+                                <div class='row'>
+                                   <div class='col '>
+                                       Tiempo restante disponible:
+                                 </div>
+                                  <div class='col '>
+                                     <h4>  <span th:id="tiempoRestanteDisponibilidad"></span> </h4>   
+                                 </div>
+                              </div>
+                                <div class='row'>
+                                   <div class='col '>
+                                       Disponible desde:
+                                 </div>
+                                  <div class='col '>
+                                     <h4>  <span th:id="disponibilidadDesde"></span> </h4>   
+                                 </div>
+                              </div>
+                                <div class='row'>
+                                   <div class='col '>
+                                       Tiempo desde disponibilidad:
+                                 </div>
+                                  <div class='col '>
+                                     <h4>  <span th:id="transcurridoDesdeDisponibilidad"></span> </h4>   
+                                 </div>
+                              </div>
+                          </div> 
+                        <div class='row'style="text-align: center"th:if="${activo.estado!='disponible'}">
+                            <div class='col '>
+                                <input type='button' value="Confirmar" class="btn btn-primary "  onclick='validarHasta()'>
+                            </div>  
+                        </div>      
+                            
+                        </form>    
+                        <form th:action="@{/cancelarDisponibilidad/}+ ${activo.id}" method="post"th:id="formCancelarCambiarEstadoProd" th:object="${activo}" enctype="multipart/form-data" >    
+                         <div class='row'style="text-align: center"th:if="${activo.estado=='disponible'}">   
+                             <div class='col 'sec:authorize="hasRole('ROLE_PROD')">
+                                <input type='submit' value="Cancelar" class="btn btn-primary "/>
+                            </div> 
+                        </div>    
+                          </form>  
+                    </div>
+                        
+                      <!--copio algunas cosas de arriba que necesito cuando el rol es prod, admin o técnico-->
+                      
+                      
+                      <div sec:authorize="hasRole('ROLE_MANT') or hasRole('ROLE_TECNICO') " th:if="${activo.estado=='disponible'}" class='row card card-body'>
+                         <div class='row'>
+                             <h3 style="text-align: center">Disponibilidad</h3>
+                         
+                         </div>  
+                        <div class='row'>
+                             <div class='col '>
+                                 El activo esta disponible hasta: 
+                           </div>
+                            <div class='col '>
+                              <!--<input type="date" class="form-control" id="fechaNacimiento"th:field="*{fechaNacimiento}" required="true">-->
+                              <input type="datetime-local"th:field="${activo.disponibilidadHasta}" class="form-control" id="disponibilidadHasta" name="disponibilidadHasta">
+                                  <label style="color: red" hidden="true" id="errorDisponibilidad">Debe ingresar un valor mayor al actual</label>
+                                  
+                           </div>
+                        </div>
+                          <div th:if="${activo.estado=='disponible'}"> 
+                                <div class='row'>
+                                   <div class='col '>
+                                       Tiempo restante disponible:
+                                 </div>
+                                  <div class='col '>
+                                     <h4>  <span th:id="tiempoRestanteDisponibilidad"></span> </h4>   
+                                 </div>
+                              </div>
+                                <div class='row'>
+                                   <div class='col '>
+                                       Disponible desde:
+                                 </div>
+                                  <div class='col '>
+                                     <h4>  <span th:id="disponibilidadDesde"></span> </h4>   
+                                 </div>
+                              </div>
+                                <div class='row'>
+                                   <div class='col '>
+                                       Tiempo desde disponibilidad:
+                                 </div>
+                                  <div class='col '>
+                                     <h4>  <span th:id="transcurridoDesdeDisponibilidad"></span> </h4>   
+                                 </div>
+                              </div>
+                          </div> 
+                              
+                            
+                            
+                    </div>
+                        
+
+                    </div>   
+                    
+                    
+                    
+                    <script>
+                        
+                        function validarHasta()
+                        {
+                        let fechaDisponibilidad =new Date($('#disponibilidadHasta').val());
+                            
+                        if(fechaDisponibilidad<=(new Date()))
+                        {
+                            document.getElementById("errorDisponibilidad").hidden = false;
+                            
+                        }else 
+                        {
+                            
+                        document.getElementById("errorDisponibilidad").hidden=true;
+                           document.getElementById('formCambiarEstadoProd').submit()
+                        }
+                    }
+                    function cancelar(){
+                        
+                        document.getElementById('formCambiarEstadoProd').submit()
+                    }
+                        
+                    </script>   
+
+                    <br>
+
+                        <!--para cuando agregue lo de los perfiles tecnicos-->
+                        <div th:if="${activo.estado=='detenida'||activo.estado=='operativa condicionada'}" class="container card">
+                            <div class="row">
+                                <div class='col-7'>
+                                    <h4>  Detenido desde: </h4>
+                                </div>
+                                <div class='col-5'>
+                                    <h4>  <span th:text="${#temporals.format(activo.momentoDetencion, ' dd/MM/yyyy    HH:mm:ss')}"></span></h4>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class='col-7'>
+                                    <h4>  Tiempo detenido:</h4>
+                                </div>
+                                <div class='col-5'>
+                                    <h4>  <span th:id="tiempoTranscurrido"></span> </h4>
+                                </div>
+                            </div>
+                            <div th:if="${tarea!=null}">
+                                <div class="row">
+                                    <div class='col-7'>
+                                        <h4>  Departamento responsable:</h4>
+                                    </div>
+                                    <div class='col-5'>
+                                          <h5><span th:text=${tarea.departamentoResponsable}></span> </h5> 
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class='col-7'>
+                                        <h4>  Descripcion del problema:</h4>
+                                    </div>
+                                    <div class='col-5'>
+                                          <span th:text=${tarea.descripcion}></span> 
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class='col-7'>
+                                        <h4>  Afecta produccion:</h4>
+                                    </div>
+                                    <div class='col-5'>
+                                        <h5><span th:text=${tarea.afectaProduccion}></span></h5> 
+                                    </div>
+                                </div>
+                            </div>    
+                            <div class="row" th:if="${tarea!=null} and ${tarea.departamentoResponsable=='mantenimiento'}">
+                                <div class='col-7'>
+                                    <h4> Interventor/es:</h4>
+                                </div>
+                                <div class='col-5  card' >
+                                    <span  ><a th:if="${tarea.estado=='abierto'}" 
+                                         sec:authorize="hasRole('ROLE_MANT')||hasRole('ROLE_TECNICO')" 
+                                         href="#" 
+                                         data-toggle="modal" 
+                                         th:data-target="'#myModal2' + ${tarea.id}" 
+                                         class="btn btn-primary ">Asignar</a></span>
+                                         
+                                        
+                                         
+                                    <div th:each="tecnico: ${tecnicosAsignar}">
+                                        
+                                        <!--<span style="display: inline;"><a sec:authorize="not hasRole('ROLE_MANT')" th:href="@{/layout}" th:text="'ver perfil'" class="btn btn-secondary btn-sm"></a></span>--> 
+                                        <form th:action="@{/perfilTecnico}" method="get">
+                                            <input type="hidden" name="url" id="url" th:value="${activo.nombre}">
+                                            <input type="hidden" name="id" id="id" th:value="${tecnico.id}">
+                                            <!--<h5 th:text="${tecnico.nombre}+' '+${tecnico.apellido}"style="display: inline;" onclick="getElementById('perfilForm').submit()">  Joaquín Gonzalez </h5>-->
+                                            <!--<span style="display: inline;"><button sec:authorize="not hasRole('ROLE_MANT')"  type="submit"class="btn btn-secondary btn-sm" th:text="'ver perfil'">Ver</button></span>-->
+                                            <input type="submit" th:value="${tecnico.nombre}+' '+${tecnico.apellido}" class="btn btn-secondary" />  
+                                            </form>
+                                    
+                                    </div>
+                                </div>
+                                     <div th:if="${tarea!=null}"><a th:if="${tarea.estado=='enProceso'}"
+                                                                    sec:authorize="hasRole('ROLE_MANT') || hasRole('ROLE_TECNICO')"
+                                                                    href="#"
+                                                                    class="btn btn-primary btn-block liberar-btn"
+                                                                    th:attr="data-id=${tarea.id}">
+                                         Liberar
+                                     </a>
+                                     
+                                     
+                                     </div>
+                                <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+                                <script>
+                                    document.addEventListener("DOMContentLoaded", function () {
+                                      const liberarBtns = document.querySelectorAll(".liberar-btn");
+
+                                      liberarBtns.forEach(btn => {
+                                        btn.addEventListener("click", function (e) {
+                                          e.preventDefault(); // Evita la navegación automática
+
+                                          const tareaId = btn.getAttribute("data-id");
+                                          const redirectUrl = `/liberarSolicitud/${tareaId}`;
+
+                                          Swal.fire({
+                                            title: "¿Está seguro que desea dar por liberado el activo?",
+                                            showDenyButton: true,
+                                            confirmButtonText: "Sí, liberar",
+                                            confirmButtonColor: "#0d6efd",
+                                            denyButtonText: "No",
+                                            denyButtonColor: "#6c757d",
+                                          }).then((result) => {
+                                            if (result.isConfirmed) {
+                                              window.location.href = redirectUrl;
+                                            }
+                                          });
+                                        });
+                                      });
+                                    });
+                                </script>
+                                
+
+                                
+                            </div>
+                        </div>
+                       <div th:if="${activo.estado=='liberada'}" class="container card">
+                        <span th:if="${tarea!=null }">
+                            <label>El activo ha sido intervenido recientemente</label><br>
+                                    <a sec:authorize="hasRole('ROLE_PROD')" 
+                                       th:if="${tarea.estado=='liberada'}" 
+                                       href="#" 
+                                       data-toggle="modal" 
+                                       th:data-target="'#myModal' + ${tarea.id}" 
+                                       class="btn btn-primary"
+                                       >
+                                        Evaluar y Cerrar intervención
+                                    </a>
+                            <label sec:authorize="not hasRole('ROLE_PROD')" th:if="${tarea.estado=='liberada'}" th:text="'aguardando cierre de producción'" />
+                        </span>
+                        </div>
+                        
+                        
+                        <!--para cuando no es de mantenimiento-->
+                         <div th:if="${activo.estado=='detenida'}" class="container card">
+                         <span th:if="${tarea!=null && tarea.departamentoResponsable!='mantenimiento'}">
+                            <!--<label>El activo ha sido intervenido recientemente</label><br>-->
+                                    <a sec:authorize="hasRole('ROLE_PROD')" 
+                                       th:if="${tarea.estado=='abierto'}" 
+                                       href="#" 
+                                       data-toggle="modal" 
+                                       th:data-target="'#myModal' + ${tarea.id}" 
+                                       class="btn btn-primary"
+                                       >
+                                        Evaluar y Cerrar intervención
+                                    </a>
+                            <label sec:authorize="not hasRole('ROLE_PROD')" th:if="${tarea.estado=='liberada'}" th:text="'aguardando cierre de producción'" />
+                        </span>   
+                           
+                           
+                           
+                           
+                           
+                       </div>
+                        <!--modal para asignar tecnicos-->
+                        <div  th:if="${tarea!=null}">
+                            <div class="modal fade" th:id="'myModal2' + ${tarea.id}" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="exampleModalLabel">Asignar colaborador/es</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                                 <form th:id="'asignarForm+${tarea.id}'" th:action="@{/asignarSolicitud/}+${tarea.id}"th:object="${tarea}" > 
+                                                     <input type="hidden" name="activoReq" id="activoReq" th:value="*{activo.id}">
+                                                           <!--<input type="hidden" name="url" id="url" th:value="${url}">-->
+                                            <div class="modal-body">
+
+                                              <label th:text="'seleccione colaborador/es '"/>
+
+                                                <div>
+                                                    <label for="tecnicos">Técnicos</label>
+
+                                                    <select id="tecnicos" name="tecnicosIds" multiple class="form-control" required>
+                                                        <option th:each="tecnico : ${todosLosTecnicos}" 
+                                                                th:value="${tecnico.id}" 
+                                                                th:text="${tecnico.apellido} + ' ' + ${tecnico.nombre}"
+                                                               >
+                                                        </option>
+                                                    </select>
+
+                                                </div>
+
+                                                <label th:text="'Ingrese motivo de demora si corresponde'"/>
+                                                <textArea th:id="motivoDemoraAsignacion" th:name="motivoDemoraAsignacion" class="form-control"></textArea>
+                                            </div>
+
+                                            <div class="modal-footer">
+                                                <button class="btn btn-primary" th:type="submit">Asignar</button>
+                                            </div>
+                                                 </form> 
+
+                                        </div>
+                                    </div>
+                                </div>
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            <div class="modal fade bd-example-modal-lg" th:id="'myModal' + ${tarea.id}" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="exampleModalLabel" >Confirme cierre de tarea</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <form th:id="'evaluarForm+${tarea.id}'" th:action="@{/CerrarSolicitud/}+${tarea.id}" > 
+                                                <div class="modal-body">
+      			
+                                                   
+                                                    <div class="row">
+                                                        <div class="form-floating mb-3 col">
+                                                            <input type="number" min="0" max="10" class="form-control" th:id="floatingInput"th:name="satisfaccion"oninput="checkInput(this)" placeHolder="Satisfacción general por la tarea realizada">
+                                                            <label for="floatingInput">Satisfacción general por la tarea realizada</label>
+                                                        </div>
+                                                        <div class="form-floating mb-3 col">
+                                                            <input type="number" min="0" max="10" class="form-control" th:id="floatingInput"th:name="predisposicion"oninput="checkInput(this)" placeHolder="Predisposición percibida por el colaborador">
+                                                            <label for="floatingInput">Predisposición percibida por el colaborador</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="form-floating mb-3 col">
+                                                            <input type="number" min="0" max="10" class="form-control" id="floatingInput"th:name="responsabilidad"oninput="checkInput(this)" placeHolder="Nivel de responsabilidad detectada">
+                                                            <label for="floatingInput">Nivel de responsabilidad detectada</label>
+                                                        </div>
+                                                        <div class="form-floating mb-3 col">
+                                                            <input type="number" min="0" max="10" class="form-control" id="floatingInput"th:name="seguridad"oninput="checkInput(this)" placeHolder="Cumplimiento de normas de seguridad">
+                                                            <label for="floatingInput">Cumplimiento de normas de seguridad</label>
+                                                        </div>
+                                                    </div>
+                                                     <div class="row">
+                                                        <div class="form-floating mb-3 col">
+                                                            <input type="number" min="0" max="10" class="form-control" id="floatingInput"th:name="conocimiento"oninput="checkInput(this)" placeHolder="Nivel de conocimiento de la tarea">
+                                                            <label for="floatingInput">Nivel de conocimiento de la tarea</label>
+                                                        </div>
+                                                        <div class="form-floating mb-3 col">
+                                                            <input type="number" min="0" max="10" class="form-control" id="floatingInput"th:name="trato"oninput="checkInput(this)" placeHolder="Trato recibido">
+                                                            <label for="floatingInput">Trato recibido</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="form-floating mb-3 col">
+                                                            <input type="number" min="0" max="10" class="form-control" id="floatingInput"th:name="prolijidad"oninput="checkInput(this)" placeHolder="Prolijidad (5S)">
+                                                            <label for="floatingInput">Prolijidad (5S)</label>
+                                                        </div>
+                                                        <div class="form-floating mb-3 col">
+                                                            <input type="number" min="0" max="10" class="form-control" id="floatingInput"th:name="puntualidad"oninput="checkInput(this)" placeHolder="Puntualidad">
+                                                            <label for="floatingInput">Puntualidad</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="form-floating mb-3 col">
+                                                            <input type="number" min="0" max="10" class="form-control" id="floatingInput"th:name="eficiencia"oninput="checkInput(this)" placeHolder="Eficiencia">
+                                                            <label for="floatingInput">Eficiencia</label>
+                                                        </div>
+                                                        <div class="form-floating mb-3 col">
+                                                            <input type="number" min="0" max="10" class="form-control" id="floatingInput"th:name="calidad"oninput="checkInput(this)" placeHolder="Calidad del trabajo">
+                                                            <label for="floatingInput">Calidad del trabajo</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="form-floating mb-3 col">
+                                                            <input type="number" min="0" max="10" class="form-control" id="floatingInput"th:name="comunicacion"oninput="checkInput(this)" placeHolder="Comunicación">
+                                                            <label for="floatingInput">Comunicación</label>
+                                                        </div>
+                                                        <div class="form-floating mb-3 col">
+                                                            <input type="number" min="0" max="10" class="form-control" id="floatingInput"th:name="trabajoEnEquipo"oninput="checkInput(this)" placeHolder="Trabajo en equipo">
+                                                            <label for="floatingInput">Trabajo en equipo</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="form-floating mb-3 col">
+                                                            <input type="number" min="0" max="10" class="form-control" id="floatingInput"th:name="resolucion"oninput="checkInput(this)" placeHolder="Capacidad para la resolución de problemas">
+                                                            <label for="floatingInput">Capacidad para la resolución de problemas</label>
+                                                        </div>
+                                                        <div class="form-floating mb-3 col">
+                                                            <input type="number" min="0" max="10" class="form-control" id="floatingInput"th:name="creatividad"oninput="checkInput(this)" placeHolder="Creatividad e innovación">
+                                                            <label for="floatingInput">Creatividad e innovación</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="form-floating mb-3 col">
+                                                            <input type="number" min="0" max="10" class="form-control" id="floatingInput"th:name="iniciativa"oninput="checkInput(this)" placeHolder="Iniciativa">
+                                                            <label for="floatingInput">Iniciativa</label>
+                                                        </div>
+                                                        <div class="form-floating mb-3 col">
+                                                            <input type="number" min="0" max="10" class="form-control" id="floatingInput"th:name="autogestion"oninput="checkInput(this)" placeHolder="Autogestión">
+                                                            <label for="floatingInput">Autogestión</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="form-floating mb-3 col">
+                                                            <input type="number" min="0" max="10" class="form-control" id="floatingInput"th:name="formacionContinua"oninput="checkInput(this)" placeHolder="Formación contínua">
+                                                            <label for="floatingInput">Formación contínua</label>
+                                                        </div>
+                                                        <div class="form-floating mb-3 col">
+                                                           
+                                                        </div>
+                                                    </div>
+                                                   
+<!--                                                   
+                                                    <label th:text="'evaluación del trabajo realizado: '"/>
+                                                    <textArea th:id="evaluacion" th:name="evaluacion" class="form-control"></textArea>
+                                                    <label th:text="'si existió demora en cierre ingrese motivo: '"/>
+                                                    <textArea th:id="motivoDemoraCierre" th:name="motivoDemoraCierre" class="form-control"></textArea>    -->
+                                        </div>
+                                        <div class="modal-footer">
+                                                 <button class="btn btn-primary" th:type="submit">Guardar y cerrar</button>
+                                        </div>
+                                             </form> 
+                                       
+                                    </div>
+                                </div>
+                            </div>
+                            </div>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+
+
+                        <br/>
+                        <a th:if="${activo.estado!='detenida'&&activo.estado!='liberada'&&activo.estado!='operativa condicionada'}" th:href="@{/crearTarea/}+ ${activo.id}" th:text="'Notificar detención'" class="btn btn-primary"></a>
+                        <br/>
+                        <a th:href="@{/registroActivo/}+ ${activo.id}" th:text="'Historial de detenciones'" class="btn btn-primary"></a>
+                        <br/>
+                        <a th:href="@{/preventivos/}+ ${activo.id}" th:text="'Preventivos y mejoras'" class="btn btn-primary"></a>
+                        <br/>
+                        <br/>
+
+                        
+                        
+                   
+                        
+                        
+                        
+                    <div class="card card-body container">
+                     <div class="row ">
+                         <br>
+                         <div class="col-md-4">
+                             <h3 >Indicadores</h3>
+
+                         </div>
+                         <div class="col-md-8">
+
+                         <div  sec:authorize="hasRole('ROLE_ADMIN')" >
+                             <div class="form-floating">
+                                 <form th:action="@{/cambiarPromedioMovil/}+ ${activo.id}" method="post"th:id="formCambiarPromedioMovil" th:object="${activo}" enctype="multipart/form-data" >
+                                     <div class="form-floating">
+                                         <select th:field="*{promedioMovil}" class="form-control" id="promedioMovil"  required="true" onchange=" document.getElementById('formCambiarPromedioMovil').submit()">
+                                             <option th:each="promedio : ${promedios}" th:value="${promedio}" th:text="${promedio}"></option>
+                                         </select>
+                                         <label  >Configure ventana de promedio móvil</label>
+                                     </div>
+                                 </form>
+                             </div>
+                         </div>
+
+                             <div  sec:authorize="not hasRole('ROLE_ADMIN')" >
+                             <h3> <span th:if="${activo.promedioMovil.equals('1 anio')}" th:text="'(1 año)'"></span>
+                                 <span th:if="${!activo.promedioMovil.equals('1 anio')}" th:text="'('+${activo.promedioMovil}+')'"></span></h3>
+
+                             </div>
+
+
+
+
+                         </div>
+                     </div>
+
+                        <br/>
+                    <div class="row">
+                            <div class='col'>
+                                <h4 th:title="'Ventana: '+${activo.promedioMovil}">MTBF: </h4>
+                            </div>
+                            <div class='col'>
+                                <h4 th:text="${mtbf}+' min'">  </h4>
+<!--                                <h4 th:text="'80 min'">  </h4> -->
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class='col'>
+                                <h4 th:title="'Ventana: '+${activo.promedioMovil}">  MTTR:  </h4>
+                            </div>
+                            <div class='col'>
+                                <h4  th:text="${mttr}+' min'"> </h4>
+<!--                                <h4  th:text="'34 min'"> </h4> -->
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class='col'>
+                                <h4 th:title="'Ventana: '+${activo.promedioMovil}">  Disponibilidad:  </h4>
+                            </div>
+                            <div class='col'>
+                                <h4  th:text="${disponibilidad}+' %'"> </h4>
+<!--                                <h4  th:text="'95 %'"> </h4> -->
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class='col'>
+                                <h4>  Confiabilidad:  </h4> 
+                            </div>
+                            <div class='col'>
+                                <h4  th:text="${confiabilidad}+' % en 24hs'"> </h4>
+<!--                                <h4  th:text="'98 % en 24hs'"> </h4> -->
+                            </div>
+                        </div>  
+                    </div>
+                 </div>
+
+
+
+
+
+
+
+
+                </div>
+
+            </div> 
+            <br/><br/>
+            <!--graficos-->
+            <div class="row " hidden="true">
+                <div class="col">
+                    <h4>Cantidad de minutos de detención </h4>
+                    <div th:id="grafico1" class="grafico"></div>
+                </div>
+                <div class="col">
+                    <h4>Cantidad de intervenciones según interventor</h4>
+                    <div th:id="grafico2" class="grafico"></div>
+                </div>
+            </div>
+            <br/><br/>
+            <div class="row">
+                <div class="col">
+                    <h4>Detenciones [minutos] últimos meses</h4>
+                    <div th:id="grafico3" class="grafico"></div>
+                </div>
+                <div class="col">
+                    <h4>Estadística de detenciones según especialidad técnica</h4>
+                    <div th:id="grafico4" class="grafico"></div>
+                </div>
+            </div>
+
+            <br><br>
+        <div class="row">
+            <div class="col-md-2" >
+
+                <button onclick="history.back()" class="btn btn-primary btn-block">Volver</button>
+            </div>
+
+        </div>
+                    <!--th:href="@{/}+${url}"-->
+                    </div>   
+                    <script th:inline="javascript">
+                        
+                         function checkInput(element) {
+                            let value = parseInt(element.value, 10);
+                            if (value > 10) {
+                                element.value = 10;g
+                            }
+                            if (value < 0) {
+                                element.value = 0;
+                            }
+                            if (isNaN(value) ) {
+                                 element.value = ""; // Asignar valor vacío
+                            }
+                        }
+                        
+                        // DMS usar este codigo en la pantalla del detalle del activo para que muestre cuanto tiempo transcurrio desde que esta parada
+
+                        function actualizarTiempo() {
+                            // Obtener el elemento span
+                            var tiempoSpan = document.getElementById("tiempoTranscurrido");
+
+                            // Obtener el tiempo detenido de Thymeleaf
+                            var tiempoDetenido = [[ ${activo.momentoDetencion
+                            }
+                            ]];
+                            // Calcular la diferencia de tiempo
+                            var tiempoActual = new Date();
+                            var diferencia = tiempoActual.getTime() - new Date(tiempoDetenido).getTime();
+                            //
+                            //                // Convertir la diferencia de tiempo a horas, minutos y segundos
+                            var horas = Math.floor(diferencia / (1000 * 60 * 60));
+                            var minutos = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
+                            var segundos = Math.floor((diferencia % (1000 * 60)) / 1000);
+                            //
+                            //                // Mostrar la diferencia de tiempo en el elemento span
+                            if(horas>=0 && minutos>=0 && segundos>=0)
+                            {
+                                
+                            tiempoSpan.textContent = horas + ":" + minutos + ":" + segundos;
+                            }
+                        }
+                        
+                        
+                        
+                        function actualizarTiempoRestante() {
+                            // Obtener el elemento span
+                            var tiempoRestante = document.getElementById("tiempoRestanteDisponibilidad");
+                            var tiempoDesde = document.getElementById("disponibilidadDesde");
+                            var tiempoTranscurridoDesde = document.getElementById("transcurridoDesdeDisponibilidad");
+                            // Obtener el tiempo detenido de Thymeleaf
+                            var disponibilidadDesde = [[ ${activo.disponibilidadDesde}]];
+                            // Calcular la diferencia de tiempo
+                            var tiempoActual = new Date();
+                            var diferencia = new Date($("#disponibilidadHasta").val()).getTime()-tiempoActual.getTime() ;
+                            //cuando alcanza el tiempo hace submit a cancelar automaticamente
+                            if(new Date($("#disponibilidadHasta").val())<new Date())document.getElementById("formCancelarCambiarEstadoProd").submit();
+                            //                // Convertir la diferencia de tiempo a horas, minutos y segundos
+                            
+                            if (diferencia >= 0) {
+                            var horas = Math.floor(diferencia / (1000 * 60 * 60));
+                            var minutos = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
+                            var segundos = Math.floor((diferencia % (1000 * 60)) / 1000);
+                            //
+                            //                // Mostrar la diferencia de tiempo en el elemento span
+                            tiempoRestante.textContent = horas + ":" + minutos + ":" + segundos;
+                            }
+                            
+                            
+                            
+                           // diferencia=
+                            
+                            
+                            
+                            
+//                            diferencia = tiempoActual.getTime()-new Date(disponibilidadDesde).getTime() ;
+                            var momentoDesdeDisponibilidad=new Date(disponibilidadDesde);
+                             tiempoDesde.textContent =momentoDesdeDisponibilidad.getDate()+"/"+(momentoDesdeDisponibilidad.getMonth()+1)+"/"+momentoDesdeDisponibilidad.getFullYear()+" - " +momentoDesdeDisponibilidad.getHours()  + ":" +momentoDesdeDisponibilidad.getMinutes()  + ":" +momentoDesdeDisponibilidad.getSeconds();
+                        
+    
+    
+    
+                              diferencia = tiempoActual.getTime()-new Date(disponibilidadDesde).getTime() ;
+                             if (diferencia >= 0) {
+                             horas = Math.floor(diferencia / (1000 * 60 * 60));
+                             minutos = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
+                             segundos = Math.floor((diferencia % (1000 * 60)) / 1000);
+                             tiempoTranscurridoDesde.textContent= horas + ":" + minutos + ":" + segundos;
+                             }
+                          }
+
+                        // Llamar a la función actualizarTiempo cada segundo para actualizar dinámicamente el tiempo
+                        if($("#tiempoTranscurrido").length)
+                        setInterval(actualizarTiempo, 1000);
+                        
+                        if($("#tiempoRestanteDisponibilidad").length)
+                        setInterval(actualizarTiempoRestante, 1000);
+                    
+                    
+                    
+
+
+                    </script>   
+
+                    <!-- Apache ECharts -->
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.0/echarts.min.js"></script>
+
+                    <script th:inline="javascript">
+
+                        var cantidadMecanicas = [[${cantidadMecanicas}
+                        ]];
+                        var cantidadHidraulicas = [[${cantidadHidraulicas}
+                        ]];
+                        var cantidadNeumaticas = [[${cantidadNeumaticas}
+                        ]];
+                        var cantidadElectronicas = [[${cantidadElectronicas}
+                        ]];
+                        var cantidadProgramacion = [[${cantidadProgramacion}
+                        ]];
+
+
+                        /* global echarts */
+
+                        const getOptionChart1 = () => {
+                            return {
+
+                                tooltip: {
+                                    show: true,
+                                    trigger: "axis",
+                                    triggerOn: "mousemove|click"
+                                },
+                                dataZoom: {
+                                    show: true,
+                                    start: 50
+                                },
+                                xAxis: [
+                                    {
+                                        type: "category",
+                                        data: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+                                    }
+                                ],
+                                yAxis: [
+                                    {
+                                        type: "value"
+                                    }
+                                ],
+                                series: [
+                                    {
+                                        data: [150, 230, 224, 218, 135, 147, 260],
+                                        type: "line"
+                                    }
+                                ]
+                            };
+                        };
+
+                        const getOptionChart2 = () => {
+                            return {
+                                color: ["#3246a8", "#00cc66", "#ff5050", "#c6de76", "#D96A8D"],
+                                tooltip: {
+                                    show: true,
+                                    trigger: "axis"
+                                },
+                                legend: {
+                                    data: ["Juan", "Pablo", "Roberto", "Marcelo", "Enrique", "Pedro", "Martín", "Gabriel", "Walter", "Hugo", "Guillermo", "Rodrigo", "Nahuel", "Iván", "Daniel"]
+                                },
+                                grid: {
+                                    left: "3%",
+                                    right: "4%",
+                                    bottom: "3%",
+                                    containLabel: true
+                                },
+                                toolbox: {
+                                    feature: {
+                                        saveAsImage: {}
+                                    }
+                                },
+                                xAxis: [
+                                    {
+                                        type: "category",
+                                        boundaryGap: false,
+                                        data: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio"],
+                                        axisLine: {show: false},
+                                        axisTick: {show: false},
+                                        axisPointer: {type: "shadow"}
+                                    }
+                                ],
+                                yAxis: [
+                                    {
+                                        type: "value"
+                                    }
+                                ],
+                                series: [
+                                    {
+                                        name: "Juan",
+                                        type: "line",
+                                        stack: "Total",
+                                        data: [120, 132, 101, 134, 90, 230, 210]
+                                    },
+                                    {
+                                        name: "Pablo",
+                                        type: "line",
+                                        stack: "Total",
+                                        data: [220, 182, 191, 234, 290, 330, 310]
+                                    },
+                                    {
+                                        name: "Roberto",
+                                        type: "line",
+                                        stack: "Total",
+                                        data: [150, 232, 201, 154, 190, 330, 410]
+                                    },
+                                    {
+                                        name: "Marcelo",
+                                        type: "line",
+                                        stack: "Total",
+                                        data: [320, 332, 301, 334, 390, 330, 320]
+                                    },
+                                    {
+                                        name: "Enrique",
+                                        type: "line",
+                                        stack: "Total",
+                                        data: [820, 932, 901, 934, 1290, 1330, 1320]
+                                    },
+                                    {
+                                        name: "Pedro",
+                                        type: "line",
+                                        stack: "Total",
+                                        data: [830, 942, 911, 944, 1300, 1340, 1330]
+                                    },
+                                    {
+                                        name: "Martín",
+                                        type: "line",
+                                        stack: "Total",
+                                        data: [840, 952, 921, 954, 1310, 1360, 1350]
+                                    },
+                                    {
+                                        name: "Gabriel",
+                                        type: "line",
+                                        stack: "Total",
+                                        data: [850, 962, 931, 964, 1320, 1370, 1360]
+                                    },
+                                    {
+                                        name: "Walter",
+                                        type: "line",
+                                        stack: "Total",
+                                        data: [860, 972, 941, 974, 1330, 1380, 1370]
+                                    },
+                                    {
+                                        name: "Hugo",
+                                        type: "line",
+                                        stack: "Total",
+                                        data: [870, 982, 951, 984, 1340, 1390, 1380]
+                                    },
+                                    {
+                                        name: "Guillermo",
+                                        type: "line",
+                                        stack: "Total",
+                                        data: [880, 992, 961, 994, 1350, 1400, 1390]
+                                    },
+                                    {
+                                        name: "Nahuel",
+                                        type: "line",
+                                        stack: "Total",
+                                        data: [890, 1002, 971, 1004, 1360, 1410, 1400]
+                                    },
+                                    {
+                                        name: "Iván",
+                                        type: "line",
+                                        stack: "Total",
+                                        data: [900, 1012, 981, 1014, 1370, 1420, 1410]
+                                    },
+                                    {
+                                        name: "Daniel",
+                                        type: "line",
+                                        stack: "Total",
+                                        data: [910, 1022, 991, 1024, 1380, 1430, 1420]
+                                    }
+                                ]
+                            };
+                        };
+
+ const meses = /*[[${minutosMes.keySet()}]]*/ [];
+    const valores = /*[[${minutosMes.values()}]]*/ [];
+
+
+
+
+                        const getOptionChart3 = () => {
+                            return {
+                                tooltip: {
+                                    show: true
+                                },
+                                xAxis: {
+                                    type: "category",
+//                                    data: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "agosto", "setiembre", "octubre", "noviembre", "diciembre"]
+                                    data: meses
+                                },
+                                yAxis: {
+                                    type: "value"
+                                },
+                                series: [
+                                    {
+//                                        data: [120, 200, 150, 80, 70, 110, 130, 130, 130, 130, 130, 130],
+                                        data: valores,
+                                        type: "bar"
+                                    }
+                                ]
+                            };
+                        };
+
+                        const getOptionChart4 = () => {
+                            return {
+                                tooltip: {
+                                    trigger: "item"
+                                },
+                                legend: {
+                                    top: "5%",
+                                    left: "center"
+                                },
+                                series: [
+                                    {
+                                        name: "Cantidad de paradas",
+                                        type: "pie",
+                                        radius: ["40%", "70%"],
+                                        avoidLabelOverlap: false,
+                                        itemStyle: {
+                                            borderRadius: 10,
+                                            borderColor: "#fff",
+                                            borderWidth: 2
+                                        },
+                                        label: {
+                                            show: false,
+                                            position: "center"
+                                        },
+                                        emphasis: {
+                                            label: {
+                                                show: true,
+                                                fontSize: "40",
+                                                fontWeight: "bold"
+                                            }
+                                        },
+                                        labelLine: {
+                                            show: false
+                                        },
+                                        data: [
+                                            {value: cantidadMecanicas, name: "Mecánicas"},
+                                            {value: cantidadHidraulicas, name: "Electrónicas"},
+                                            {value: cantidadNeumaticas, name: "Neumática"},
+                                            {value: cantidadElectronicas, name: "Hidráulica"},
+                                            {value: cantidadProgramacion, name: "Programación"}
+
+
+
+                                        ]
+                                    }
+                                ]
+                            };
+                        };
+
+                        const initCharts = () => {
+                            const chart1 = echarts.init(document.getElementById("grafico1"));
+                            const chart2 = echarts.init(document.getElementById("grafico2"));
+                            const chart3 = echarts.init(document.getElementById("grafico3"));
+                            const chart4 = echarts.init(document.getElementById("grafico4"));
+                            chart1.setOption(getOptionChart1());
+                            chart2.setOption(getOptionChart2());
+                            chart3.setOption(getOptionChart3());
+                            chart4.setOption(getOptionChart4());
+
+                            chart1.resize();
+                            chart2.resize();
+                            chart3.resize();
+                            chart4.resize();
+                        };
+
+                        window.addEventListener("load", () => {
+                            initCharts();
+                        });
+
+
+
+
+                    </script>
+
+                    
+                    
+                    <script th:inline="javascript">
+                    
+                    $(document).ready(function() { 
+                    // cada 5 seg traigo el estado del activo, si cambia recargo la pagina (por si otro usuario lo modifica)
+                    
+                    //necesito el dato cuando esta en proceso que es estado de la tarea, pero no siempre esta presente la tarea por eso utilizo logica con estado activo
+                    var activo=[[${activo}]];;
+                    var tarea=[[${tarea}]];;
+                    
+                    var estado;
+                    
+                    setInterval(function() {
+                        if(activo.estado=="detenida"&&tarea!=null)
+                        {
+                            if(tarea.estado=="abierto")
+                            estado="detenida";
+                            if(tarea.estado=="enProceso")
+                            estado="enProceso";
+                        }else
+                        {
+                            estado=activo.estado;
+                        }
+                        ajax(estado,activo.id);
+                    }, 5000);  // 5000 milisegundos = 5 segundos
+                    
+                    
+                    
+                    function ajax(estadoActual,activo){
+                    $.ajax({
+                           url: '/traerEstadoActivo/',   // La URL del método en tu controlador
+                           type: 'GET',// Método HTTP  
+                           data:{
+                               estadoActual:estadoActual,
+                               activo:activo
+                                },// Enviar el estado y el id del activo como parámetro
+                                 dataType: 'text', // Esto evita que jQuery lo convierta en un objeto
+                           success: function(response) {
+                               // Si cambia el estado refresco la pagina
+                            if(response=='true') location.reload();
+                              
+                           },
+                           error: function(error) {
+                               console.error("Error en la petición", error);
+                           }
+                         });
+                       }
+                    
+                    
+                    
+                    
+                    if (activo.estado === "disponible") {
+                        document.getElementById("disponibilidadHasta").setAttribute("disabled", "disabled");
+                    }
+                    
+                    
+                    
+                     })
+                    </script>
+                    </body>
+                    </html>

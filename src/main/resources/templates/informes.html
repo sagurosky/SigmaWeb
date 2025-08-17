@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.tymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      xmlns:temporals="http://www.thymeleaf.org/extras/thymeleaf-temporals">
+
+
+    <!--<meta http-equiv="refresh" id="metaRefresh" content="60">-->
+
+        <head th:replace="plantillas/plantilla::head">
+            <title>Lista de tareas</title>
+            <meta charset="UTF-8"/>
+            
+        </head>
+
+        <body>
+            <header th:replace="plantillas/plantilla::header">lista de informes</header>
+            <div th:replace="plantillas/plantilla::menu"></div>
+             <div th:replace="plantillas/plantilla::notificaciones"></div>
+            
+            <style>
+                .hora {
+                margin-left: 10px; /* Agregar espacio a la izquierda de la hora */
+                font-weight: bold; /* Ejemplo de hacer la hora más destacada */
+                color: #333; /* Cambiar el color de la hora, si es necesario */
+                border:solid 1px;
+                }
+        </style>
+        
+        
+        <!--------------------CDN datatables---------------------------->
+        <!-- CSS de DataTables -->
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+
+        <!-- jQuery -->
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+        <!-- JS de DataTables -->
+        <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+        <!--estilos para la tabla-->
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+        <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+        <!--------------------fin CDN datatables---------------------------->
+        
+        
+        
+        <script>
+            $(document).ready(function() {
+                $('#informesAprobados').DataTable({
+                    // Opciones de configuración
+                    "paging": true,         // Activar paginación
+                    "searching": true,      // Activar barra de búsqueda
+                    "ordering": true,       // Activar ordenamiento de columnas
+                    "info": true,           // Mostrar información del estado
+                    "language": {
+                        "url": "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+                    }
+                });
+            });
+        </script>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+            <div class="container ">
+                
+                
+                
+                <div sec:authorize="hasRole('ROLE_TECNICO') or hasRole('ROLE_MANT')">
+                    <h3> Seleccionar intervenciones que requieran informes</h3>
+                        <table  class="table table-bordered table-hover table-sm "  >
+                            <thead class="thead-light " >
+                                <tr > 
+                                    <th >Fecha</th>
+                                    <th >Activo</th>
+                                    <th >Descripción</th>
+                                    <th sec:authorize="hasRole('ROLE_MANT')">Técnico/s</th>
+                                    <th >Acción</th>
+
+                                </tr>
+                            </thead>
+                            <tbody >
+                                <tr th:each="tarea :${tareasNoEvaluadas}">
+                                    <td  >  <span th:text="${#temporals.format(tarea.momentoLiberacion, 'dd/MM/yyy')}"></span>
+                                          <span th:text="${#temporals.format(tarea.momentoLiberacion, 'HH:mm')}" class="hora"></span>
+                                    </td>
+                                    <td th:text="${tarea.activo.nombre}">activo</td>
+                                    <td th:text="${tarea.descripcion}">descripción</td>
+                                     <td sec:authorize="hasRole('ROLE_MANT')"><div th:each="asignacion : ${tarea.asignaciones}"><div th:text="${asignacion.tecnico.apellido} + ' ' + ${asignacion.tecnico.nombre}"></div></div></td>
+                              
+                                    <td >
+                                        <a th:href="@{/seleccionarTareaParaInforme/}+${tarea.id}"class="btn btn-secondary btn-sm" >Seleccionar</a>
+                                        <a sec:authorize="hasRole('ROLE_MANT')" th:href="@{/descartarTareaParaInforme/}+${tarea.id}"class="btn btn-secondary btn-sm" >Descartar</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                </div>
+                
+                <br>
+               
+                <div sec:authorize="hasRole('ROLE_TECNICO') or hasRole('ROLE_MANT')">
+                      <h3>Informes pendientes de generar</h3>
+                          <table  class="table table-bordered table-hover table-sm "  >
+                              <thead class="thead-light " >
+                                  <tr > 
+                                      <th >Fecha</th>
+                                      <th >Activo</th>
+                                      <th >Descripción</th>
+                                      <th >Acción</th>
+
+                                  </tr>
+                              </thead>
+                              <tbody >
+                                  <div sec:authorize="hasRole('ROLE_TECNICO')"> <tr  th:each="tarea :${tareasInformePendienteTecnico}">
+                                  
+                                      <td  >
+                                          <span th:text="${#temporals.format(tarea.momentoLiberacion, 'dd/MM/yyy')}"></span>
+                                          <span th:text="${#temporals.format(tarea.momentoLiberacion, 'HH:mm')}" class="hora"></span>
+                                      </td>
+                                      <td th:text="${tarea.activo.nombre}">activo</td>
+                                      <td th:text="${tarea.descripcion}">descripción</td>
+                                      <td sec:authorize="hasRole('ROLE_TECNICO')">
+                                          <a  th:if="${tarea.informe.estadoInforme=='pendiente'}" th:href="@{/generarInforme/}+${tarea.id}" class="btn btn-secondary btn-sm">Generar informe</a>
+                                         <a  th:if="${tarea.informe.estadoInforme=='enRevision'}" th:href="@{/generarInforme/}+${tarea.id}" class="btn btn-secondary btn-sm">Revisar informe</a>
+                                      </td>
+                                      <td sec:authorize="hasRole('ROLE_MANT') or hasRole('ROLE_ADMIN')"><strong>Informe pendiente de:</strong> <div th:each="asignacion : ${tarea.asignaciones}"><div th:text="${asignacion.tecnico.apellido} + ' ' + ${asignacion.tecnico.nombre}"></div></div></td>
+                                  </tr>
+                                  </div>   
+                                  <div sec:authorize="hasRole('ROLE_MANT') or hasRole('ROLE_ADMIN')">
+                                      <tr th:each="tarea :${tareasInformePendiente}">                                  
+                                        <td >  
+                                            <span th:text="${#temporals.format(tarea.momentoLiberacion, 'dd/MM/yyy')}"></span>
+                                          <span th:text="${#temporals.format(tarea.momentoLiberacion, 'HH:mm')}" class="hora"></span>
+                                        </td>
+                                        <td th:text="${tarea.activo.nombre}">activo</td>
+                                        <td th:text="${tarea.descripcion}">descripción</td>
+                                        <td sec:authorize="hasRole('ROLE_TECNICO')">
+                                            <a  th:href="@{/generarInforme/}+${tarea.id}" class="btn btn-secondary btn-sm">Generar informe</a>
+                                        </td>
+                                        <td sec:authorize="hasRole('ROLE_MANT') or hasRole('ROLE_ADMIN')">
+                                            <strong>Informe <span th:if="${tarea.informe.estadoInforme=='pendiente'}" >pendiente</span><span th:if="${tarea.informe.estadoInforme=='enRevision'}" >en revisión</span> de: </strong>
+                                            <div th:each="asignacion : ${tarea.asignaciones}"><div th:text="${asignacion.tecnico.apellido} + ' ' + ${asignacion.tecnico.nombre}"></div></div>
+                                        </td>
+                                    </tr>
+                                  </div>   
+                              </tbody>
+                          </table>
+                  </div>
+                    
+                    <br>
+                        
+                  <div sec:authorize="hasRole('ROLE_MANT')">
+                      <h3> Validar informes generados</h3>
+                          <table  class="table table-bordered table-hover table-sm "  >
+                              <thead class="thead-light " >
+                                  <tr > 
+                                      <th >Fecha</th>
+                                      <th >Activo</th>
+                                      <th >Descripción</th>
+                                      <th >Técnico/s</th>
+                                      <th >Acción</th>
+
+                                  </tr>
+                              </thead>
+                              <tbody >
+                                  <tr th:each="tarea :${tareasNoAprobadas}">
+                                      <td  > 
+                                          <span th:text="${#temporals.format(tarea.momentoLiberacion, 'dd/MM/yyy')}"></span>
+                                          <span th:text="${#temporals.format(tarea.momentoLiberacion, 'HH:mm')}" class="hora"></span>
+                                      </td>
+                                      <td th:text="${tarea.activo.nombre}">activo</td>
+                                      <td th:text="${tarea.descripcion}">descripción</td>
+                                       <td sec:authorize="hasRole('ROLE_MANT')"><div th:each="asignacion : ${tarea.asignaciones}"><div th:text="${asignacion.tecnico.apellido} + ' ' + ${asignacion.tecnico.nombre}"></div></div></td>
+                              
+                                      <td >
+                                          <a th:href="@{/verInforme/}+${tarea.id}"class="btn btn-secondary btn-sm">Ver informe</a>
+                                          <a th:href="@{/validar/}+${tarea.id}" class="btn btn-secondary btn-sm">validar</a>
+                                      </td>
+                                  </tr>
+                              </tbody>
+                          </table>
+                  </div>
+                   
+                        <br>
+                        <br>
+                        <br>
+                            
+                     <div >
+                      <h3> Informes aprobados</h3>
+                          <table  class="table table-bordered table-hover table-sm " id="informesAprobados" >
+                              <thead class="thead-light " >
+                                  <tr > 
+                                      <th >Fecha</th>
+                                      <th >Activo</th>
+                                      <th >Descripción</th>
+                                      <th >Ver</th>
+
+                                  </tr>
+                              </thead>
+                              <tbody >
+                                  <tr th:each="tarea :${tareasAprobados}">
+                                      <td   >
+                                          <span th:text="${#temporals.format(tarea.momentoLiberacion, 'dd/MM/yyy')}"></span>
+                                          <span th:text="${#temporals.format(tarea.momentoLiberacion, 'HH:mm')}" class="hora"></span>
+                                      </td>
+                                      <td th:text="${tarea.activo.nombre}">activo</td>
+                                      <td th:text="${tarea.descripcion}">descripción</td>
+                                      <td >
+                                          <a th:href="@{/verInforme/}+${tarea.id}" class="btn btn-secondary btn-sm">Ver informe</a>
+                                      </td>
+                                  </tr>
+                              </tbody>
+                          </table>
+                  </div>
+
+                    
+<!--                                
+                                <td sec:authorize="hasRole('ROLE_ADMIN')or hasRole('ROLE_MANT')"><div th:each="tecnico : ${todosLosTecnicos}"><div th:text="${tecnico.apellido} + ' ' + ${tecnico.nombre}"></div></div>técnico</td>
+                                <td sec:authorize="hasRole('ROLE_ADMIN')"><a th:href="@{/eliminarInforme/}+${informe.id}"class="btn btn-secondary btn-sm" >eliminar</a></td>
+
+                                <td  sec:authorize="hasRole('ROLE_TECNICO')or hasRole('ROLE_ADMIN')" th:if="${tarea.informe.estadoInforme=='pendiente'}">
+                                    <a th:href="@{/generarInforme/}+${tarea.id}+ '?url=' + ${url}" class="btn btn-secondary btn-sm">generar informe</a>
+                                </td>
+                                <td  sec:authorize="hasRole('ROLE_MANT')or hasRole('ROLE_ADMIN')" th:if="${tarea.informe.estadoInforme=='generado'}"}>
+                                    <a th:href="@{/generarInforme/}+${tarea.informe.id}" class="btn btn-secondary btn-sm">validar</a>
+                                </td>
+                                <td   th:if="${tarea.informe.estadoInforme=='generado'}">
+                                    </td>-->
+                
+                
+        </div>
+            
+        <!-- <section  class="py-4 mb-4 bg-light">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-2" >
+                        <a th:href="@{/}+${url}" class="btn btn-primary btn-block">
+                             Volver
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </section>-->
+
+        
+      
+
+        
+        
+        
+
+
+        
+        
+       
+    </body>
+
+<!--    <div class="row">-->
+<!--        <div class="col-md-2" >-->
+
+<!--            <button onclick="history.back()" class="btn btn-primary btn-block">Volver</button>-->
+<!--        </div>-->
+
+<!--    </div>-->
+</html>

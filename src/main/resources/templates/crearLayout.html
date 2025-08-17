@@ -1,0 +1,197 @@
+
+
+
+
+
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.tymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+    <!--<meta id="meta-refresh" http-equiv="refresh" content="5">-->
+    <meta name="_csrf" th:content="${_csrf.token}" xmlns:th="http://www.w3.org/1999/xhtml"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+        <head th:replace="plantillas/plantilla::head">
+            <title>Lista de tareas</title>
+            <meta charset="UTF-8"/>
+
+
+        </head>
+        <style>
+
+            body{
+                /*background: #4169E1;*/
+                background: url('/recursos/fondoLayout3.jpg') no-repeat center center fixed;
+                     background-size: cover;
+            }
+            
+
+    </style>
+
+    <!-- Paper.js CDN para operaciones booleanas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.15/paper-full.min.js"></script>
+    <!-- SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <body>
+            <header th:replace="plantillas/plantilla::header">lista de tareas</header>
+<div th:replace="plantillas/plantilla::logo"></div>
+            
+            
+            
+            
+            
+            <div class="container-fluid ">
+                <div class="row">
+                    <div  class="col-md-2">
+
+
+                        <div class="mb-3" style="margin: 10px;">
+                            <label for="nombre" class="form-label">Nombre del layout</label>
+                            <input type="text" class="form-control" id="nombre" placeholder="Ej: Primer piso" required>
+                        </div>
+                        <button type="button" class="btn btn-primary btn-block" data-toggle="modal" data-target="#exampleModalCenter">
+                            Ayuda
+                        </button>
+
+                        <button id="imgBtn" onclick="triggerImage()" class="btn btn-primary btn-block">Adjuntar Imagen</button>
+
+                        <!-- Modal -->
+                        <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-primary text-white">
+                                        <h5 class="modal-title" id="exampleModalCenterTitle">Guía para la Generación de Layouts</h5>
+                                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+
+                                        <p><strong>Antes de comenzar:</strong> Asegúrese de contar con:</p>
+                                        <ul>
+                                            <li>Una imagen general del layout de la planta.</li>
+                                            <li>Una imagen individual por cada activo que desea incluir.</li>
+                                        </ul>
+
+                                        <h6>🛠️ <strong>Pasos para crear un layout:</strong></h6>
+                                        <ol>
+                                            <li><strong>Ingresar nombre del layout:</strong> En el campo <em>“Nombre del layout”</em> (es obligatorio y debe ser único).</li>
+                                            <li><strong>Adjuntar imagen:</strong> Cargar la imagen del layout general.</li>
+                                            <li><strong>Conformar activos:</strong>
+                                                <ul>
+                                                    <li>Seleccione <em>Rectángulo</em> o <em>Elipse</em> para representar los activos.</li>
+                                                    <li>Presione <strong>Conformar</strong>, asigne un nombre único a cada activo e incluya su imagen.</li>
+                                                </ul>
+                                            </li>
+                                            <li><strong>Guardar en servidor:</strong>
+                                                <ul>
+                                                    <li>Presione <strong>Guardar en servidor</strong> una vez finalizada la configuración.</li>
+                                                    <li>Al guardarse correctamente, la pantalla se recargará para permitir la creación de un nuevo layout si fuera necesario.</li>
+                                                </ul>
+                                            </li>
+                                        </ol>
+
+                                        <h6>📋 <strong>Administración de múltiples layouts:</strong></h6>
+                                        <ul>
+                                            <li>Los nuevos layouts aparecerán automáticamente en el <strong>menú superior</strong>.</li>
+                                            <li>Desde allí podrá <strong>abrir</strong> cualquier layout existente para visualizarlo o editar su representación gráfica.</li>
+                                            <li>También podrá <strong>eliminar layouts</strong> utilizando el desplegable <em>“Layouts existentes”</em>.</li>
+                                        </ul>
+
+                                        <h6>⚠️ <strong>Notas adicionales:</strong></h6>
+                                        <ul>
+                                            <li>Para eliminar un <strong>activo</strong>, pulse <strong>Eliminar</strong> y haga clic sobre la figura. No hay opción de recuperación.</li>
+                                            <li>Para editar forma/posición, use el botón <strong>Editar</strong>.</li>
+                                            <li>No es posible modificar activos ya conformados: si hay un error, elimínelo y créelo nuevamente.</li>
+                                        </ul>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+
+
+
+
+
+
+
+                        <button id="rectBtn" onclick="setMode('rect')" class="btn btn-primary btn-block">Rectángulo</button>
+                    <br/>
+                        <button id="ellipseBtn" onclick="setMode('ellipse')" class="btn btn-primary btn-block">Elipse</button>
+                    <br/>
+                        <button id="editBtn" onclick="setMode('edit')" class="btn btn-primary btn-block">Editar</button>
+                    <br/>
+                    <button id="mergeBtn" onclick="confirmMerge()" class="btn btn-primary btn-block">Conformar</button>
+                    <br/>
+                    <button id="deleteBtn" onclick="toggleDeleteMode()" class="btn btn-primary btn-block">Eliminar</button>
+                    <br/>
+
+<!--                    <br/>-->
+<!--                        <button id="saveCopySvgBtn" onclick="downloadSVG()" class="btn btn-primary btn-block">Guardar copia local SVG</button>-->
+<!--                    <br/>-->
+                        <button id="saveSvgBtn" onclick="sendSvgToServer()" class="btn btn-primary btn-block">Guardar en servidor</button>
+<!--                        //DMS calculo que no necesitaré mas estos botones, borrar-->
+                    <!--<br/>
+                        <a  th:if="${existeLayout}"id="btnAbrir" th:href="@{/layout}" class="btn btn-primary btn-block" style="display: block;">abrir</a>
+                        <a  th:if="${!existeLayout}"id="btnAbrir" th:href="@{/layout}" class="btn btn-primary btn-block" style="display: none;">abrir</a>
+                    <br/>-->
+
+                        <th:block th:if="${nombresLayouts != null and !nombresLayouts.isEmpty()}">
+                            <div class="dropdown mt-3">
+                                <button class="btn btn-primary btn-block dropdown-toggle" type="button" data-toggle="dropdown">
+                                    Layouts existentes
+                                </button>
+                                <div class="dropdown-menu">
+                                    <th:block th:each="nombre : ${nombresLayouts}">
+                                        <div class="dropdown-item d-flex justify-content-between align-items-center">
+                                            <span th:text="${#strings.replace(nombre, '.svg', '')}"></span>
+                                            <form th:action="@{'/eliminarLayout/' + ${#strings.replace(nombre, ' ', '%20')}}" method="post" th:object="${_csrf}">
+                                                <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+                                                <button type="submit" class="btn btn-danger btn-sm ml-2">Eliminar</button>
+                                            </form>
+                                        </div>
+                                    </th:block>
+                                </div>
+                            </div>
+                        </th:block>
+
+
+                        <input type="file" id="imgInput" accept="image/*" style="display:none" class="btn btn-primary btn-block"/>
+
+
+
+
+
+                </div>
+
+                    <div  class="col-md-10" style="text-align: center; padding-left: 50px; " id="contenedorLayout" >
+                        <div class=" mapadiv">
+                            <svg id="drawingArea" xmlns="http://www.w3.org/2000/svg" width="900" height="600"  >
+                        </svg>
+                    </div>
+
+                </div>
+            </div>
+
+            </div>
+
+
+        <script>
+
+        </script>
+
+            <script src="/editorLayout.js" type="application/javascript" ></script>
+        </body>
+</html>
+
+
+
+
+

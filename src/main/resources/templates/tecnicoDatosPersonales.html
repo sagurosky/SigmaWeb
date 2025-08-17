@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="plantillas/plantilla::head">
+        <meta charset="UTF-8"/>
+    </head>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+
+        /* CSS personalizado para el popover */
+        .popover-body {
+            color: #fff; /* Cambiar el color del texto */
+            background-color: #007bff; /* Cambiar el fondo */
+        }
+
+        .popover {
+            max-width: 500px; /* Ensanchar el popover */
+        }
+    </style>
+
+    <body>
+        <!--para que funcione el popover-->
+        <script>
+
+            $(function () {
+                $('[data-toggle="popover"]').popover({
+                    trigger: 'focus' // Permitir cerrar al hacer clic fuera
+                });
+            });
+
+        </script>
+        <header th:replace="plantillas/plantilla::header"></header>
+        <div th:replace="plantillas/plantilla::menu"></div>
+         <div th:replace="plantillas/plantilla::notificaciones"></div>
+       
+
+        <body>
+
+            <form th:action="@{/guardarTecnicoPersonal}" method="post" th:object="${tecnico}" enctype="multipart/form-data" class="was-validated">
+
+                <input type="hidden" th:field="*{id}"/>
+                <input type="hidden" th:field="*{estado}"/>
+                <input type="hidden" th:field="*{especialidad}"/>
+                <input type="hidden" th:field="*{fechaIngresoPlanta}"/>
+                <input type="hidden" th:field="*{habilidades}"/>
+                <input type="hidden" th:field="*{proyectosDestacados}"/>
+                <input type="hidden" th:field="*{promedioEvaluaciones}"/>
+                <input type="hidden" th:field="*{notasAdicionales}"/>
+
+                <input type="hidden" th:field="*{satisfaccionClienteInterno}"/>
+                <input type="hidden" th:field="*{predisposicionParaLaTarea}"/>
+                <input type="hidden" th:field="*{responsabilidad}"/>
+                <input type="hidden" th:field="*{cumplimientoNormasSeguridad}"/>
+                <input type="hidden" th:field="*{nivelDeConocimiento}"/>
+                <input type="hidden" th:field="*{tratoRecibidoPorCliente}"/>
+                <input type="hidden" th:field="*{prolijidad}"/>
+                <input type="hidden" th:field="*{puntualidad}"/>
+                <input type="hidden" th:field="*{eficiencia}"/>
+                <input type="hidden" th:field="*{calidadDelTrabajo}"/>
+                <input type="hidden" th:field="*{comunicacion}"/>
+                <input type="hidden" th:field="*{trabajoEnEquipo}"/>
+                <input type="hidden" th:field="*{resolucionDeProblemas}"/>
+                <input type="hidden" th:field="*{creatividadEInnovacion}"/>
+                <input type="hidden" th:field="*{iniciativa}"/>
+                <input type="hidden" th:field="*{autogestion}"/>
+                <input type="hidden" th:field="*{formacionContinua}"/>
+                <!--no puedo poner usuario porque me da error de recirculacion infinita, lo levanto en el conmtrolador sino no se guarda el usuario-->
+                <!--<input type="hidden" th:field="*{usuario}"/>-->
+
+
+
+
+
+                <div class="container mt-5">
+                    <h4 class="mb-4">Datos personales</h4>
+                    <div class="form-row ">
+                        <div class="form-group col-md-6">
+                            <label for="legajo">Legajo</label>
+                            <input type="text" class="form-control" id="legajo"th:field="*{legajo}" readonly="true">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <label for="acercaDeMi">Acerca de mi</label>&nbsp;&nbsp;<span><i class="fa-regular fa-circle-question custom-popover" tabindex="0" data-container="body" data-trigger="focus"data-toggle="popover"data-placement="right" data-content="Breve carta de presentación, por ejemplo:'soy técnico mecánico con [número] años de experiencia en el mantenimiento y reparación de maquinaria industrial. Me especializo en el diagnóstico y solución de problemas mecánicos, así como en la implementación de programas de mantenimiento preventivo.' "></i></span>
+                    </div> 
+
+                    <textarea class="form-control" id="acercaDeMi"th:field="*{acercaDeMi}" ></textarea>   
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="nombre">Nombre</label>
+                            <input type="text" class="form-control" id="nombre"th:field="*{nombre}" required="true">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="apellido">Apellido</label>
+                            <input type="text" class="form-control" id="apellido"th:field="*{apellido}"  required="true">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="fechaNacimiento">Fecha de Nacimiento</label>
+                            <input type="date" class="form-control" id="fechaNacimiento"th:field="*{fechaNacimiento}" required="true">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="edad">Edad</label>
+                            <input type="text" class="form-control" id="edad"th:field="*{edad}" disabled="true">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="telefono">Teléfono</label>
+                            <input type="text" class="form-control" id="telefono"th:field="*{telefono}">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="email">Email</label>
+                            <input type="email" class="form-control" id="email"th:field="*{email}">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="direccion">Dirección</label>
+                            <input type="text" class="form-control" id="direccion"th:field="*{direccion}">
+                        </div>
+
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-12">
+                            <label for="formacion">Formacion académica</label>&nbsp;&nbsp;<span><i class="fa-regular fa-circle-question custom-popover" tabindex="0" data-container="body" data-trigger="focus"data-toggle="popover"data-placement="right" data-content="Títulos obtenidos (secundario, terciario, universitario), cursos, especializaciones, etc' "></i></span>
+                            <textarea class="form-control" id="formacion" th:field="*{formacionAcademica}"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-12">
+                            <label for="experiencia">Experiencia laboral</label>&nbsp;&nbsp;<span><i class="fa-regular fa-circle-question custom-popover" tabindex="0" data-container="body" data-trigger="focus"data-toggle="popover"data-placement="right" data-content="Breve listado de empresa, cargo/responsabilidad y años de servicio en cada organización de la que fue parte"></i></span>
+                            <textarea class="form-control" id="experiencia" th:field="*{experienciaLaboral}"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-12">
+                            <label for="conocimientos">Conocimientos varios</label>&nbsp;&nbsp;<span><i class="fa-regular fa-circle-question custom-popover" tabindex="0" data-container="body" data-trigger="focus"data-toggle="popover"data-placement="right" data-content="Conocimientos no academicos, empíricos, habilidades varias"></i></span>
+                            <textarea class="form-control" id="conocimientos" th:field="*{conocimientosVarios}" ></textarea>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-12">
+                            <label for="pasatiempos">Pasatiempos</label>&nbsp;&nbsp;<span><i class="fa-regular fa-circle-question custom-popover" tabindex="0" data-container="body" data-trigger="focus"data-toggle="popover"data-placement="right" data-content=""></i></span>
+                            <textarea class="form-control" id="pasatiempos" th:field="*{pasatiempos}" ></textarea>
+                        </div>
+                    </div>
+
+
+
+
+
+
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+            </div>
+
+
+        </body>
+
+        <script>
+
+
+
+
+
+
+
+            // Función para actualizar el valor del progress y el span
+            function actualizarProgress(id) {
+                // Obtener el elemento del slider
+                var slider = document.getElementById(id);
+
+                // Obtener el elemento donde se mostrará el valor actual
+                var output = document.getElementById(id + "Valor");
+
+                // Mostrar el valor inicial al cargar la página
+                output.innerHTML = slider.value;
+
+                // Actualizar el valor mientras se mueve el slider
+                //                        slider.oninput = function () {
+                //                            output.innerHTML = this.value;
+                //                        };
+            }
+
+            // Seleccionar todos los elementos de progreso y actualizarlos
+            document.addEventListener('DOMContentLoaded', function () {
+                var progressElements = document.querySelectorAll('progress');
+
+                progressElements.forEach(function (progressElement) {
+                    actualizarProgress(progressElement.id);
+                });
+            });
+
+
+
+        </script>
+
+
+
+
+
+
+
+
+       
+
+        <!--//para que funcione el popover-->
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    </body>
+</html>

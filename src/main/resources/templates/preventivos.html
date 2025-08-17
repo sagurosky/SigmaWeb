@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.tymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      xmlns:temporals="http://www.thymeleaf.org/extras/thymeleaf-temporals">
+
+
+    <!--<meta http-equiv="refresh" id="metaRefresh" content="60">-->
+
+        <head th:replace="plantillas/plantilla::head">
+            <meta charset="UTF-8"/>
+           
+        </head>
+
+        <body>
+            <header th:replace="plantillas/plantilla::header">lista de preventivos</header>
+            <div th:replace="plantillas/plantilla::menu"></div>
+             <div th:replace="plantillas/plantilla::notificaciones"></div>
+            
+            <section  class="py-4 mb-4 bg-light">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-3" >
+                            <!--<a th:href="@{/sugerenciaPreventivo/}+${activo.id}" class="btn btn-primary btn-block" th:text="'Sugerencia de preventivo'">-->
+                              <a 
+                                         href="#" 
+                                         data-toggle="modal" 
+                                         th:data-target="'#myModal'" 
+                                         class="btn btn-primary ">Sugerencia de preventivo o mejora</a>   
+                            <!--</a>-->
+                        </div>
+
+                    </div>
+                    <div class="modal fade" th:id="'myModal'" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                                <div class="modal-dialog modal-lg" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="exampleModalLabel">Sugerencia de preventivo o mejora</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                                                             
+                                        
+                                        
+                                        
+                                        
+                                        <form th:id="'sugerenciaPreventivo'" th:action="@{/guardarSugerencia/}+ ${activo.id}"th:object="${preventivo}" method="post"enctype="multipart/form-data"> 
+  
+                                            
+                                            
+                                            <div class="modal-body">
+                                                
+                                            <div class='row'> 
+                                                <div class="col">
+                                                    <label >Categoría</label>
+                                                </div>   
+                                                <div class="col">
+                                                    <select th:field="*{categoria}" class="form-control" required>
+                                                        <option value="">Seleccione</option>
+                                                        <option value="preventivo">Preventivo</option>
+                                                        <option value="mejora">Mejora</option>
+                                                    </select>
+                                                </div>            
+                                            </div>    
+                                        <br>
+                                            <div class='row'> 
+                                                <div class="col">
+                                                    <label th:text="'Descripcion breve (título)'" ></label>   
+                                                </div>
+                                                <div class="col">
+                                                    <input type="text" th:name="descripcion"class="form-control" oninput="reiniciarContador()"/>
+                                                </div>
+                                            </div>
+                                        <br>
+                                            <div class='row'> 
+                                                <div class="col">
+                                                    <label th:text="'Detalle'" ></label>   
+                                                </div>
+                                                <div class="col">
+                                                    <textarea th:name="detalle"class="form-control"oninput="reiniciarContador()"></textarea>
+                                                </div>
+                                            </div>
+                                             <br>
+                                                <div class='row'>
+                                                    <div class="col">
+                                                        <label>Periodicidad</label>
+                                                    </div>
+                                                    <div class="col">
+                                                        <select th:field="*{frecuencia}" class="form-control" id="periodicidad" required>
+                                                            <option value="una vez">Una vez</option>
+                                                            <option value="mensual">Mensual</option>
+                                                            <option value="trimestral">Trimestral</option>
+                                                            <option value="semestral">Semestral</option>
+                                                            <option value="anual">Anual</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <br>
+                                                <div class='row'>
+                                                
+                                                <div class="col">
+                                                   
+                                                    <input type="file" id="fileInput" name="file" hidden/>
+                                                    <label for="fileInput" class="btn btn-primary " >
+                                                        Adjuntar imagen
+                                                    </label>
+                                                </div>
+                                                <div class="col">
+                                                     <label id="adjuntarImagen"></label>
+                                                </div>
+                                                
+                                            </div>
+                                        </div>
+                                            
+                                            <script>
+                                                //para que muestre el nombre del archivo
+                                                document.getElementById('fileInput').addEventListener('change', function() {
+                                                    const label = document.getElementById('adjuntarImagen');
+                                                    const fileName = this.files[0]?.name || 'No se seleccionó ningún archivo';
+                                                    label.textContent = fileName;
+                                                });
+
+
+                                             //DMS inhabilito la frecuencia cuando selecciono "mejora", ya que la frecuencia es solo para preventivos
+                                                const categoriaSelect = document.querySelector('[name="categoria"]');
+                                                const frecuenciaSelect = document.querySelector('[name="frecuencia"]');
+
+                                                function actualizarFrecuencia() {
+                                                    if (categoriaSelect.value === "mejora") {
+                                                        frecuenciaSelect.value = "una vez";
+                                                        frecuenciaSelect.disabled = true;
+                                                    } else {
+                                                        frecuenciaSelect.disabled = false;
+                                                    }
+                                                }
+
+                                                categoriaSelect.addEventListener('change', actualizarFrecuencia);
+                                                window.addEventListener('DOMContentLoaded', actualizarFrecuencia); // asegura estado al cargar
+
+                                            </script>    
+                                            
+                                            
+                                            
+                                            
+                                        <div class="modal-footer">
+                                            <button class="btn btn-primary" th:type="submit">Guardar</button>
+                                        </div>
+                                             </form> 
+                                       
+                                    </div>
+                                </div>
+                            </div>
+                </div>
+            </section>
+
+
+
+            <!--------------------CDN datatables---------------------------->
+            <!-- CSS de DataTables -->
+            <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+
+            <!-- jQuery -->
+            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+            <!-- JS de DataTables -->
+            <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+            <!--estilos para la tabla-->
+            <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+            <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+            <!--------------------fin CDN datatables---------------------------->
+
+
+
+            <script>
+                $(document).ready(function() {
+                    $('#preventivos').DataTable({
+                        // Opciones de configuración
+                        "paging": true,         // Activar paginación
+                        "searching": true,      // Activar barra de búsqueda
+                        "ordering": true,       // Activar ordenamiento de columnas
+                        "info": true,           // Mostrar información del estado
+                        "language": {
+                            "url": "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+                        }
+                    });
+                });
+            </script>
+
+
+
+            <div class="container ">
+                <table class="table table-bordered table-hover table-sm "  id="preventivos">
+                    <thead class="thead-light " >
+                        <tr > 
+                            <!--<th >Activo</th>-->
+                            <th >Categoría</th>
+                            <th >Estado</th>
+                            <th >Descripcion </th>
+                            <th >Detalle</th>
+                            <th  sec:authorize="hasRole('ROLE_ADMIN')or hasRole('ROLE_MANT')">Solicitador</th>
+                            <th  sec:authorize="hasRole('ROLE_ADMIN')or hasRole('ROLE_MANT')">Eliminar</th>
+                            <th sec:authorize="hasRole('ROLE_ADMIN')or hasRole('ROLE_MANT')or hasRole('ROLE_TECNICO')">Acción</th>
+
+                        </tr>
+                    </thead>
+                    <tbody >
+                        <tr th:each="preventivo: ${preventivos}">
+
+                        <!--<td th:text="${preventivo.activo.nombre}" >activo</td>-->
+                        <td th:text="${preventivo.categoria}" >categoría</td>
+                        <td th:text="${preventivo.estado}">estado</td>
+                        <td th:text="${preventivo.descripcion}">descripcion</td>
+                        <td ><a        href="#" 
+                                       data-toggle="modal" 
+                                       th:data-target="'#modalMostrar'+ ${preventivo.id}"
+                                       class="btn btn-primary"
+                                       >
+                                Mostrar
+                            </a></td>
+                        
+                         <div class="modal fade bd-example-modal-lg" th:id="'modalMostrar'+ ${preventivo.id}" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                            <div class="modal-dialog modal-lg" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-body">
+                                            <textarea th:text="${preventivo.detalle}" class="form-control"></textarea>
+
+                                            <br>
+                                                 <div class="container">
+                                                    <div th:if="${preventivo.imagen!=null}" class="card-body">
+                                                        <img class="img-thumbnail rounded "
+                                                             th:src="'/recursos/imagenes/'+${preventivo.imagen}"
+                                                             th:alt='${preventivo.imagen}'
+                                                             style='max-width: 25%;'/>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <label>Fecha de creación: </label>
+                                                    <span th:text="${#temporals.format(preventivo.fechaDeCreacion, ' dd/MM/yyyy    HH:mm:ss')}"></span>
+                                                </div>   
+                                                <div th:if="${preventivo.estado=='cerrado'||preventivo.estado=='cerrado y clonado'}">
+                                                    <label>Fecha de cierre: </label>
+                                                        <span th:text="${#temporals.format(preventivo.fechaRealizado, ' dd/MM/yyyy    HH:mm:ss')}"></span>
+                                                </div>
+                                                <label>frecuencia: <span th:text="${preventivo.frecuencia}"></span></label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <td sec:authorize="hasRole('ROLE_ADMIN')or hasRole('ROLE_MANT')" th:text="${preventivo.solicita}">Usuario</td>
+                        <td sec:authorize="hasRole('ROLE_ADMIN')or hasRole('ROLE_MANT')"><a th:href="@{/eliminarPreventivo/}+${preventivo.id}"class="btn btn-secondary btn-sm" >eliminar</a></td>
+                        <td  th:if='${preventivo.estado=="cerrado"}'></td>
+                        <td sec:authorize="hasRole('ROLE_ADMIN')or hasRole('ROLE_MANT')" th:if='${preventivo.estado=="pendiente"}'>
+                            <a th:href="@{/validarPreventivo/}+${preventivo.id}" class="btn btn-secondary btn-sm">Validar</a></td>
+                         <td sec:authorize="hasRole('ROLE_ADMIN')or hasRole('ROLE_MANT')or hasRole('ROLE_TECNICO')"th:if='${preventivo.estado=="validado"}'>
+                             
+                             
+<!--                            <select id="tecnicos" name="tecnicosIds" multiple class="form-control" required size="2">
+                                <option th:each="tecnico : ${todosLosTecnicos}" 
+                                        th:value="${tecnico.id}" 
+                                        th:text="${tecnico.apellido} + ' ' + ${tecnico.nombre}"
+                                       >
+                                </option>
+                            </select>
+                             
+                            <a th:href="@{/cerrarPreventivo/}+${preventivo.id}" class="btn btn-secondary btn-sm" >cerrar</a>-->
+                         <form th:action="@{/cerrarPreventivo/{id}(id=${preventivo.id})}" method="post" id="formCerrar">
+                            <select id="tecnicos"  multiple class="tecnicos form-control" required size="2" >
+                                <option th:each="tecnico : ${todosLosTecnicos}" 
+                                        th:value="${tecnico.id}" 
+                                        th:text="${tecnico.apellido} + ' ' + ${tecnico.nombre}">
+                                </option>
+                            </select>
+                             <input type="hidden" id="tecnicosHidden"  class="tecnicosHidden" name="tecnicosIds">
+                            <div th:if="${todosLosTecnicos.size >0}">
+                             <button type="button" onclick="cerrar(this)"class="btn btn-secondary btn-sm">Cerrar</button>
+                            </div>
+                            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+                            <script>
+                            function cerrar(btn) { 
+                                //DMS tenia problemas para hacer el submit desde el script al intentar usar sweetAlert (no llevaba los selecionados ) asi que resolvimos asi
+                                // Obtenemos el formulario actual a partir del botón
+                                const form = btn.closest("form");
+                                // Obtenemos el select y calculamos los seleccionados de este formulario
+                                const selectElement = form.querySelector(".tecnicos");
+                                const seleccionados = Array.from(selectElement.selectedOptions).map(option => option.value);
+
+//                                console.log("Seleccionados antes de enviar:", seleccionados);
+
+                                if (seleccionados.length === 0) {
+                                  Swal.fire("Error", "Debe seleccionar al menos un técnico", "warning");
+                                  return;
+                                }
+
+                                // Guardamos los valores seleccionados en el input hidden dentro del mismo formulario
+                                form.querySelector(".tecnicosHidden").value = seleccionados.join(',');
+
+                                Swal.fire({
+                                  title: "¿Está seguro que desea dar por finalizada la actividad?",
+                                  showDenyButton: true,
+                                  showCancelButton: false,
+//                                  toast: true,
+//                                  animation:true,
+                                  confirmButtonText: "Sí, guardar",
+                                  confirmButtonColor:"#0d6efd",
+                                  denyButtonText: "No",
+                                  denyButtonColor:"#0d6efd",
+                                 
+                                
+                                  
+                                }).then((result) => {
+                                  if (result.isConfirmed) {
+//                                    console.log("Enviando formulario con:", form.querySelector(".tecnicosHidden").value);
+                                     form.submit();  
+                                  }
+                                });
+                              }
+
+
+                            </script>
+                             
+                            
+                            
+                        </form>
+
+  
+
+
+                         
+                         </td>   
+
+                    </tr>
+                </tbody>
+            </table>
+                
+                
+                
+                
+        </div>
+         <section  class="py-4 mb-4 bg-light">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-2" >
+                        <button onclick="history.back()" class="btn btn-primary btn-block">Volver</button>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        
+      
+
+        
+        
+        
+
+
+        
+        
+        
+    </body>
+</html>

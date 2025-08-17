@@ -1,0 +1,96 @@
+name: Build and Deploy SigmaWeb en AWS (EC2)
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-m2-
+
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: spring-boot-app
+          path: target/*.jar
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: spring-boot-app
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Copy JAR to EC2 via SSH
+        uses: appleboy/scp-action@v0.1.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: ${{ secrets.EC2_PORT }}
+          source: "*.jar"
+          target: "/home/ubuntu/app/"
+
+      - name: Replace JAR and restart service
+        uses: appleboy/ssh-action@v0.1.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: ${{ secrets.EC2_PORT }}
+          script: |
+            APP_DIR="/home/ubuntu/app"
+            DEST="$APP_DIR/gestortareas-1.0.jar"
+
+            # Buscar el nuevo JAR subido
+            JAR_FILE=$(ls -1 $APP_DIR/*.jar | grep -v "gestortareas-1.0.jar" | head -n 1)
+            if [ -z "$JAR_FILE" ]; then
+              echo "❌ No se encontró ningún nuevo .jar en $APP_DIR"
+              exit 1
+            fi
+
+            # Reemplazar el JAR anterior
+            echo "♻️ Reemplazando $DEST con $JAR_FILE"
+            sudo mv -f "$JAR_FILE" "$DEST"
+            sudo chown ubuntu:ubuntu "$DEST"
+            sudo chmod 500 "$DEST"
+
+            # Reiniciar el servicio
+            echo "♻️ Reiniciando sigmaweb..."
+            sudo systemctl daemon-reload
+            sudo systemctl restart sigmaweb
+            sudo systemctl status sigmaweb --no-pager

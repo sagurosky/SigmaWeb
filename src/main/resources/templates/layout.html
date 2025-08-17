@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.tymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<!--<meta id="meta-refresh" http-equiv="refresh" content="5">-->
+
+<head th:replace="plantillas/plantilla::head">
+    <title>Lista de tareas</title>
+    <meta charset="UTF-8"/>
+
+
+</head>
+<style>
+
+    body{
+        /*background: #4169E1;*/
+        background: url('/recursos/fondoLayout3.jpg') no-repeat center center fixed;
+             background-size: cover;
+    }
+/*
+    .mapadiv{
+        widht:70vw;
+        margin:auto;
+    }*/
+    .mapadiv path{
+        fill:rgba(0, 0, 255, 0);
+      /*  stroke: #8B4513;
+        stroke-widht:2px;*/
+    }
+
+    .mapadiv :hover{
+        fill:rgba(0,191,255, 0.7);
+    }
+       /* Estilo inicial: la tarjeta está fuera de la pantalla */
+    .card-hidden {
+        position: absolute;
+        left: -100%;  /* Comienza fuera de la pantalla (a la izquierda) */
+        top: 60%;     /* Asegúrate de que la posición vertical se mantenga */
+        transition: left 0.5s ease;  /* Transición suave para el desplazamiento horizontal */
+    }
+
+    /* Estilo cuando la tarjeta es visible */
+    .card-visible {
+        position: absolute;
+        left: 5%;
+        top: 60%; /* La tarjeta se desplaza a la posición final dentro de la pantalla */
+        transition: left 0.5s ease;
+    }
+
+</style>
+<body>
+<header th:replace="plantillas/plantilla::header">lista de tareas</header>
+<div th:replace="plantillas/plantilla::menu"></div>
+<div th:replace="plantillas/plantilla::logo"></div>
+
+
+<div class="container-fluid ">
+
+
+    <div class="row">
+
+
+
+
+
+
+
+
+
+        <!-- Contenedor del card, inicialmente oculto -->
+        <div id="cardInfo" class="card card-hidden"
+             style="width: 18rem;  position: absolute; z-index: 9999;box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);">
+            <div class="card-body">
+                <h5 class="card-title">Tareas validadas</h5>
+                <p class="card-text" id="listaPreventivos"></p>
+            </div>
+        </div>
+
+
+        <!--<div  class="col-md-10" style="text-align: center; padding-left: 50px" id="contenedorLayout" >-->
+
+        <div class="col-md-12" style="text-align: center; " id="contenedorLayout">
+            <div class="mapadiv">
+                <div th:utext="${svgContent}"></div>
+
+            </div>
+        </div>
+
+
+        <div sec:authorize="hasRole('ROLE_MANT')">
+
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+            <script th:inline="javascript">
+                /*<![CDATA[*/
+                var preventivos = [[${preventivosNoValidados}]] ;
+                var informes = [[${informesPendientesSupervisor}]] ;
+
+                toastr.options = {
+                                    "closeButton": true,
+                                    "debug": false,
+                                    "newestOnTop": false,
+                                    "progressBar": true,
+                                    "positionClass": "toast-bottom-right",
+                                    "preventDuplicates": false,
+                                    "showDuration": "30000",
+                                    "hideDuration": "10000",
+                                    "timeOut": "50000",
+                                    "extendedTimeOut": "50000",
+                                    "showEasing": "swing",
+                                    "hideEasing": "linear",
+                                    "showMethod": "fadeIn",
+                                    "hideMethod": "fadeOut"
+                                };
+
+
+               if (preventivos.length > 0) {
+                    let nombres = preventivos.map(p =>
+                        `<a href='/preventivos/${p.activo.id}'  class="btn btn-secondary"'>${p.activo.nombre}</a>`
+                    ).join("<br>");
+
+                     let mensaje = `Tienes preventivos sin validar:<br>${nombres}`;
+
+                    // Mostramos la notificación
+                    let toast = toastr.warning(mensaje);
+
+
+                     if (toast) {
+                        toast.on('mouseenter', function() {
+                            $(this).css('cursor', 'default'); // Mantener flecha normal en el toastr
+                        });
+                    }
+                }
+
+                if (informes.length > 0) {
+
+                    // Mostramos la notificación
+                    let toast = toastr.warning(`Tienes informes para seleccionar y/o revisar:`);
+
+
+                }
+                /*]]>*/
+            </script>
+        </div>
+
+        <div sec:authorize="hasRole('ROLE_TECNICO')">
+
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+            <script th:inline="javascript">
+                /*<![CDATA[*/
+                var tareasInformes = [[${tareasConInformesPendientesTecnico}]] ;
+
+                toastr.options = {
+                                    "closeButton": true,
+                                    "debug": false,
+                                    "newestOnTop": false,
+                                    "progressBar": true,
+                                    "positionClass": "toast-bottom-right",
+                                    "preventDuplicates": false,
+                                    "showDuration": "30000",
+                                    "hideDuration": "10000",
+                                    "timeOut": "50000",
+                                    "extendedTimeOut": "50000",
+                                    "showEasing": "swing",
+                                    "hideEasing": "linear",
+                                    "showMethod": "fadeIn",
+                                    "hideMethod": "fadeOut"
+                                };
+
+
+                if (tareasInformes.length > 0) {
+
+                    // Mostramos la notificación
+                    let toast = toastr.warning(`Tienes informes pendientes:`);
+
+
+                }
+                /*]]>*/
+            </script>
+        </div>
+
+
+        <div sec:authorize="hasRole('ROLE_MONITOR')&& not hasRole('ROLE_ADMIN')">
+            <script>
+
+
+                $(document).ready(function() {
+                    $("#svg").attr("width", "60%");
+                    $("#svg").attr("height", "60%");
+                    $("#contenedorLayout").attr("class", "col-md-12");
+                    var navbar = $("#navbar");
+
+                    $("#fullscreen-button").click(function() {
+                        if (!document.fullscreenElement) {
+                            document.documentElement.requestFullscreen();
+                        } else {
+                            if (document.exitFullscreen) {
+                                document.exitFullscreen();
+                            }
+                        }
+                    });
+
+                    $("body").mousemove(function(event) {
+                        if (event.clientY <= 100) {
+                            navbar.stop(true, true).show(500); // Mostrar con animación
+                        } else {
+                            navbar.stop(true, true).hide(500); // Ocultar con animación
+                        }
+                    });
+                });
+
+
+            </script>
+
+        </div>
+
+
+    </div>
+</div>
+
+
+<script th:inline="javascript">
+
+
+    $(document).ready(function() {
+        // Seleccionamos todos los elementos <path> y los ponemos a la escucha del evento hover
+        traerEstados();
+
+    var funcionTimeout;
+
+        $("path").hover(function() {
+            // Esto se ejecuta al hacer hover (mouseenter)
+
+
+            var elementId = this.id;  // Obtenemos el id del elemento actual
+            var estadoElemento=this.dataset.estado;
+            if(estadoElemento==="disponible")
+            funcionTimeout=setTimeout(function() {
+            //jo estan encadenados los dos timeouts, esto hace que se vaya el card actual y luego entre el nuevo
+            setTimeout(function() { ajax(elementId,estadoElemento);},500);
+
+                ocultarCard();
+            }, 500);
+        }, function() {
+            clearTimeout(funcionTimeout);
+            // Esto se ejecuta cuando se sale del hover (mouseleave)
+            // Si quieres hacer algo cuando el mouse sale, puedes añadir aquí tu lógica
+        });
+    });
+
+
+
+
+    function ajax(nombre,estado){
+         $.ajax({
+                url: '/traerPreventivosAlLayout/',   // La URL del método en tu controlador
+                type: 'GET',// Método HTTP
+                data:{nombre:nombre,
+                      estado:estado  },// Enviar el nombre del activo como parámetro
+                success: function(response) {
+                    // Limpiar el contenedor de salida
+                    $("#listaPreventivos").html("");
+
+                    // Recorrer la lista de objetos y mostrar sus campos
+                    response.forEach(function(objeto) {
+                        $("#listaPreventivos").append("<p>- " + objeto.descripcion + "</p>");
+                    });
+                },
+                error: function(error) {
+                    console.error("Error en la petición", error);
+                }
+              });
+            mostrarCard();
+            }
+
+
+
+
+
+
+
+
+            document.addEventListener("click", (event) => {
+                // Si haces clic fuera del card y del path
+                if (!cardInfo.contains(event.target) ) {
+                    ocultarCard();
+                }
+            });
+
+
+
+     // Mostrar la tarjeta con animación
+            function mostrarCard() {
+
+                cardInfo.classList.remove("card-hidden");  // Quita la clase que la oculta
+                cardInfo.classList.add("card-visible");    // Añade la clase que la muestra
+            }
+
+            // Ocultar la tarjeta con animación
+            function ocultarCard() {
+                cardInfo.classList.remove("card-visible"); // Quita la clase que la muestra
+                cardInfo.classList.add("card-hidden");     // Añade la clase que la oculta
+            }
+
+
+</script>
+
+
+</body>
+</html>
+
+
+
+
+

@@ -1,0 +1,119 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="plantillas/plantilla::head">
+        <title>Gestor de mantenimiento</title>
+    </head>
+    <body>
+        <header th:replace="plantillas/plantilla::header">lista de tareas</header>
+         <div th:replace="plantillas/plantilla::notificaciones"></div>
+        <div class="container">
+           <div class="text-center">
+            <h1 >Crear usuarios</h1>
+           </div> 
+            <br>
+             <div class="card mx-auto"style="width: 50rem;"> 
+                
+                <form method="POST" th:action="@{/gestionar}" th:object="${usuario}" class="form-group " id="form">
+                    <div class="card-header ">
+                        <label for="username">Nuevo usuario</label>
+                    </div>  
+                    <div class="row">
+                        <div class="col-3"></div>   
+                        <div class="col-6">
+                     <div class="card-body ">
+                       
+                        <div class="row"> 
+                            <div class="col" >
+                               <div class="form-floating  ">
+                                  <input type="text"  class="form-control" th:id="floatingInput"th:name="username" placeHolder="Usuario"required="true">
+                                  <label for="floatingInput">usuario</label>
+                              </div><span th:if="${#fields.hasErrors('username')}" th:errors="*{username}">Error en nombre</span>
+                           </div> 
+                        </div>
+                         
+                        <!--
+                        <span th:if="${#fields.hasErrors('username')}" th:errors="*{username}"/>
+                        -->
+                        
+                        <br/>
+                          <div class="row"> 
+                            <div class="col" >
+                               <div class="form-floating  ">
+                                  <input type="password"  class="form-control" th:id="password"th:name="Password" placeHolder="Password"required="true">
+                                  <label for="floatingInput">Password</label>
+                              </div><span th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Error en password</span>
+                           </div> 
+                        </div>
+                        
+<!--                         <div class="row">
+                            <div class="col">
+                                 <label for="password">Password</label>
+                             </div>     
+                            <div class="col">     
+                                <input type="text" name="password" id="password" />
+                                <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}">error en nombre</span>
+                            </div>
+                         </div>     -->
+                        <!-- 
+                        <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}"/>
+                        -->
+                        <br/>
+                        <br/>
+                                <h4 >Rol del nuevo usuario: </h4>
+                            <div class="card-body">
+                                <label for="rol1">Administrador</label>
+                                <input type="radio" id="rol1" name="rol" th:value="ADMINISTRADOR" th:field="${rol.nombre}" />
+                                <br/>
+                                <label for="rol2">Mantenimiento</label>
+                                <input type="radio" id="rol2" name="rol" th:value="MANTENIMIENTO" th:field="${rol.nombre}"/>
+                                <br/>
+                                <label for="rol3">Producción</label>
+                                <input type="radio" id="rol3" name="rol" th:value="PRODUCCION" th:field="${rol.nombre}"/>
+                                <br/>
+                                <label for="rol4">Técnico</label>
+                                <input type="radio" id="rol4" name="rol" th:value="TECNICO" th:field="${rol.nombre}"/>
+                                <br/>
+                                <label for="rol5">Monitor</label>
+                                <input type="radio" id="rol5" name="rol" th:value="MONITOR" th:field="${rol.nombre}"/>
+                                <br/>
+                            </div>
+
+
+                         <br/>
+                     </div>
+
+                        </div>
+                        <div class="col-3"></div>
+                     </div> 
+                    <div class="row ">
+                     <div class="col "></div >
+                    <div class="col ">
+                        <input type="submit" value="Guardar" class="btn btn-primary"/>
+                        <a th:href="@{/gestionUsuarios}" th:text="regresar" class="btn btn-primary"></a>
+                      </div > 
+                      <div class="col "> </div >
+                    </div >    
+                </form>
+                 <script>
+                     document.addEventListener("DOMContentLoaded", function() {
+                        const form = document.getElementById("form");
+                       form.addEventListener("submit", function(event) {
+                         const radios = document.querySelectorAll("input[name='nombre']");
+                         let isChecked = false;
+                         radios.forEach(radio => {
+                         console.log("pedo");
+                           if (radio.checked) isChecked = true;
+                         });
+
+                         if (!isChecked) {
+                           event.preventDefault(); // Detiene el envío del formulario
+                           alert("Por favor, selecciona un rol antes de continuar.");
+                         }
+                       });
+                     });
+                 </script>
+            </div> 
+        </div>
+    </body>
+</html>
+

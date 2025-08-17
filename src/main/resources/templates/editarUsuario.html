@@ -1,0 +1,177 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="plantillas/plantilla::head">
+        <title>Gestor de mantenimiento</title>
+    </head>
+    <body>
+        <header th:replace="plantillas/plantilla::header">lista de tareas</header>
+         <div th:replace="plantillas/plantilla::notificaciones"></div>
+       
+        <div class="container">
+             <div class="text-center">
+                <h1>Editar usuario</h1>
+             </div>
+            <br>
+             <div class="card mx-auto"style="width: 50rem;"> 
+            <form method="POST" th:action="@{/guardarUsuarioEditado}" th:object="${usuario}" class="form-group">
+               <div class="card-header ">
+                <label th:text="'usuario '+*{username}">Usuario</label>
+               </div> 
+                
+               <div class="row">
+                        <div class="col-3"></div>   
+                        <div class="col-6">
+                     <div class="card-body "> 
+                
+                         
+                         
+                <div class="row"> 
+                    <div class="col" >
+                       <div class="form-floating  ">
+                          <input type="text"  class="form-control" th:id="floatingInput"th:name="username" placeHolder="usuario"th:field="*{username}"required="true">
+                          <label for="floatingInput">Usuario</label>
+                      </div><span th:if="${#fields.hasErrors('username')}" th:errors="*{username}">Error en nombre</span>
+                   </div> 
+                </div>         
+                  <input hidden="true" type="text" name="username" id="username" th:field="*{idUsuario}"/>
+                  
+                  
+                <div class="row"> 
+                    <div class="col" >
+                       <div class="form-floating  ">
+                          <input type="password"  class="form-control" th:id="floatingInput"th:name="password" placeHolder="Password" th:field="*{password}"th:value="${usuario.password}">
+                          <label for="floatingInput">Nuevo password:</label>
+                      </div> <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Error en password</span>
+                   </div> 
+                </div>         
+                         
+                         
+                         
+                         
+                         
+<!--                <input type="text" name="username" id="username" th:field="*{username}"/>
+                <span th:if="${#fields.hasErrors('username')}" th:errors="*{username}">error en nombre</span>
+                <input hidden="true" type="text" name="username" id="username" th:field="*{idUsuario}"/>
+                <br/>-->
+
+<!--                <label for="password">Password</label>
+                <input type="password" name="password" id="password" th:field="*{password}"th:value="${usuario.password}"/>
+                <input type="text" name="password" id="password" value="${usuario.password}""/>
+                <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}">error en password</span>-->
+
+                <br/>
+                <br/>
+
+                <h4 >Roles: </h4>
+                
+                <div class="card-body">
+                <!--da error si no hago la comprobacion de nulidad-->
+                 <th:block th:if="${usuario.roles != null and not #lists.isEmpty(usuario.roles)}">
+                    <input type="checkbox" id="rolAdministrador" name="rol" value="ROLE_ADMIN"  
+                           th:checked="${#lists.contains(usuario.roles.![nombre], 'ROLE_ADMIN')}" />
+                    <label for="rolAdministrador">Administrador</label>
+                    <br/>
+                    <input type="checkbox" id="rolMantenimiento" name="rol" value="ROLE_MANT"  
+                           th:checked="${#lists.contains(usuario.roles.![nombre], 'ROLE_MANT')}" />
+                    <label for="rolMantenimiento">Mantenimiento</label>
+                    <br/>
+                    <input type="checkbox" id="rolProduccion" name="rol" value="ROLE_PROD" 
+                           th:checked="${#lists.contains(usuario.roles.![nombre], 'ROLE_PROD')}"/>
+                    <label for="rolProduccion">Produccion</label>
+                    <br/>
+                    <input type="checkbox" id="rolTecnico" name="rol" value="ROLE_TECNICO"  onclick="chequearTecnico(this)" title="no podes convertir un usuario a técnico, los tecnicos deben ser generados como nuevos para cargar sus datos"
+                           th:checked="${#lists.contains(usuario.roles.![nombre], 'ROLE_TECNICO')}"/>
+                    <label for="rolTecnico">Técnico</label>
+                    <script>
+                        function chequearTecnico(elemento)
+                        {
+                            if(elemento.checked===true)
+                            {
+                                elemento.checked=false;
+                                alert("No podés convertir un usuario a técnico, los tecnicos deben ser generados como nuevos para cargar sus datos");
+                            }else if(elemento.checked===false)
+                            {
+                                elemento.checked=true;
+                                alert("No podés cambiar el rol de un tecnico, eliminalo y generá un usuario nuevo con otro rol");
+                            }
+                            
+                        }
+
+
+
+
+
+                    </script>
+                    <br/>
+                    <input type="checkbox" id="rolMonitor" name="rol" value="ROLE_MONITOR"
+                           th:checked="${#lists.contains(usuario.roles.![nombre], 'ROLE_MONITOR')}"/>
+                    <label for="rolMonitor">Monitor</label>
+                </th:block>
+                <th:block th:if="${usuario.roles == null or #lists.isEmpty(usuario.roles)}">
+                    <input type="checkbox" id="rolAdministrador" name="rol" value="ROLE_ADMIN"   />
+                    <label for="rolAdministrador">Administrador</label>
+                    <br/>
+                    <input type="checkbox" id="rolMantenimiento" name="rol" value="ROLE_MANT" /> 
+                    <label for="rolMantenimiento">Mantenimiento</label>
+                    <br/>
+                    <input type="checkbox" id="rolProduccion" name="rol" value="ROLE_PROD"/> 
+                    <label for="rolProduccion">Produccion</label>
+                    <br/>
+                    <input type="checkbox" id="rolTecnico" name="rol" value="ROLE_TECNICO"/> 
+                    <label for="rolTecnico">Técnico</label>
+                    <br/>
+                    <input type="checkbox" id="rolMonitor" name="rol" value="ROLE_MONITOR"/>
+                    <label for="rolMonitor">Monitor</label>
+                </th:block>
+                </div>
+                <br/>
+                <script>
+                    //DMS código para evitar tener mas de un rol, y al renderizar un admin solo muestre el admin
+                 document.addEventListener("DOMContentLoaded", function() {
+                     const checkboxes = document.querySelectorAll("input[name='rol']");
+                     const adminCheckbox = document.getElementById("rolAdministrador");
+
+                     // 🔹 Lógica de limpieza inicial si hay múltiples roles seleccionados
+                     const checkedBoxes = Array.from(checkboxes).filter(cb => cb.checked);
+                     if (checkedBoxes.length > 1 && adminCheckbox.checked) {
+                         checkboxes.forEach(cb => {
+                             if (cb !== adminCheckbox) cb.checked = false;
+                         });
+                     }
+
+                     // 🔹 Lógica de selección en tiempo real
+                     checkboxes.forEach(checkbox => {
+                         checkbox.addEventListener("change", function() {
+                             if (this.checked) {
+                                 if (this === adminCheckbox) {
+                                     // Si se selecciona Administrador, desmarcar los otros
+                                     checkboxes.forEach(cb => {
+                                         if (cb !== adminCheckbox) cb.checked = false;
+                                     });
+                                 } else {
+                                     // Si se selecciona otro, desmarcar Administrador y otros
+                                     checkboxes.forEach(cb => {
+                                         if (cb !== this) cb.checked = false;
+                                     });
+                                 }
+                             }
+                         });
+                     });
+                 });
+
+                         </script>
+
+                <br/>
+            </div> 
+                        </div>
+                        <div class="col-3"></div>
+                     </div> 
+                <input type="submit" value="Guardar" class="btn btn-primary"/>
+                <a th:href="@{/gestionUsuarios}" th:text="Regresar" class="btn btn-primary"></a>
+            </form>
+                 
+        </div>
+        </div>
+    </body>
+</html>
+

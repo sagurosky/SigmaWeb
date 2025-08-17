@@ -1,0 +1,83 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="plantillas/plantilla::head">
+        <title>Gestor de mantenimiento</title>
+        <<link rel="stylesheet" href="/jquery-3.7.1.min"/>
+    </head>
+    <body>
+        <header th:replace="plantillas/plantilla::header">lista de tareas</header>
+         <div th:replace="plantillas/plantilla::notificaciones"></div>
+        <div th:replace="plantillas/plantilla::menu"></div>
+<div th:replace="plantillas/plantilla::logo"></div>
+<div class="container">
+        <h1 >Usuarios registrados</h1>
+            
+                <table class="table table-bordered table-hover table-sm ">
+                    <thead class="thead-light ">
+                        <tr>
+                            <th th:text="Nombre"></th>
+                            <th th:text="Rol"></th>
+                            <th th:text="Editar"></th>
+                            <th th:text="Eliminar"></th>
+                        </tr>
+                    </thead>
+                    <tr th:each="usuario: ${usuarios }">
+                        <td th:text="${usuario.username}"></td>
+                        <td>
+                            <span >
+                                <span  th:each="rol, iterStat:${usuario.roles}">
+                                    <span th:id="'rol' + ${usuario.idUsuario}+ ${iterStat.index}" th:text="${rol.nombre}"></span>
+                                </span>
+                            </span>
+
+
+                        </td>
+                        <td ><a th:href="@{/editarUsuario/}+${usuario.idUsuario}"th:text="Editar"></a></td>
+                        <td ><a th:if="${usuarios.size>1}"th:href="@{/eliminarUsuario/}+${usuario.idUsuario}"th:text="Eliminar"></a></td>
+
+                    </tr>
+                    <script>
+                     $(document).ready(function() {
+                                    // Iterar sobre cada span con el ID que has generado 
+                                    //DMS el selector hace referencia a todos os ids que comiencen con rol
+                                    $('[id^="rol"]').each(function(index) {
+                                         var texto = $(this).text();
+                                        // Realizar la sustitución de cadenas
+                                        switch(texto) {
+                                            case "ROLE_ADMIN":
+                                                texto = "Administrador";
+                                                break;
+                                            case "ROLE_PROD":
+                                                texto = "Produccion";
+                                                break;
+                                            case "ROLE_MANT":
+                                                texto = "Mantenimiento";
+                                                break;
+                                            case "ROLE_TECNICO":
+                                                texto = "Tecnico";
+                                                break;
+                                            case "ROLE_MONITOR":
+                                                texto = "Monitor";
+                                                break;
+                                            // Añadir más casos si es necesario
+                                        }
+                                       $(this).text(texto);
+                                    });
+                                });
+
+                    </script>
+                </table>
+        <a th:href="@{/crearUsuario/}" class="btn btn-primary">Crear usuario</a>
+<br>
+
+    <button onclick="history.back()" class="btn btn-primary " >Volver</button>
+            </div>
+        
+        
+        
+        
+        
+
+    </body>
+</html>
+

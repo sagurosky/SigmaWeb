@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+    <head th:fragment="head">
+
+        <title>Gestor de mantenimiento</title>
+        <meta charset="UTF-8"/>
+        <link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}"/>
+        <link rel="stylesheet" th:href="@{/webjars/font-awesome/css/all.css}"/>
+        <script th:src="@{/webjars/jquery/jquery.min.js}"></script>
+        <script th:src="@{/webjars/popper.js/umd/popper.min.js}"></script>
+        <script th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+        <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css'>
+
+    </head>
+
+    <body>
+
+        <header th:fragment="header">
+
+            <style>
+
+                /* Agrega sombra y animación a los botones Bootstrap */
+                .btn {
+                    position: relative;
+                    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);
+                    transition: all 0.3s ease;
+                    overflow: hidden;
+                    margin:10px;
+                }
+
+                .btn:active {
+                    transform: translateY(4px);
+                    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+                }
+
+                .btn::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    border-radius: inherit;
+                    background: linear-gradient(45deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0));
+                    opacity: 0;
+                    transition: opacity 0.3s ease;
+                }
+
+                .btn:hover::before {
+                    opacity: 1;
+                }
+                body {
+
+                     background-size: cover;
+
+                }
+
+/* desaparece boton en moviles */
+  @media (max-width: 576px) {
+    #toggleMenuBtn.btn {
+        display: none !important;
+    }
+}
+
+
+
+            </style>
+            <nav class="navbar fixed-top navbar-expand-sm navbar-dark bg-dark p-0" id="navbar" >
+               
+                <div class="container-fluid">
+
+<!--                    <label class="navbar-brand" style="font-size: 30px;">Sigma web</label>-->
+                    <button id="toggleMenuBtn" class="btn btn-primary mt-2" >
+                        ☰
+                    </button>
+
+                    
+                    
+                    
+                    
+                    <button class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse" >
+                        <span class="navbar-toggler-icon"></span>
+                        <!--<span class=bi bi-arrows-expand"></span>-->
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarCollapse">
+                        <ul class="navbar-nav">
+
+                            <!-- Botones generados dinámicamente desde la lista nombresLayouts -->
+                            <li th:each="nombreLayout : ${nombresLayouts}" class="nav-item px-2">
+                                <a th:href="@{'/layout/' + ${nombreLayout}}"
+                                   th:text="${#strings.replace(nombreLayout, '.svg', '')}"
+                                   th:id="${#strings.replace(nombreLayout, '.svg', '')}"
+                                   class="btn btn-primary btn-block mt-2"
+                                  >
+                                    Layout
+                                </a>
+                            </li>
+
+                            <!-- Botón de pantalla completa -->
+                            <li sec:authorize="hasRole('ROLE_MONITOR') && !hasRole('ROLE_ADMIN')" class="nav-item px-2">
+                                <a id="fullscreen-button" class="btn btn-primary btn-block mt-2">Pantalla completa</a>
+                            </li>
+
+                        </ul>
+
+                        <ul sec:authorize="isAuthenticated()" class="navbar-nav ml-auto">
+                            <li class="nav-item mr-3">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-user"></i>
+                                    <span >Bienvenido: </span>
+                                    <span sec:authentication="name">Usuario</span>
+                                </a>
+
+                            </li>
+                            <li class="nav-item mr-3">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-user"></i>
+                                    <span >Rol: </span>
+                                    <span id="selRol" th:each='rol:${#authentication.getAuthorities()}'>
+                                        <span hidden="true" th:if='${rol.toString().equals("ROLE_ADMIN")}' th:text='Administrador ' />
+                                        <span hidden="true" th:if='${rol.toString().equals("ROLE_MANT")}' th:text='Mantenimiento '/>
+                                        <span hidden="true" th:if='${rol.toString().equals("ROLE_PROD")}' th:text='Produccion '/>
+                                        <span hidden="true" th:if='${rol.toString().equals("ROLE_TECNICO")}' th:text='Técnico '/>
+                                        <span hidden="true" th:if='${rol.toString().equals("ROLE_MONITOR")}' th:text='Monitor '/>
+                                    </span>
+                                    <span id="rol"></span>
+                                    <script>
+                                        document.getElementById("rol").innerHTML = document.getElementById("selRol").children[0].innerHTML;
+                                    </script>
+                                </a>    
+                            </li>
+                            <li class="nav-item">
+                                <form method="POST" th:action="@{/logout}">
+                                    <a href="#" onclick="this.parentNode.submit();" class="nav-link">
+                                        <i class="fas fa-user-times"></i> Logout
+                                    </a>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+            
+            <br>
+            <br>
+            <br>
+                
+                
+          <script th:inline="javascript">
+            let tiempoInactividad;
+
+            function reiniciarTemporizador() {
+                clearTimeout(tiempoInactividad);
+                tiempoInactividad = setTimeout(() => {
+                    window.location.href = "/"; 
+                }, 1200000); // 2 minutos (120000 milisegundos)
+            }
+
+            // Detectar movimiento del mouse, clics o teclas presionadas
+            window.onload = reiniciarTemporizador;
+            document.onmousemove = reiniciarTemporizador;
+            document.onkeypress = reiniciarTemporizador;
+            document.onclick = reiniciarTemporizador;
+            document.onscroll = reiniciarTemporizador;
+
+
+
+
+
+
+      let tiempoRefresco=[[${tiempoRefresco}]];
+      let noTraerEstados=[[${noTraerEstados}]];
+
+//seteo todos los atributos en "operativa" que es la condicion normal
+$("path").attr("data-estado", "operativa");
+
+
+
+
+
+
+//let elementosParpadeantes = new Map();
+let elementosParpadeantes = {};
+let isYellow;
+ let isRed;
+ let isLightRed;
+ let lightRed="rgba(255, 0, 0, 0.3)";
+
+//console.log("traer estados: "+noTraerEstados);
+
+ if(noTraerEstados!='no'||noTraerEstados==null)
+setInterval(function() {
+   traerEstados();
+}, tiempoRefresco);  //  milisegundos
+
+
+
+
+function traerEstados(){
+    $.ajax({
+        url: '/actualizarEstados/',   // La URL del método en tu controlador
+        type: 'GET',                  // Método HTTP
+        success: function(response) {
+
+            elementosParpadeantes=response;
+
+        },
+        error: function(error) {
+            console.error("Error en actualizacion de estados", error);
+        }
+    });
+}
+
+
+
+setInterval(function () {
+    // 1. Agrupamos los estados por layout
+    const layoutsEstado = {};
+
+    Object.entries(elementosParpadeantes).forEach(function ([nombre, datos]) {
+        const layout = datos.layout;
+        const estado = datos.estado;
+
+        if (!layoutsEstado[layout]) {
+            layoutsEstado[layout] = { tieneDetenida: false };
+        }
+
+        if (estado === "detenida") {
+            layoutsEstado[layout].tieneDetenida = true;
+        }
+    });
+
+    // 2. Procesamos los botones según el estado agrupado
+    Object.entries(layoutsEstado).forEach(([layoutNombre, info]) => {
+        const boton = document.getElementById(layoutNombre);
+
+        if (boton) {
+            if (info.tieneDetenida) {
+                // Parpadeo rojo
+                boton.style.backgroundColor = boton.style.backgroundColor === 'red' ? '' : 'red';
+            } else {
+                // Quitar color si no hay ninguna detenida
+                boton.style.backgroundColor = '';
+            }
+        }
+    });
+
+    // (lógica de parpadeo en SVG)
+    Object.entries(elementosParpadeantes).forEach(function ([nombre, datos]) {
+
+        let elementoSvg = document.getElementById(nombre);
+        const estado = datos.estado;
+
+        if (elementoSvg) {
+        elementoSvg.removeAttribute("fill");
+         //   console.log(elementoSvg+" "+estado);
+            if (estado == "detenida") {
+                isRed = (elementoSvg.style.fill === 'red');
+                elementoSvg.style.fill = isRed ? 'transparent' : 'red';
+                elementoSvg.setAttribute("data-estado", "detenida");
+
+
+            } else if (estado == "liberada") {
+                isYellow = (elementoSvg.style.fill === 'yellow');
+                elementoSvg.style.fill = isYellow ? 'transparent' : 'yellow';
+                elementoSvg.setAttribute("data-estado", "liberada");
+
+            } else if (estado == "disponible") {
+                elementoSvg.style.fill = 'rgba(255, 165, 0, 0.5)';
+                elementoSvg.setAttribute("data-estado", "disponible");
+
+            } else if (estado === "operativa condicionada") {
+                elementoSvg.style.fill = 'rgba(255, 0, 0, 0.3)';
+                elementoSvg.setAttribute("data-estado", "operativa condicionada");
+
+
+            } else if (estado === "operativa") {
+                elementoSvg.style.fill = '';
+                elementoSvg.setAttribute("data-estado", "operativa");
+            }
+if(nombre==='materiasPrimas')console.log(elementoSvg.style.fill);
+        }
+    });
+}, 500);
+
+
+
+
+          </script>
+                
+                
+                
+                
+        </header>
+
+<div th:fragment="logo">
+        
+        <style>
+            .logo-esquina {
+           position: fixed;  /* Fija la imagen en la pantalla */
+           bottom: 10px;      /* Distancia desde la parte inferior */
+           right: 10px;       /* Distancia desde la parte derecha */
+           width: 150px;      /* Ajusta el tamaño de la imagen (modifica según necesites) */
+           z-index: 1000;     /* Asegura que esté por encima de otros elementos */
+       }
+       </style>
+        <img class="logo-esquina"th:src="'/recursos/logoReg.png'"/>
+        
+        </div >    
+        
+        <div th:fragment="menu">
+        <div id="sideMenu" class="vertical-menu">
+<style>
+
+
+    /* Menú desplegable vertical */
+    .vertical-menu {
+        position: fixed;
+        top: -700px; /* Comienza fuera de pantalla */
+        left: 20px;
+        width: 90%;
+        max-width: 300px;
+        background-color: #1f1f1f;
+        color: white;
+        border-radius: 8px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        overflow: hidden;
+        z-index: 900;
+
+        transition: top 0.4s ease;
+    }
+
+    .vertical-menu.active {
+        top: 60px; /* Aparece desde arriba */
+    }
+
+    .vertical-menu-content {
+        padding: 15px;
+    }
+
+    .vertical-menu-content .btn {
+        text-align: left;
+        margin: 10px 0 10px;
+        background-color: #007bff !important;
+        color: white;
+    }
+
+    /* Responsive */
+    @media (max-width: 576px) {
+        .vertical-menu {
+            width: 95%;
+            left: 10px;
+        }
+
+</style>
+
+            <div class="vertical-menu-content">
+                <!-- Aquí va tu contenido original del menú -->
+                <div sec:authorize="not hasRole('ROLE_MONITOR') or hasRole('ROLE_ADMIN')">
+
+                    <div sec:authorize="hasRole('ROLE_PROD')">
+                        <input type="hidden" name="url" id="url" value="/layout">
+                        <br/>
+                    </div>
+
+                    <div sec:authorize="hasRole('ROLE_ADMIN')">
+                        <a th:href="@{/tareas}" class="btn btn-primary btn-block">Detenciones</a>
+                    </div>
+                    <div sec:authorize="hasRole('ROLE_ADMIN')">
+                        <div th:if="${habilitarGestionUsuarios == 'si'}">
+                            <a th:href="@{/gestionUsuarios}" class="btn btn-primary btn-block">Gestión de usuarios</a>
+                        </div>
+                    </div>
+
+                    <a th:href="@{/registro}" class="btn btn-primary btn-block">Registro histórico</a>
+
+                    <a th:href="@{/perfil/}" class="btn btn-primary btn-block mt-2" sec:authorize="hasRole('ROLE_TECNICO') and not hasRole('ROLE_ADMIN')">Perfil</a>
+
+                    <div sec:authorize="hasRole('ROLE_ADMIN') or hasRole('ROLE_MANT')" class="card-header mt-4">
+                        <label>Datos de técnicos</label>
+                        <form th:action="@{/perfilTecnico}" method="get">
+                            <input type="hidden" name="url" id="url" value="/layout">
+                            <div class="container">
+                                <div class="row">
+                                    <select name="id" class="form-control">
+                                        <option th:each="tecnico : ${tecnicos}"
+                                                th:if="${tecnico.nombre != null}"
+                                                th:value="${tecnico.id}"
+                                                th:text="${tecnico.nombre + ' ' + tecnico.apellido}">
+                                        </option>
+                                    </select>
+                                </div>
+                                <br/>
+                                <div class="row">
+                                    <div th:if="${tecnicos.size > 0}">
+                                        <button type="submit" class="btn btn-primary btn-block">Ver</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <br/>
+                    <a id="botonInformes" th:href="@{/informes}" class="btn btn-primary btn-block mt-2">Informes</a>
+                    <div th:if="${habilitarEditorLayout == 'si'}">
+                        <div sec:authorize="hasRole('ROLE_ADMIN')">
+                            <a id="botonEditor" th:href="@{/crearLayout}" class="btn btn-primary btn-block mt-2">Editor layout</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+            <script>
+                //DMS menu ocultable
+         $(document).ready(function () {
+            const $btn = $('#toggleMenuBtn');
+            const $menu = $('#sideMenu');
+
+
+
+            // Alternar menú
+            $btn.on('click', function () {
+                $menu.toggleClass('active');
+            });
+
+            // Cerrar menú al hacer clic fuera
+            $(document).on('click', function (e) {
+                if (!$(e.target).closest('#sideMenu').length && !$(e.target).is($btn)) {
+                    $menu.removeClass('active');
+                }
+            });
+
+            // Opcional: cerrar al scroll
+            $(window).on('scroll', function () {
+                $menu.removeClass('active');
+            });
+        });
+            </script>
+
+
+
+        </div>
+        
+        
+        <div th:fragment="notificaciones">
+            
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+         <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+          <input type="hidden" id="cantidadActivosDetenidos" th:value="${cantidadActivosDetenidos}"/>
+         <script>
+              // Configuración global de Toastr
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "newestOnTop": false,
+            "progressBar": true,
+            "positionClass": "toast-bottom-right",
+            "preventDuplicates": false,
+            "showDuration": "30000",
+            "hideDuration": "10000",
+            "timeOut": "50000",
+            "extendedTimeOut": "50000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        };
+           
+
+
+         </script>
+
+         
+            
+            
+            
+            
+        </div>    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <footer th:fragment="footer"class="bg-dark text-white mt-5 p-5">
+<!--            <div class="container">
+                <div class="col">
+                    <p class="lead text-center">
+                        <h5>Copyright DanielSagurosky </h5>
+
+                        <span>  &copy; <a href="https://sagurosky.github.io/WebPersonal/index.html" target="_blank">pagina personal</a></span>
+                    </p>
+                </div>
+            </div>-->
+
+        </footer>
+    </body>
+</html>

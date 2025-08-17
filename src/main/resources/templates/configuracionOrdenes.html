@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.tymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      xmlns:temporals="http://www.thymeleaf.org/extras/thymeleaf-temporals">
+
+
+    <!--<meta http-equiv="refresh" content="10">-->
+
+    <head th:replace="plantillas/plantilla::head">
+        <title>Configuracio ordenes de trabajo</title>
+        <meta charset="UTF-8"/>
+    </head>
+  
+
+    <body>
+        <header th:replace="plantillas/plantilla::header">lista de tareas</header>
+         <div th:replace="plantillas/plantilla::notificaciones"></div>
+
+        <div class="container ">
+            <br/><h2>Configuración productos</h2><br/>
+            
+            <a  
+               href="#" 
+               data-toggle="modal" 
+               th:data-target="'#modal'" 
+               class="btn btn-primary ">Agregar producto</a>
+            
+             
+            
+            <div class="modal fade bd-example-modal-lg" th:id="'modal'" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                                <div class="modal-dialog modal-lg" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="exampleModalLabel">Nuevo producto</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                    <form th:id="'nuevoProducto'" th:action="@{/nuevoProducto}"th:object="${producto}" method="post" > 
+                                        <input type="hidden" name="url" id="url" th:value="${url}">
+                                        <div class="modal-body">
+                                                 
+                                                
+                                            <div class="container ">
+                                                 <div class="card card-body">
+                                                    <div class="row">
+                                                        <div class="form-floating mb-3 col">
+                                                            <input type="text"  class="form-control" th:id="floatingInput"th:name="codigo" th:field="*{codigo}" placeHolder="Código">
+                                                            <label for="floatingInput">Código</label>
+                                                        </div>
+
+                                                        <div class="form-floating mb-3 col">
+                                                            <input type="text"  class="form-control" th:id="floatingInput"th:name="nombre"th:field="*{nombre}" placeHolder="Nombre">
+                                                            <label for="floatingInput">Nombre</label>
+                                                        </div>
+                                                     </div>
+                                                     <div class="row">
+                                                        <div class="form-floating mb-3 col">
+                                                            <input type="textarea"  class="form-control" th:id="floatingInput"th:name="descripcion"th:field="*{descripcion}" placeHolder="Descripción">
+                                                            <label for="floatingInput">Descripción del producto</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <br/>
+                                                 <div class="row">
+                                                     <div class="form-floating mb-3 col">
+                                                        <input type="text"  class="form-control" th:id="floatingInput"th:name="cadenciaAdulto2" th:field="*{cadenciaAdulto2}"placeHolder="Cadencia adulto 2">
+                                                        <label for="floatingInput">Cadencia adulto 2</label>
+                                                    </div>
+                                                </div>
+                                                 <div class="row">
+                                                     <div class="form-floating mb-3 col">
+                                                        <input type="text"  class="form-control" th:id="floatingInput"th:name="cadenciaAdulto3" th:field="*{cadenciaAdulto3}"placeHolder="Cadencia adulto 3">
+                                                        <label for="floatingInput">Cadencia adulto 3</label>
+                                                    </div>
+                                                </div>
+                                                 <div class="row">
+                                                     <div class="form-floating mb-3 col">
+                                                        <input type="text"  class="form-control" th:id="floatingInput"th:name="cadenciaAdulto4" th:field="*{cadenciaAdulto4}"placeHolder="Cadencia adulto 4">
+                                                        <label for="floatingInput">Cadencia adulto 4</label>
+                                                    </div>
+                                                </div>
+                                                 <div class="row">
+                                                     <div class="form-floating mb-3 col">
+                                                        <input type="text"  class="form-control" th:id="floatingInput"th:name="cadenciaAdulto5"th:field="*{cadenciaAdulto5}" placeHolder="Cadencia adulto 5">
+                                                        <label for="floatingInput">Cadencia adulto 5</label>
+                                                    </div>
+                                                </div>
+                                                 <div class="row">
+                                                     <div class="form-floating mb-3 col">
+                                                        <input type="text"  class="form-control" th:id="floatingInput"th:name="cadenciaAposito"th:field="*{cadenciaAposito}" placeHolder="Cadencia Apósito">
+                                                        <label for="floatingInput">Cadencia Apósito</label>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+                                                 
+                                        <div class="modal-footer">
+                                            <button class="btn btn-primary" th:type="submit">Agregar</button>
+                                        </div>
+                                    </form> 
+                                       
+                                        
+                                        
+                                </div>
+                            </div>
+                        </div>
+            
+            
+            
+            
+            
+            
+            
+            
+             <div class="container ">
+                <table class="table table-bordered table-hover table-sm "  >
+                    <thead class="thead-light " >
+                        <tr > 
+                            <th >Código</th>
+                            <th >Nombre</th>
+                            <th >Descripción </th>
+                            <th title="cadencia en unidades/hora">Adulto 2</th>
+                            <th title="cadencia en unidades/hora">Adulto 3</th>
+                            <th title="cadencia en unidades/hora">Adulto 4</th>
+                            <th title="cadencia en unidades/hora">Adulto 5</th>
+                            <th title="cadencia en unidades/hora">Apósito</th>
+                            <!--<th  sec:authorize="hasRole('ROLE_ADMIN')or hasRole('ROLE_MANT')">solicita</th>-->
+                            <th  sec:authorize="hasRole('ROLE_ADMIN')">Acción</th>
+                            <!--<th sec:authorize="hasRole('ROLE_ADMIN')or hasRole('ROLE_MANT')or hasRole('ROLE_TECNICO')">acción</th>-->
+
+                        </tr>
+                    </thead>
+                    
+                    <tbody >
+                        <tr th:each="producto : ${productos}">
+                            <input type="hidden" th:value="*{id}"/>   
+                           <td th:text="${producto.codigo}"></td>
+                           <td th:text="${producto.nombre}"></td>
+                           <td ><textarea  th:text="${producto.descripcion}"class="form-control" readonly="true" ></textarea></td>
+                           
+
+                           <td  th:text="${producto.cadenciaAdulto2}"></td>
+                           <td  th:text="${producto.cadenciaAdulto3}"></td>
+                           <td  th:text="${producto.cadenciaAdulto4}"></td>
+                           <td  th:text="${producto.cadenciaAdulto5}"></td>
+                           <td th:text="${producto.cadenciaAposito}"></td>
+                           <td sec:authorize="hasRole('ROLE_ADMIN')"><a th:href="@{/eliminarProducto/}+${producto.id}+ '?url=' + ${url}">Eliminar</a></td>
+                         </tr>
+                     </tbody>
+                 </table>
+
+
+
+        </div>
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+           
+        </div>
+        
+        
+        <section  class="py-4 mb-4 bg-light">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-2" >
+
+
+                        <a th:href="@{/produccion/}+${url}" class="btn btn-primary btn-block">
+                            Volver
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <script>
+            $(function () {
+                $('.example-popover').popover({
+                  container: 'body'
+                })
+              })
+            </script>
+
+
+    </body>
+</html>

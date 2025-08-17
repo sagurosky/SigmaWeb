@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="plantillas/plantilla::head">
+        <meta charset="UTF-8"/>
+    </head>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+   <!-- <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">-->
+
+
+        <!-- Bootstrap CSS -->
+        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+            <!-- jQuery -->
+            <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+            <!-- jQuery UI CSS -->
+            <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+                <!-- jQuery UI JS -->
+                <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+
+                    <style>
+
+                        /* CSS personalizado para el popover */
+                        .popover-body {
+                            color: #fff; /* Cambiar el color del texto */
+                            background-color: #007bff; /* Cambiar el fondo */
+                        }
+
+                        .popover {
+                            max-width: 500px; /* Ensanchar el popover */
+                        }
+                    </style>
+
+                    <body>
+                        <!--para que funcione el popover-->
+                        <script>
+
+//para cerrar el popover al hacer clic fuera
+                            $(function () {
+                                $('[data-toggle="popover"]').popover({
+                                    trigger: 'focus' // Permitir cerrar al hacer clic fuera
+                                });
+                            });
+
+                        </script>
+                        <header th:replace="plantillas/plantilla::header"></header>
+                        <div th:replace="plantillas/plantilla::menu"></div>
+                         <div th:replace="plantillas/plantilla::notificaciones"></div>
+                       
+
+                        <body>
+                            <div class="container mt-5">
+                                <h2 class="mb-4">Perfil Técnico</h2>
+                               <form th:action="@{/modificarTecnico}" method="post" th:object="${tecnico}" enctype="multipart/form-data" class="was-validated">
+                                    <input type="hidden"  id="id"th:field="*{id}"  >
+
+
+                                <h4 class="mb-4">Datos personales</h4>
+                                    
+                                    <div class="form-row">
+                                        <label for="acercaDeMi">Acerca de mi</label>&nbsp;&nbsp;<span><i class="fa-regular fa-circle-question custom-popover" tabindex="0" data-container="body" data-trigger="focus"data-toggle="popover"data-placement="right" data-content="Breve carta de presentación, por ejemplo:'soy técnico mecánico con [número] años de experiencia en el mantenimiento y reparación de maquinaria industrial. Me especializo en el diagnóstico y solución de problemas mecánicos, así como en la implementación de programas de mantenimiento preventivo.' "></i></span>
+                                    </div> 
+
+                                    <textarea class="form-control" id="acercaDeMi" th:field="*{acercaDeMi}"></textarea>   
+
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label for="nombre">Nombre</label>
+                                            <input type="text" class="form-control" id="nombre"th:field="*{nombre}" required="true" >
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label for="apellido">Apellido</label>
+                                            <input type="text" class="form-control" id="apellido"th:field="*{apellido}"  required="true" >
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label for="fechaNacimiento">Fecha de Nacimiento</label>
+                                            <input type="date" class="form-control" id="fechaNacimiento"th:field="*{fechaNacimiento}" required="true">
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label for="especialidad">Edad</label>
+                                            <input type="text" class="form-control" id="edad"th:field="*{edad}" disabled="true">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label for="telefono">Teléfono</label>
+                                            <input type="text" class="form-control" id="telefono"th:field="*{telefono}">
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label for="email">Email</label>
+                                            <input type="email" class="form-control" id="email"th:field="*{email}">
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label for="direccion">Dirección</label>
+                                            <input type="text" class="form-control" id="direccion"th:field="*{direccion}">
+                                        </div>
+
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group col-md-12">
+                                            <label for="formacion">Formacion académica</label>&nbsp;&nbsp;<span><i class="fa-regular fa-circle-question custom-popover" tabindex="0" data-container="body" data-trigger="focus"data-toggle="popover"data-placement="right" data-content="Títulos obtenidos (secundario, terciario, universitario), cursos, especializaciones, etc' "></i></span>
+                                            <textarea class="form-control" id="formacion"th:field="*{formacionAcademica}" ></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group col-md-12">
+                                            <label for="experiencia">Experiencia laboral</label>&nbsp;&nbsp;<span><i class="fa-regular fa-circle-question custom-popover" tabindex="0" data-container="body" data-trigger="focus"data-toggle="popover"data-placement="right" data-content="Breve listado de empresa, cargo/responsabilidad y años de servicio en cada organización de la que fue parte"></i></span>
+                                            <textarea class="form-control" id="experiencia"th:field="*{experienciaLaboral}" ></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group col-md-12">
+                                            <label for="conocimientos">Conocimientos varios</label>&nbsp;&nbsp;<span><i class="fa-regular fa-circle-question custom-popover" tabindex="0" data-container="body" data-trigger="focus"data-toggle="popover"data-placement="right" data-content="Conocimientos no academicos, empíricos, habilidades varias"></i></span>
+                                            <textarea class="form-control" id="conocimientos" th:field="*{conocimientosVarios}"  ></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group col-md-12">
+                                            <label for="pasatiempos">Pasatiempos</label>&nbsp;&nbsp;<span><i class="fa-regular fa-circle-question custom-popover" tabindex="0" data-container="body" data-trigger="focus"data-toggle="popover"data-placement="right" data-content=""></i></span>
+                                            <textarea class="form-control" id="pasatiempos"  th:field="*{pasatiempos}" ></textarea>
+                                        </div>
+                                    </div>
+                                    <br>
+                                        <h4 class="mt-4">Datos empresa</h4>
+                                        <div class="form-row ">
+                                            <div class="form-group col-md-6">
+                                                <label for="nombre">Legajo</label>
+                                                <input type="text" class="form-control" id="nombre"th:field="*{legajo}" readonly="true">
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group col-md-6">
+                                                <label for="estado">Estado</label>
+                                                <!--<input type="text" class="form-control" id="estado">-->
+                                                <!--<select th:field="*{categoriaTecnica}" class="form-control" id="estado">-->
+                                                <select class="form-control" id="estado"th:field="*{estado}"required="true">
+                                                    <option value="0">Seleccione</option>
+                                                    <option value="activo">Activo</option>
+                                                    <option value="licencia médica">Licencia médica</option>
+                                                    <option value="vacaciones">Vacaciones</option>
+                                                    <option value="suspendido">Suspendido</option>
+                                                    <option value="baja">Baja</option>
+                                                </select>
+
+
+                                            </div>
+                                            <div class="form-group col-md-6">
+                                                <label for="especialidad">Especialidad</label>
+                                                <select  th:field="*{especialidad}"class="form-control"  required="true" >
+                                                    <option value="0">Seleccione</option>
+                                                    <option value="mecánica">Mecánica</option>
+                                                    <option value="hidráulica">Hidráulica</option>
+                                                    <option value="neumática">Neumática</option>
+                                                    <option value="electrónica">Electrónica</option>
+                                                    <option value="programación">Programación</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group col-md-6">
+                                                <label for="fechaIngresoPlanta">Fecha de ingreso a planta</label>
+                                                <input type="date" th:field="*{fechaIngresoPlanta}"class="form-control" id="fechaIngresoPlanta" required="true">
+                                            </div>
+                                            <div class="form-group col-md-6">
+                                                <label for="habilidades">Habilidades</label>&nbsp;&nbsp;<span><i class="fa-regular fa-circle-question custom-popover" tabindex="0" data-container="body" data-trigger="focus"data-toggle="popover"data-placement="right" data-content="Información breve relacionada al concepto del colaborador desde el punto de vista de sus superiores"></i></span>
+                                                 <input type="text" th:field="*{habilidades}"class="form-control" id="habilidades">
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group col-md-6">
+                                                <label for="promedioEvaluaciones">Promedio gral evaluaciones</label>&nbsp;&nbsp;<span><i class="fa-regular fa-circle-question custom-popover" tabindex="0" data-container="body" data-trigger="focus"data-toggle="popover"data-placement="right" data-content="Promedio obtenido del total de todas las calificaciones obtenidas por su desempeño"></i></span>
+                                                 <input type="text" th:field="*{promedioEvaluaciones}"class="form-control" id="promedioEvaluaciones" disabled='true'>
+                                            </div>
+
+
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group col-md-12">
+                                                <label for="proyectosDestacados">Proyectos destacados/Logros</label>&nbsp;&nbsp;<span><i class="fa-regular fa-circle-question custom-popover" tabindex="0" data-container="body" data-trigger="focus"data-toggle="popover"data-placement="right" data-content="Breve listado de los proyectos mas importantes o relevantes en los que el colaborador haya aportado"></i></span>
+                                                 <textarea class="form-control"th:field="*{proyectosDestacados}" id="proyectosDestacados"  ></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group col-md-12">
+                                                <label for="notasAdicionales">Notas adicionales</label>
+                                                <textarea class="form-control" th:field="*{notasAdicionales}" id="notasAdicionales"  ></textarea>
+                                            </div>
+                                        </div>
+
+
+
+
+                                        <h4 class="mt-4">Desempeño  <span><i class="fa-regular fa-circle-question custom-popover" tabindex="0" data-container="body" data-trigger="focus"data-toggle="popover"data-placement="right" data-content="Información obtenida del promedio de todos los resultados obtenidos en cada campo en las intervenciones en que estuvo involucrado el colaborador"></i></span></h4>
+                                        <br>
+                                            
+                                            
+                                            
+                                            
+                                         <div class="row">  
+                                            <div class="col-7">
+                                             
+                                            <div class="form-row">
+                                                <div class="form-group col-md-4">
+                                                    <label >Satisfacción cliente interno</label>
+                                                </div>
+                                                <div class="form-group col-md-4">
+                                                    <progress  th:value="${satisfaccion}"  max="10" id="satisfaccionClienteInterno"></progress>
+                                                    <span id="satisfaccionClienteInternoValor"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-row">
+                                                <div class="form-group col-md-4">
+                                                    <label >Predisposición para la tarea</label>
+                                                </div>
+                                                <div class="form-group col-md-4">
+                                                    <progress th:value="${predisposicion}" max="10" id="predisposicionParaLaTarea"></progress>
+                                                    <span id="predisposicionParaLaTareaValor"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-row">
+                                                <div class="form-group col-md-4">
+                                                    <label >Responsabilidad</label>
+                                                </div>
+                                                <div class="form-group col-md-4">
+                                                    <progress th:value="${responsabilidad}" max="10" id="responsabilidad"></progress>
+                                                    <span id="responsabilidadValor"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-row">
+                                                <div class="form-group col-md-4">
+                                                    <label >Cumplimiento normas de seguridad</label>
+                                                </div>
+                                                <div class="form-group col-md-4">
+                                                    <progress  th:value="${seguridad}" max="10" id="cumplimientoNormasSeguridad"></progress>
+                                                    <span id="cumplimientoNormasSeguridadValor"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-row">
+                                                <div class="form-group col-md-4">
+                                                    <label >Conocimiento gral de su trabajo</label>
+                                                </div>
+                                                <div class="form-group col-md-4">
+                                                    <progress th:value="${conocimiento}" max="10" id="nivelDeConocimiento"></progress>
+                                                    <span id="nivelDeConocimientoValor"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-row">
+                                                <div class="form-group col-md-4">
+                                                    <label >Trato recibido por cliente interno</label>
+                                                </div>
+                                                <div class="form-group col-md-4">
+                                                    <progress th:value="${trato}" max="10" id="tratoRecibidoPorCliente"></progress>
+                                                    <span id="tratoRecibidoPorClienteValor"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-row">
+                                                <div class="form-group col-md-4">
+                                                    <label >Prolijidad</label>
+                                                </div>
+                                                <div class="form-group col-md-4">
+                                                    <progress th:value="${prolijidad}" max="10" id="prolijidad"></progress>
+                                                    <span id="prolijidadValor"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-row">
+                                                <div class="form-group col-md-4">
+                                                    <label >Puntualidad</label>
+                                                </div>
+                                                <div class="form-group col-md-4">
+                                                    <progress th:value="${puntualidad}" max="10" id="puntualidad"></progress>
+                                                    <span id="puntualidadValor"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-row">
+                                                <div class="form-group col-md-4">
+                                                    <label >Eficiencia</label>
+                                                </div>
+                                                <div class="form-group col-md-4">
+                                                    <progress th:value="${eficiencia}" max="10" id="eficiencia"></progress>
+                                                    <span id="eficienciaValor"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-row">
+                                                <div class="form-group col-md-4">
+                                                    <label >Calidad de su trabajo</label>
+                                                </div>
+                                                <div class="form-group col-md-4">
+                                                    <progress th:value="${calidad}" max="10" id="calidadDelTrabajo"></progress>
+                                                    <span id="calidadDelTrabajoValor"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-row">
+                                                <div class="form-group col-md-4">
+                                                    <label >Comunicación</label>
+                                                </div>
+                                                <div class="form-group col-md-4">
+                                                    <progress th:value="${comunicacion}" max="10" id="comunicacion"></progress>
+                                                    <span id="comunicacionValor"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-row">
+                                                <div class="form-group col-md-4">
+                                                    <label >Trabajo en equipo</label>
+                                                </div>
+                                                <div class="form-group col-md-4">
+                                                    <progress th:value="${trabajoEnEquipo}" max="10" id="trabajoEnEquipo"></progress>
+                                                    <span id="trabajoEnEquipoValor"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-row">
+                                                <div class="form-group col-md-4">
+                                                    <label >Resolución de problemas</label>
+                                                </div>
+                                                <div class="form-group col-md-4">
+                                                    <progress th:value="${resolucion}" max="10" id="resolucionDeProblemas"></progress>
+                                                    <span id="resolucionDeProblemasValor"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-row">
+                                                <div class="form-group col-md-4">
+                                                    <label >Creatividad e innovación</label>
+                                                </div>
+                                                <div class="form-group col-md-4">
+                                                    <progress th:value="${creatividad}" max="10" id="creatividadEInnovacion"></progress>
+                                                    <span id="creatividadEInnovacionValor"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-row">
+                                                <div class="form-group col-md-4">
+                                                    <label >Iniciativa</label>
+                                                </div>
+                                                <div class="form-group col-md-4">
+                                                    <progress th:value="${iniciativa}" max="10" id="iniciativa"></progress>
+                                                    <span id="iniciativaValor"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-row">
+                                                <div class="form-group col-md-4">
+                                                    <label >Autogestión</label>
+                                                </div>
+                                                <div class="form-group col-md-4">
+                                                    <progress th:value="${autogestion}" max="10" id="autogestion"></progress>
+                                                    <span id="autogestionValor"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-row">
+                                                <div class="form-group col-md-4">
+                                                    <label >Formación continua</label>
+                                                </div>
+                                                <div class="form-group col-md-4">
+                                                    <progress th:value="${formacionContinua}" max="10" id="formacionContinua"></progress>
+                                                    <span id="formacionContinuaValor"></span>
+                                                </div>
+                                            </div>
+                                            </div>
+                                             <div class="col-5">
+                                                <div class="row"> 
+                                                    <div class="card card-body">
+                                                        <div class="row"><label>Preventivos realizados el último mes:</label></div>
+                                                        <div class="row" style="text-align: center; border:solid 1px royalblue; border-radius: 10px; display: inline-block;"><h5 th:text="${cantidadPreventivosMes}">5</h5></div>
+                                                    </div>    
+                                                </div>
+                                                <div class="row"> 
+                                                    <div class="card card-body">
+                                                        <div class="row"><label>Preventivos realizados el último año:</label></div>
+                                                        <div class="row"style="text-align: center; border:solid 1px royalblue; border-radius: 10px; display: inline-block;"><h5 th:text="${cantidadPreventivosAnio}">5</h5></div>
+                                                    </div>    
+                                                </div>
+                                                <div class="row"> 
+                                                    <div class="card card-body">
+                                                        <div class="row"><label>Preventivos realizados en total:</label></div>
+                                                        <div class="row" style="text-align: center; border:solid 1px royalblue; border-radius: 10px; display: inline-block;"><h5 th:text="${cantidadPreventivosTotal}">5</h5></div>
+                                                    </div>    
+                                                </div>
+                                                 <div class="row" style="height: 50px"> </div>
+                                                 <div class="row"> 
+                                                    <div class="card card-body">
+                                                        <div class="row"><label>Informes realizados el último mes:</label></div>
+                                                        <div class="row" style="text-align: center; border:solid 1px royalblue; border-radius: 10px; display: inline-block;"><h5 th:text="${cantidadInformesMes}">5</h5></div>
+                                                    </div>    
+                                                </div>
+                                                <div class="row"> 
+                                                    <div class="card card-body">
+                                                        <div class="row"><label>Informes realizados el último año:</label></div>
+                                                        <div class="row"style="text-align: center; border:solid 1px royalblue; border-radius: 10px; display: inline-block;"><h5 th:text="${cantidadInformesAnio}">5</h5></div>
+                                                    </div>    
+                                                </div>
+                                                <div class="row"> 
+                                                    <div class="card card-body">
+                                                        <div class="row"><label>Informes realizados en total:</label></div>
+                                                        <div class="row" style="text-align: center; border:solid 1px royalblue; border-radius: 10px; display: inline-block;"><h5 th:text="${cantidadInformesTotal}">5</h5></div>
+                                                    </div>    
+                                                </div>
+                                                <div class="row"> 
+                                                    <div class="card card-body">
+                                                        <div class="row"><label>Informes pendientes:</label></div>
+                                                        <div class="row" style="text-align: center; border:solid 1px royalblue; border-radius: 10px; display: inline-block;"><h5 th:text="${cantidadInformesPendientes}">5</h5></div>
+                                                    </div>    
+                                                </div>
+                                             </div>    
+                                         </div>
+                                            
+                                            
+                                            
+
+
+
+
+
+                                            <div class="row">
+                                                <div class="col">
+                                                     <button  th:if="${not #strings.contains(url, 'activo')}"
+                                                              sec:authorize="hasRole('ROLE_ADMIN')||hasRole('ROLE_TECNICO')"  type="submit" class="btn btn-primary">Guardar cambios</button>
+                                                </div>
+                                                    <div class="col-md-2" >
+
+                                                        <button onclick="history.back()" class="btn btn-primary btn-block">Volver</button>
+                                                    </div>
+
+                                               <!-- <div class="col">
+                                                    &lt;!&ndash; Botón para volver a la página anterior &ndash;&gt;
+                                                    <a th:href="${url}"class="btn btn-primary">Volver </a>
+                                                </div>-->
+                                            </div>
+                                            </form>
+                                            </div>
+
+
+                                            </body>
+
+                                            <script>
+
+
+
+
+
+
+
+                                                // Función para actualizar el valor del progress y el span
+                                                function actualizarProgress(id) {
+                                                    // Obtener el elemento del slider
+                                                    var slider = document.getElementById(id);
+
+                                                    // Obtener el elemento donde se mostrará el valor actual
+                                                    var output = document.getElementById(id + "Valor");
+
+                                                    // Mostrar el valor inicial al cargar la página
+                                                    output.innerHTML = slider.value;
+
+                                                    // Actualizar el valor mientras se mueve el slider
+                                                    //                        slider.oninput = function () {
+                                                    //                            output.innerHTML = this.value;
+                                                    //                        };
+                                                }
+
+                                                // Seleccionar todos los elementos de progreso y actualizarlos
+                                                document.addEventListener('DOMContentLoaded', function () {
+                                                    var progressElements = document.querySelectorAll('progress');
+
+                                                    progressElements.forEach(function (progressElement) {
+                                                        actualizarProgress(progressElement.id);
+                                                    });
+                                                });
+
+
+
+                                            </script>
+
+
+
+
+
+
+
+
+                                           
+
+                                            <!--//para que funcione el popover-->
+                                            <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+                                            </body>
+                                            </html>
