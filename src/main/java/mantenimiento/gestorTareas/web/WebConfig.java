@@ -63,10 +63,10 @@ public class WebConfig implements WebMvcConfigurer{
         WebMvcConfigurer.super.addResourceHandlers(registry); //To change body of generated methods, choose Tools | Templates.
 
             //DMS para AWS
-//        registry.addResourceHandler("/recursos/**").addResourceLocations("file:/media/sf_personal/sigmaweb/recursos/");
+        registry.addResourceHandler("/recursos/**").addResourceLocations("file:/media/sf_personal/sigmaweb/recursos/");
 
             //DMS docker
-            registry.addResourceHandler("/recursos/**").addResourceLocations("file:/app/recursos/");
+//            registry.addResourceHandler("/recursos/**").addResourceLocations("file:/app/recursos/");
 
 
 
