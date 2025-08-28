@@ -12,35 +12,49 @@ import org.springframework.data.repository.query.Param;
 public interface PreventivoService extends JpaRepository<Preventivo,Long> {
 
     List<Preventivo> findByTenantId(Long tenantId);
+    @Query("SELECT t FROM Preventivo t " +
+            "WHERE t.activo = :activo " +
+            "AND t.tenant.id = :tenantId")
+    public List<Preventivo> traerPorActivo(@Param("activo") Activo activo,
+                                           @Param("tenantId") Long tenantId);
 
-    @Query("SELECT t FROM Preventivo t  WHERE "
-            + "t.activo=?1 and t.tenant.id=:tenantId")
-    public List<Preventivo> traerPorActivo(Activo activo, @Param("tenantId") Long tenantId );
-    
-    @Query("SELECT t FROM Preventivo t  WHERE "
-            + "t.activo.nombreCamelCase=?1 and t.estado='validado' and t.tenant.id=:tenantId")
-    public List<Preventivo> traerPreventivosValidadosPorNombreActivo(String activo,@Param("tenantId") Long tenantId );
-    
-    @Query("SELECT t FROM Preventivo t  WHERE "
-            + " t.estado='pendiente' and t.tenant.id=:tenantId")
-    public List<Preventivo> traerPreventivosNoValidados( @Param("tenantId") Long tenantId);
+    @Query("SELECT t FROM Preventivo t " +
+            "WHERE t.activo.nombreCamelCase = :activoNombre " +
+            "AND t.estado = 'validado' " +
+            "AND t.tenant.id = :tenantId")
+    public List<Preventivo> traerPreventivosValidadosPorNombreActivo(@Param("activoNombre") String activo,
+                                                                     @Param("tenantId") Long tenantId);
 
-    @Query("SELECT t FROM Preventivo t  WHERE "
-            + " t.estado='cerrado'"
-            + " and t.frecuencia <> 'una vez' and t.tenant.id=:tenantId")
-    public List<Preventivo> traerPreventivosCerradosPeriodicos( @Param("tenantId") Long tenantId);
+    @Query("SELECT t FROM Preventivo t " +
+            "WHERE t.estado = 'pendiente' " +
+            "AND t.tenant.id = :tenantId")
+    public List<Preventivo> traerPreventivosNoValidados(@Param("tenantId") Long tenantId);
 
-     @Query("SELECT p FROM Preventivo p JOIN p.asignaciones a WHERE a.tecnico = ?1 and p.tenant.id=:tenantId and a.tenant.id=:tenantId")
-    public List<Preventivo> traerPorTecnico(Tecnico tecnico,@Param("tenantId") Long tenantId );
-    
-    
-    //pendiente
-    @Query("SELECT p FROM Preventivo p JOIN p.asignaciones a WHERE a.tecnico = ?1 AND "
-       + "p.fechaRealizado >= STR_TO_DATE(?2, '%Y-%m-%dT%H:%i:%s') AND "
-        + "p.fechaRealizado <= STR_TO_DATE(?3, '%Y-%m-%dT%H:%i:%s') and p.tenant.id=:tenantId and a.tenant.id=:tenantId")
-public List<Preventivo> traerPorTecnicoEnRangoDeFecha(Tecnico tecnico, String fechaInicio, String fechaFin,@Param("tenantId") Long tenantId);
-    
+    @Query("SELECT t FROM Preventivo t " +
+            "WHERE t.estado = 'cerrado' " +
+            "AND t.frecuencia <> 'una vez' " +
+            "AND t.tenant.id = :tenantId")
+    public List<Preventivo> traerPreventivosCerradosPeriodicos(@Param("tenantId") Long tenantId);
 
+    @Query("SELECT p FROM Preventivo p " +
+            "JOIN p.asignaciones a " +
+            "WHERE a.tecnico = :tecnico " +
+            "AND p.tenant.id = :tenantId " +
+            "AND a.tenant.id = :tenantId")
+    public List<Preventivo> traerPorTecnico(@Param("tecnico") Tecnico tecnico,
+                                            @Param("tenantId") Long tenantId);
+
+    @Query("SELECT p FROM Preventivo p " +
+            "JOIN p.asignaciones a " +
+            "WHERE a.tecnico = :tecnico " +
+            "AND p.fechaRealizado >= STR_TO_DATE(:fechaInicio, '%Y-%m-%dT%H:%i:%s') " +
+            "AND p.fechaRealizado <= STR_TO_DATE(:fechaFin, '%Y-%m-%dT%H:%i:%s') " +
+            "AND p.tenant.id = :tenantId " +
+            "AND a.tenant.id = :tenantId")
+    public List<Preventivo> traerPorTecnicoEnRangoDeFecha(@Param("tecnico") Tecnico tecnico,
+                                                          @Param("fechaInicio") String fechaInicio,
+                                                          @Param("fechaFin") String fechaFin,
+                                                          @Param("tenantId") Long tenantId);
 
 
 }

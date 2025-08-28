@@ -14,24 +14,32 @@ import org.springframework.transaction.annotation.Transactional;
 public interface TecnicoService extends JpaRepository<Tecnico,Long> {
 
     List<Tecnico> findByTenantId(Long tenantId);
-    
-    @Query("SELECT t FROM Tecnico t  WHERE "
-        + "t.usuario =?1 and"+
-            "t.tenant.id = :tenantId")
-    public Tecnico traerPorUsuario(Usuario usuario, @Param("tenantId") Long tenantId);
+
+    @Query("SELECT t FROM Tecnico t " +
+            "WHERE t.usuario = :usuario " +
+            "AND t.tenant.id = :tenantId")
+    public Tecnico traerPorUsuario(@Param("usuario") Usuario usuario,
+                                   @Param("tenantId") Long tenantId);
+
 
     @Query("SELECT t FROM Tecnico t  WHERE "
         + "t.nombre !=null and t.tenant.id = :tenantId")
     public List<Tecnico> traerHabilitados( @Param("tenantId") Long tenantId );
     
     //trae los tecnicos que estan interviniendo en el activo enviado por parametro
-      @Query("SELECT t FROM Tecnico t JOIN t.asignaciones a WHERE a.tarea.estado='enProceso' AND a.tarea.activo= ?1 and t.tenant.id = :tenantId and a.tenant.id=:tenant.id")
-    public List<Tecnico> traerPorTareaEnActivo(Activo activo,@Param("tenantId") Long tenantId );
+    @Query("SELECT t FROM Tecnico t JOIN t.asignaciones a " +
+            "WHERE a.tarea.estado = 'enProceso' " +
+            "AND a.tarea.activo = :activo " +
+            "AND t.tenant.id = :tenantId " +
+            "AND a.tenant.id = :tenantId")
+    List<Tecnico> traerPorTareaEnActivo(@Param("activo") Activo activo,
+                                        @Param("tenantId") Long tenantId);
 
 
-  
-    
-    
-    
-    
+
+
+
+
+
+
 }

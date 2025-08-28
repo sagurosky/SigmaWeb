@@ -11,7 +11,7 @@ public interface ProduccionService extends JpaRepository<Produccion,Long> {
     List<Produccion> findByTenantId(Long tenantId);
      @Query("SELECT p FROM Produccion p WHERE p.estado='abierta' and p.tenant.id=:tenantId")
     List<Produccion> traerAbiertas(@Param("tenantId") Long tenantId);
-     @Query("SELECT p FROM Produccion p WHERE p.estado='cerrada' and p.tenant.id=:tenantId\"")
+     @Query("SELECT p FROM Produccion p WHERE p.estado='cerrada' and p.tenant.id=:tenantId")
     List<Produccion> traerCerradas(@Param("tenantId") Long tenantId);
 
 

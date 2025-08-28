@@ -339,7 +339,7 @@ public class Controlador {
        String svgContent = "";
        if (Files.exists(carpeta) && Files.isDirectory(carpeta)) {
            List<Path> archivosSvg = Files.list(carpeta)
-                   .filter(p -> p.toString().endsWith(".svg"))
+                   .filter(p -> p.toString().endsWith(TenantContext.getTenantId()+".svg"))
                    .sorted(Comparator.comparingLong(p -> p.toFile().lastModified()))
                    .collect(Collectors.toList());
 
@@ -727,7 +727,7 @@ public class Controlador {
                  carpetaLayouts = Paths.get("/media/sf_personal/sigmaweb/recursos/layouts/");
             }else
             {
-                svgDestino = Paths.get("/app/recursos/layouts/" + nombreLayout + TenantContext.getTenantId()+".svg");
+                svgDestino = Paths.get("/app/recursos/layouts/" + nombreLayout + TenantContext.getTenantId() +".svg");
                  carpetaLayouts = Paths.get("/app/recursos/layouts/");
             }
 
@@ -764,7 +764,7 @@ log.info(""+svgDestino);
                 if ("svg".equals(entrada.getKey())) {
                     continue; // Saltar la clave "svg" para que no se procese como imagen
                 }
-                String nombreArchivo = toCamelCase(entrada.getKey()) + ".jpg"; // Mantiene el nombre correcto (idName)
+                String nombreArchivo = toCamelCase(entrada.getKey()) + TenantContext.getTenantId()+".jpg"; // Mantiene el nombre correcto (idName)
                 MultipartFile archivo = entrada.getValue();
 
                 // Ajuste para evitar errores en la ruta
