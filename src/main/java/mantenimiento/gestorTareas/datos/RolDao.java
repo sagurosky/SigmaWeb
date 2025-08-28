@@ -7,8 +7,6 @@ import mantenimiento.gestorTareas.dominio.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 public interface RolDao extends JpaRepository<Rol,Long>{
-
-    
-    
+    List<Rol> findByTenantId(Long tenantId);
 }
 

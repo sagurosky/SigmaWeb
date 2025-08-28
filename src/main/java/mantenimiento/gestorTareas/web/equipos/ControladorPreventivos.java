@@ -74,7 +74,7 @@ public class ControladorPreventivos {
 
         model.addAttribute("url", url);
         model.addAttribute("activo", activoSeleccionado);
-        model.addAttribute("preventivos", preventivoService.traerPorActivo(activoSeleccionado));
+        model.addAttribute("preventivos", preventivoService.traerPorActivo(activoSeleccionado,TenantContext.getTenantId()));
         model.addAttribute("todosLosTecnicos", tecnicoService.findAll());
         model.addAttribute("cantidadActivosDetenidos", activoService.findByStatus("detenida").size());
 
@@ -82,7 +82,7 @@ public class ControladorPreventivos {
         model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
 
         //DMS para el menú
-        List<Tecnico> tecnicosFiltrados = tecnicoService.traerHabilitados().stream()
+        List<Tecnico> tecnicosFiltrados = tecnicoService.traerHabilitados(TenantContext.getTenantId()).stream()
                 .filter(t -> t.getUsuario().getRoles().get(0).getNombre().equals("ROLE_TECNICO"))
                 .collect(Collectors.toList());
         model.addAttribute("tecnicos", tecnicosFiltrados);

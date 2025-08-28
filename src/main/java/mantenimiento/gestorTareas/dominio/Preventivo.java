@@ -14,6 +14,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 @Data
 @Entity
+@EntityListeners(TenantEntityListener.class)
 
 
 public class Preventivo implements Serializable {
@@ -23,6 +24,10 @@ public class Preventivo implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tenant_id", nullable = true)
+    private Tenant tenant;
+
     private String descripcion;
     private String detalle;
     private String categoria;

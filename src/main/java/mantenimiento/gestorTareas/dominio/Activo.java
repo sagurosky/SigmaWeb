@@ -15,6 +15,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 @Data
 @Entity
 @Table(name = "activo")
+@EntityListeners(TenantEntityListener.class)
 
 public class Activo implements Serializable {
 
@@ -23,6 +24,10 @@ public class Activo implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tenant_id", nullable = true)
+    private Tenant tenant;
 //    @NotEmpty
     private String nombre;//como es conocida
     private String nombreCamelCase;//como es conocida

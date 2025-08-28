@@ -15,6 +15,7 @@ import mantenimiento.gestorTareas.util.TiempoUtils;
 @Data
 @Entity
 @Table(name = "tecnico")
+@EntityListeners(TenantEntityListener.class)
 
 public class Tecnico implements Serializable {
 
@@ -23,7 +24,11 @@ public class Tecnico implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
-    
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tenant_id", nullable = true)
+    private Tenant tenant;
+
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "usuario")
     private Usuario usuario;

@@ -20,41 +20,47 @@ public interface TareaService extends JpaRepository<Tarea,Long> {
             "t.estado != 'disponible' AND " +
             "t.estado != 'finDisponible' AND " +
             "t.afectaProduccion = 'si' AND " +
-            "t.momentoDetencion BETWEEN :fechaInicio AND :fechaFin")
-
+            "t.momentoDetencion BETWEEN :fechaInicio AND :fechaFin AND " +
+            "t.tenant.id = :tenantId")
 
     public List<Tarea> traerNoCerradas(@Param("fechaInicio") LocalDateTime fechaInicio,
-                                       @Param("fechaFin") LocalDateTime fechaFin);
+                                       @Param("fechaFin") LocalDateTime fechaFin,
+                                       @Param("tenantId") Long tenantId);
 
     @Query("SELECT t FROM Tarea t WHERE " +
             "t.estado = 'cerrada' AND " +
             "t.afectaProduccion = 'si' AND " +
-            "t.momentoDetencion BETWEEN :fechaInicio AND :fechaFin")
+            "t.momentoDetencion BETWEEN :fechaInicio AND :fechaFin AND " +
+            "t.tenant.id = :tenantId")
     List<Tarea> traerCerradas(@Param("fechaInicio") LocalDateTime fechaInicio,
-                              @Param("fechaFin") LocalDateTime fechaFin);
+                              @Param("fechaFin") LocalDateTime fechaFin,
+                              @Param("tenantId") Long tenantId);
 
 
     @Query("SELECT t FROM Tarea t WHERE " +
             "t.estado = 'cerrada' AND " +
             "t.activo = :activo AND " +
-            "t.momentoDetencion BETWEEN :fechaInicio AND :fechaFin")
-
+            "t.momentoDetencion BETWEEN :fechaInicio AND :fechaFin AND " +
+            "t.tenant.id = :tenantId")
     List<Tarea> traerCerradasPorActivo(@Param("activo") Activo activo,
                                        @Param("fechaInicio") LocalDateTime fechaInicio,
-                                       @Param("fechaFin") LocalDateTime fechaFin);
+                                       @Param("fechaFin") LocalDateTime fechaFin,
+                                       @Param("tenantId") Long tenantId);
 
     @Query("SELECT t FROM Tarea t WHERE " +
             "t.estado = 'disponible' AND " +
-            "t.activo = :activo " +
+            "t.activo = :activo AND " +
+            "t.tenant.id = :tenantId " +
             "ORDER BY t.momentoDetencion DESC")
-    List<Tarea> traerDisponiblePorActivo(@Param("activo") Activo activo);
+    List<Tarea> traerDisponiblePorActivo(@Param("activo") Activo activo,
+                                         @Param("tenantId") Long tenantId);
 
-    @Query("SELECT t FROM Tarea t  WHERE "
-            + "t.estado !='cerrada' and "
-            + "t.estado != 'disponible' AND " 
-            + "t.estado != 'finDisponible' AND "
-            + "t.activo=?1")
-    public List<Tarea> traerNoCerradaPorActivo(Activo activo );
+    @Query("SELECT t FROM Tarea t WHERE " +
+            "t.estado <> 'cerrada' AND " +
+            "t.estado <> 'disponible' AND " +
+            "t.estado <> 'finDisponible' AND " +
+            "t.activo = ?1 AND t.tenant.id = ?2")
+    List<Tarea> traerNoCerradaPorActivo(Activo activo, Long tenantId);
 
 
 
@@ -124,9 +130,10 @@ FROM tareas
 WHERE
   momento_liberacion > :inicio
   AND momento_detencion < :fin
-  and tareas.activo =:activo
+   AND tareas.activo = :activo
+  AND tareas.tenant_id = :tenantId
 """, nativeQuery = true)
-    Map<String, Object> calcularIndicadores(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin, @Param("activo") Activo activo);
+    Map<String, Object> calcularIndicadores(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin, @Param("activo") Activo activo,  @Param("tenantId") Long tenantId);
 
 
 
@@ -136,51 +143,63 @@ WHERE
 
 
 
-    @Query("SELECT t FROM Tarea t  WHERE "
-            + "t.estado='cerrada' AND "
-            + "t.departamentoResponsable='mantenimiento' AND "
-            + "t.activo=?1 AND "
-            + "t.afectaProduccion='si' AND "
-            + "t.momentoDetencion >= STR_TO_DATE(?2, '%Y-%m-%dT%H:%i:%s') AND "
-            + "t.momentoDetencion <= STR_TO_DATE(?3, '%Y-%m-%dT%H:%i:%s')")
-    public List<Tarea> traerCerradasPorActivoEnRangoDeFecha(Activo activo, String fechaInicio, String fechaFin);
-
-    @Query("SELECT t FROM Tarea t  WHERE "
-            + "(t.estado='cerrada' or "
-            + "t.estado='finDisponible') AND "
-            + "(t.departamentoResponsable !='mantenimiento' OR "
-            + " t.departamentoResponsable is null) AND "
-            + "t.activo=?1 AND "
-            + "t.momentoDetencion >= STR_TO_DATE(?2, '%Y-%m-%dT%H:%i:%s') AND "
-            + "t.momentoDetencion <= STR_TO_DATE(?3, '%Y-%m-%dT%H:%i:%s')")
-    public List<Tarea> traerNoMantenimientoPorActivoEnRangoDeFecha(Activo activo, String fechaInicio, String fechaFin);
+    @Query("SELECT t FROM Tarea t WHERE " +
+            "t.estado = 'cerrada' AND " +
+            "t.departamentoResponsable = 'mantenimiento' AND " +
+            "t.activo = ?1 AND " +
+            "t.momentoDetencion >= STR_TO_DATE(?2, '%Y-%m-%dT%H:%i:%s') AND " +
+            "t.momentoDetencion <= STR_TO_DATE(?3, '%Y-%m-%dT%H:%i:%s') AND " +
+            "t.tenant.id = ?4")
+    List<Tarea> traerCerradasPorActivoEnRangoDeFecha(Activo activo, String fechaInicio, String fechaFin, Long tenantId);
 
 
-    
+    @Query("SELECT t FROM Tarea t WHERE " +
+            "(t.estado = 'cerrada' OR t.estado = 'finDisponible') AND " +
+            "(t.departamentoResponsable <> 'mantenimiento' OR t.departamentoResponsable IS NULL) AND " +
+            "t.activo = ?1 AND " +
+            "t.momentoDetencion >= STR_TO_DATE(?2, '%Y-%m-%dT%H:%i:%s') AND " +
+            "t.momentoDetencion <= STR_TO_DATE(?3, '%Y-%m-%dT%H:%i:%s') AND " +
+            "t.tenant.id = ?4")
+    List<Tarea> traerNoMantenimientoPorActivoEnRangoDeFecha(Activo activo, String fechaInicio, String fechaFin, Long tenantId);
 
-    
-    
-    @Query("SELECT t FROM Tarea t  WHERE "
-            + "t.activo.nombre LIKE CONCAT('%', ?1, '%') AND "
-   + "t.momentoDetencion >= STR_TO_DATE(?2, '%Y-%m-%dT%H:%i:%s') AND "
-        + "t.momentoDetencion <= STR_TO_DATE(?3, '%Y-%m-%dT%H:%i:%s')")
-public List<Tarea> traerPorLineaEnRangoDeFecha(String linea, String fechaInicio, String fechaFin);
-    
-      @Query("SELECT t FROM Tarea t JOIN t.asignaciones a WHERE a.tecnico = :tecnico AND t.estado = 'cerrada' and t.momentoDetencion BETWEEN :fechaInicio AND :fechaFin")
-    public List<Tarea> traerPorTecnico(@Param("tecnico") Tecnico tecnico,
-                                       @Param("fechaInicio") LocalDateTime fechaInicio,
-                                       @Param("fechaFin") LocalDateTime fechaFin);
-     
-    @Query("SELECT t FROM Tarea t JOIN t.asignaciones a WHERE a.tecnico = :tecnico AND t.estado = 'cerrada' and  t.informe.estadoInforme= :estado and t.momentoDetencion BETWEEN :fechaInicio AND :fechaFin")
-    public List<Tarea> traerPorTecnicoYEstadoInforme(@Param("tecnico") Tecnico tecnico,
-                                                     @Param("estado") String estado,
-                                                     @Param("fechaInicio") LocalDateTime fechaInicio,
-                                                     @Param("fechaFin") LocalDateTime fechaFin );
-  
-    @Query("SELECT t FROM Tarea t  WHERE  t.estado = 'cerrada' and  t.informe.estadoInforme=:estado and t.momentoDetencion BETWEEN :fechaInicio AND :fechaFin")
-    public List<Tarea> traerPorEstadoInforme(@Param("estado") String estado,
-                                             @Param("fechaInicio") LocalDateTime fechaInicio,
-                                             @Param("fechaFin") LocalDateTime fechaFin  );
+
+
+
+
+    @Query("SELECT t FROM Tarea t WHERE " +
+            "t.activo.nombre LIKE CONCAT('%', ?1, '%') AND " +
+            "t.momentoDetencion >= STR_TO_DATE(?2, '%Y-%m-%dT%H:%i:%s') AND " +
+            "t.momentoDetencion <= STR_TO_DATE(?3, '%Y-%m-%dT%H:%i:%s') AND " +
+            "t.tenant.id = ?4")
+    List<Tarea> traerPorLineaEnRangoDeFecha(String linea, String fechaInicio, String fechaFin, Long tenantId);
+
+
+    @Query("SELECT t FROM Tarea t JOIN t.asignaciones a WHERE " +
+            "a.tecnico = :tecnico AND t.estado = 'cerrada' AND " +
+            "t.momentoDetencion BETWEEN :fechaInicio AND :fechaFin AND t.tenant.id = :tenantId")
+    List<Tarea> traerPorTecnico(@Param("tecnico") Tecnico tecnico,
+                                @Param("fechaInicio") LocalDateTime fechaInicio,
+                                @Param("fechaFin") LocalDateTime fechaFin,
+                                @Param("tenantId") Long tenantId);
+
+    @Query("SELECT t FROM Tarea t JOIN t.asignaciones a WHERE " +
+            "a.tecnico = :tecnico AND t.estado = 'cerrada' AND " +
+            "t.informe.estadoInforme = :estado AND " +
+            "t.momentoDetencion BETWEEN :fechaInicio AND :fechaFin AND t.tenant.id = :tenantId")
+    List<Tarea> traerPorTecnicoYEstadoInforme(@Param("tecnico") Tecnico tecnico,
+                                              @Param("estado") String estado,
+                                              @Param("fechaInicio") LocalDateTime fechaInicio,
+                                              @Param("fechaFin") LocalDateTime fechaFin,
+                                              @Param("tenantId") Long tenantId);
+
+    @Query("SELECT t FROM Tarea t WHERE " +
+            "t.estado = 'cerrada' AND " +
+            "t.informe.estadoInforme = :estado AND " +
+            "t.momentoDetencion BETWEEN :fechaInicio AND :fechaFin AND t.tenant.id = :tenantId")
+    List<Tarea> traerPorEstadoInforme(@Param("estado") String estado,
+                                      @Param("fechaInicio") LocalDateTime fechaInicio,
+                                      @Param("fechaFin") LocalDateTime fechaFin,
+                                      @Param("tenantId") Long tenantId);
 
 
 }

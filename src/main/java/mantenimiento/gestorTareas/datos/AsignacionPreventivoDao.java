@@ -9,9 +9,10 @@ import java.util.List;
 
 @Repository
 public interface AsignacionPreventivoDao extends JpaRepository<AsignacionPreventivo, Long> {
+    List<AsignacionPreventivo> findByTenantId(Long tenantId);
 
-    List<AsignacionPreventivo> findByPreventivoId(Long preventivoId);
+    List<AsignacionPreventivo> findByPreventivoIdAndTenantId(Long preventivoId, Long tenantId);
 
-    void deleteByPreventivoId(Long preventivoId); // opcional si querés eliminar directamente
+    void deleteByPreventivoIdAndTenantId(Long preventivoId, Long tenantId);
 }
 

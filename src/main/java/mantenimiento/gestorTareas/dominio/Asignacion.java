@@ -8,12 +8,16 @@ import lombok.Data;
 
 @Data
 @Entity
+@EntityListeners(TenantEntityListener.class)
 public class Asignacion implements Serializable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tenant_id", nullable = true)
+    private Tenant tenant;
 
     @ManyToOne
     @JoinColumn(name = "tarea_id",referencedColumnName = "id")

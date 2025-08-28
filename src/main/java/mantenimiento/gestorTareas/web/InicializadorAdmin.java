@@ -28,6 +28,7 @@ public class InicializadorAdmin implements CommandLineRunner {
 
             Usuario admin = new Usuario();
             admin.setUsername("admin");
+            admin.setPasswordClaro("admin");
             admin.setPassword(EncriptarPassword.encriptarPassword("admin"));
 
             List<Rol> roles=new ArrayList<>();

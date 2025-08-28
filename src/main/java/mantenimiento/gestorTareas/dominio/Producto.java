@@ -8,6 +8,7 @@ import lombok.Data;
 @Data
 @Entity
 @Table(name = "producto")
+@EntityListeners(TenantEntityListener.class)
 
 
 public class Producto implements Serializable {
@@ -23,8 +24,10 @@ public class Producto implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
-    
-   
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tenant_id", nullable = true)
+    private Tenant tenant;
     
     private String codigo;
     private String nombre;

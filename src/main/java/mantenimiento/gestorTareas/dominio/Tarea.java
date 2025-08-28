@@ -10,6 +10,7 @@ import lombok.Data;
 @Data
 @Entity
 @Table(name = "tareas")
+@EntityListeners(TenantEntityListener.class)
 public class Tarea implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -17,6 +18,11 @@ public class Tarea implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tenant_id", nullable = true)
+    private Tenant tenant;
+
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "activo")
     private Activo activo;

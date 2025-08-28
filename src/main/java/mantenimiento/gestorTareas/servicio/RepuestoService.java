@@ -12,8 +12,5 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
 public interface RepuestoService extends JpaRepository<Repuesto,Long> {
-    
- 
-    
-    
+    List<Repuesto> findByTenantId(Long tenantId);
 }

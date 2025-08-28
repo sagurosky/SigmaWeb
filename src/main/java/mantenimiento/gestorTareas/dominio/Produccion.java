@@ -8,7 +8,7 @@ import lombok.Data;
 @Data
 @Entity
 @Table(name = "produccion")
-
+@EntityListeners(TenantEntityListener.class)
 
 public class Produccion implements Serializable {
 
@@ -28,7 +28,11 @@ public class Produccion implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
-    
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tenant_id", nullable = true)
+    private Tenant tenant;
+
     private LocalDateTime inicio;
     private LocalDateTime fin;
     
