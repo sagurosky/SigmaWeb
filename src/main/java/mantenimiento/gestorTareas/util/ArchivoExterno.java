@@ -74,7 +74,7 @@ public class ArchivoExterno {
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(layoutDir, "*.svg")) {
             for (Path entry : stream) {
                 String fileName = entry.getFileName().toString();
-                String suffix = TenantContext.getTenantId() + ".svg";
+                String suffix = "Tenant"+TenantContext.getTenantId() + ".svg";
 
                 if (fileName.endsWith(suffix)) {
                     // le saco el sufijo tenantId.svg para dejar el nombre original

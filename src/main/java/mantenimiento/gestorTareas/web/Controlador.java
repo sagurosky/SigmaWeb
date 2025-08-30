@@ -166,9 +166,10 @@ public class Controlador {
         try {
 
             Path path=null;
+            nombre=nombre.substring(0,nombre.length()-4);//DMS le quito el .svg
             if(ArchivoExterno.getString("nube").equals("si"))
             {
-                 path = Paths.get("/media/sf_personal/sigmaweb/recursos/layouts/", nombre);
+                 path = Paths.get("/media/sf_personal/sigmaweb/recursos/layouts/", nombre+"Tenant"+TenantContext.getTenantId()+".svg");
             }else
             {
                 path = Paths.get("/app/recursos/layouts/",nombre);
@@ -339,7 +340,7 @@ public class Controlador {
        String svgContent = "";
        if (Files.exists(carpeta) && Files.isDirectory(carpeta)) {
            List<Path> archivosSvg = Files.list(carpeta)
-                   .filter(p -> p.toString().endsWith(TenantContext.getTenantId()+".svg"))
+                   .filter(p -> p.toString().endsWith("Tenant"+TenantContext.getTenantId()+".svg"))
                    .sorted(Comparator.comparingLong(p -> p.toFile().lastModified()))
                    .collect(Collectors.toList());
 
@@ -368,9 +369,10 @@ public class Controlador {
         {
             carpeta = Path.of("/app/recursos/layouts/");
         }
-        Path archivo = carpeta.resolve(nombreArchivo);
-        String svgContent;
+        nombreArchivo=nombreArchivo.substring( 0,nombreArchivo.length()-4 );
 
+        Path archivo = carpeta.resolve(nombreArchivo+"Tenant"+TenantContext.getTenantId()+".svg");
+        String svgContent;
         if (Files.exists(archivo)) {
             svgContent = Files.readString(archivo);
         } else {
@@ -723,16 +725,15 @@ public class Controlador {
             Path carpetaLayouts=null;
             if(ArchivoExterno.getString("nube").equals("si"))
             {
-                svgDestino = Paths.get("/media/sf_personal/sigmaweb/recursos/layouts/" + nombreLayout + TenantContext.getTenantId()+".svg");
+                svgDestino = Paths.get("/media/sf_personal/sigmaweb/recursos/layouts/" + nombreLayout +"Tenant"+ TenantContext.getTenantId()+".svg");
                  carpetaLayouts = Paths.get("/media/sf_personal/sigmaweb/recursos/layouts/");
             }else
             {
-                svgDestino = Paths.get("/app/recursos/layouts/" + nombreLayout + TenantContext.getTenantId() +".svg");
+                svgDestino = Paths.get("/app/recursos/layouts/" + nombreLayout + "Tenant"+TenantContext.getTenantId() +".svg");
                  carpetaLayouts = Paths.get("/app/recursos/layouts/");
             }
 
 
-log.info(""+svgDestino);
 
             // Crear carpeta layouts si no existe
             if (!Files.exists(carpetaLayouts)) {
@@ -764,7 +765,7 @@ log.info(""+svgDestino);
                 if ("svg".equals(entrada.getKey())) {
                     continue; // Saltar la clave "svg" para que no se procese como imagen
                 }
-                String nombreArchivo = toCamelCase(entrada.getKey()) + TenantContext.getTenantId()+".jpg"; // Mantiene el nombre correcto (idName)
+                String nombreArchivo = toCamelCase(entrada.getKey()) +"Tenant"+ TenantContext.getTenantId()+".jpg"; // Mantiene el nombre correcto (idName)
                 MultipartFile archivo = entrada.getValue();
 
                 // Ajuste para evitar errores en la ruta

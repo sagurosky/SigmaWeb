@@ -3,14 +3,16 @@ package mantenimiento.gestorTareas.dominio;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import javax.persistence.*;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
 @Data
 @Entity
 @Table(name = "produccion")
 @EntityListeners(TenantEntityListener.class)
-
-public class Produccion implements Serializable {
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+public class Produccion implements Serializable, TenantSupport {
 
 
     public static final String LINEA_1="adulto2";
@@ -29,7 +31,7 @@ public class Produccion implements Serializable {
     @Column(name = "id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "tenant_id", nullable = true)
     private Tenant tenant;
 

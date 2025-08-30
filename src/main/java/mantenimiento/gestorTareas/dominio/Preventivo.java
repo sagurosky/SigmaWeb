@@ -1,6 +1,7 @@
 package mantenimiento.gestorTareas.dominio;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import java.io.Serializable;
 import java.sql.Date;
@@ -15,16 +16,16 @@ import org.springframework.format.annotation.DateTimeFormat;
 @Data
 @Entity
 @EntityListeners(TenantEntityListener.class)
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 
-
-public class Preventivo implements Serializable {
+public class Preventivo implements Serializable, TenantSupport {
 
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "tenant_id", nullable = true)
     private Tenant tenant;
 

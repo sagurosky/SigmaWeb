@@ -79,8 +79,10 @@ public class ControladorEquipos {
     //planta 3
     @GetMapping("/activo/{nombre}")
     public String activo(Model model, @PathVariable String nombre) throws IOException {
+        log.info("#### "+nombre+" tenant "+TenantContext.getTenantId());
            Activo activo = activoService.findByName(nombre);
-            cargarModel(model, activo);
+//        log.info("#### "+activo!=null?activo.getNombre():"nada");
+           cargarModel(model, activo);
         model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
             return "equipos/activo";
         }
@@ -257,7 +259,7 @@ public class ControladorEquipos {
         model.addAttribute("cantidadNeumaticas", cantidadNeumaticas);
         model.addAttribute("cantidadElectronicas", cantidadElectronicas);
         model.addAttribute("cantidadProgramacion", cantidadProgramacion);
-        model.addAttribute("linkFoto", "/recursos/imagenes/" + activo.getNombreCamelCase().replace(" ", "") + ".jpg");
+        model.addAttribute("linkFoto", "/recursos/imagenes/" + activo.getNombreCamelCase().replace(" ", "") +"Tenant"+ TenantContext.getTenantId()+".jpg");
 
         //indicadores
         //mtbf = promedio de minutos en funcionamiento entre fallas, 

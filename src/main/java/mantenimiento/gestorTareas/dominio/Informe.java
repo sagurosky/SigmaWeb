@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import javax.persistence.*;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -21,7 +22,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 @Entity
 @Table(name = "informe")
 @EntityListeners(TenantEntityListener.class)
-public class Informe implements Serializable {
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+public class Informe implements Serializable, TenantSupport {
     
     private static final long serialVersionUID = 1L;
     
@@ -30,7 +32,7 @@ public class Informe implements Serializable {
     @Column(name = "id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "tenant_id", nullable = true)
     private Tenant tenant;
 
