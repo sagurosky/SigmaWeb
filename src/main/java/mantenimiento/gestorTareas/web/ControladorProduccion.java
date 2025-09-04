@@ -60,7 +60,7 @@ public class ControladorProduccion {
     @GetMapping("/produccion/{url}")
     public String cargaProduccion(@PathVariable("url") String url, Model model) {
         model.addAttribute("produccion", new Produccion());
-         model.addAttribute("productos",productoService.findAll());
+         model.addAttribute("productos",productoService.findAllByTenant());
 //        log.info("Productos: " + productos);
         List<String> lineas=Arrays.asList(Produccion.LINEA_1,
                                                   Produccion.LINEA_2,
@@ -86,7 +86,7 @@ public class ControladorProduccion {
                                                   Produccion.LINEA_4,
                                                   Produccion.LINEA_5);
         model.addAttribute("lineas",lineas);
-         model.addAttribute("productos",productoService.findAll());
+         model.addAttribute("productos",productoService.findAllByTenant());
         produccion.setEstado("abierta");
         produccion.setInicio(TiempoUtils.ahora());
         produccionService.save(produccion);
@@ -109,7 +109,7 @@ public class ControladorProduccion {
                                                   Produccion.LINEA_4,
                                                   Produccion.LINEA_5);
         model.addAttribute("lineas",lineas);
-         model.addAttribute("productos",productoService.findAll());
+         model.addAttribute("productos",productoService.findAllByTenant());
 //        log.info("id: "+produccion.getId());
         
         model.addAttribute("url",url);
@@ -131,7 +131,7 @@ public class ControladorProduccion {
                                                   Produccion.LINEA_4,
                                                   Produccion.LINEA_5);
         model.addAttribute("lineas",lineas);
-         model.addAttribute("productos",productoService.findAll());
+         model.addAttribute("productos",productoService.findAllByTenant());
 //        log.info("id: "+produccion.getId());
         
         model.addAttribute("url",url);
@@ -149,7 +149,7 @@ public class ControladorProduccion {
     }
      @GetMapping("/configuracionOrdenes/{url}")
     public String configuracionOrdenes(  @PathVariable("url") String url, Model model) {
-        model.addAttribute("productos",productoService.findAll());
+        model.addAttribute("productos",productoService.findAllByTenant());
        List<String> lineas=Arrays.asList(Produccion.LINEA_1,
                                                   Produccion.LINEA_2,
                                                   Produccion.LINEA_3,
@@ -174,7 +174,7 @@ public class ControladorProduccion {
                                                   Produccion.LINEA_4,
                                                   Produccion.LINEA_5);
         model.addAttribute("lineas",lineas);
-         model.addAttribute("productos",productoService.findAll());        
+         model.addAttribute("productos",productoService.findAllByTenant());
 //        produccionService.save(produccion);
         model.addAttribute("url",url);
          model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
@@ -198,7 +198,7 @@ public class ControladorProduccion {
                                                   Produccion.LINEA_5);
         model.addAttribute("lineas",lineas);
                model.addAttribute("producto",new Producto());
-         model.addAttribute("productos",productoService.findAll());
+         model.addAttribute("productos",productoService.findAllByTenant());
         return "redirect:/configuracionOrdenes/"+url;
     }
       @GetMapping("/eliminarProducto/{id}")
@@ -215,7 +215,7 @@ public class ControladorProduccion {
                                                   Produccion.LINEA_4,
                                                   Produccion.LINEA_5);
         model.addAttribute("lineas",lineas);
-         model.addAttribute("productos",productoService.findAll());
+         model.addAttribute("productos",productoService.findAllByTenant());
          model.addAttribute("producto",new Producto());
         
 //        produccionService.save(produccion);

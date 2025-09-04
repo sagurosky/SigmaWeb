@@ -133,7 +133,7 @@ public class ControladorInformes {
             model.addAttribute("tareasAprobados",tareasAprobados);
         }
         
-         model.addAttribute("todosLosTecnicos",tecnicoService.findAll());
+         model.addAttribute("todosLosTecnicos",tecnicoService.findAllByTenant());
         model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
         //DMS para el menú
         List<Tecnico> tecnicosFiltrados = tecnicoService.traerHabilitados(TenantContext.getTenantId()).stream()
@@ -152,7 +152,7 @@ public class ControladorInformes {
            Tarea tareaBD =tareaService.findById(id).orElse(null);
            model.addAttribute("tarea",tareaBD);
            model.addAttribute("informe",tareaBD.getInforme());
-           model.addAttribute("todosLosTecnicos",tecnicoService.findAll());
+           model.addAttribute("todosLosTecnicos",tecnicoService.findAllByTenant());
            
 
            // Calcular la diferencia
@@ -221,7 +221,7 @@ public class ControladorInformes {
            Tarea tareaBD =tareaService.findById(id).orElse(null);
            model.addAttribute("tarea",tareaBD);
            model.addAttribute("informe",tareaBD.getInforme());
-           model.addAttribute("todosLosTecnicos",tecnicoService.findAll());
+           model.addAttribute("todosLosTecnicos",tecnicoService.findAllByTenant());
            
 
            // Calcular la diferencia

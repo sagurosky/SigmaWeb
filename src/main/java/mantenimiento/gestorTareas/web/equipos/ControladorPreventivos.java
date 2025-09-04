@@ -75,7 +75,7 @@ public class ControladorPreventivos {
         model.addAttribute("url", url);
         model.addAttribute("activo", activoSeleccionado);
         model.addAttribute("preventivos", preventivoService.traerPorActivo(activoSeleccionado,TenantContext.getTenantId()));
-        model.addAttribute("todosLosTecnicos", tecnicoService.findAll());
+        model.addAttribute("todosLosTecnicos", tecnicoService.findAllByTenant());
         model.addAttribute("cantidadActivosDetenidos", activoService.findByStatus("detenida").size());
 
         model.addAttribute("preventivo", preventivoNuevo); // 👈 esto es lo que faltaba

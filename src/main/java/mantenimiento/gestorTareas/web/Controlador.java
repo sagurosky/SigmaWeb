@@ -146,7 +146,7 @@ public class Controlador {
         log.info("configuracion cargada ok");
         ArchivoExterno.recargar();
 
-    return "/";
+    return "redirect:/";
     }
     @GetMapping("/crearLayout")
     public String crearLayout(Model model) throws IOException {
@@ -196,7 +196,7 @@ public class Controlador {
         var tareas = tareaService.traerNoCerradas(TiempoUtils.haceAnios(1), TiempoUtils.ahora(),TenantContext.getTenantId());
         log.info("cantidad: "+tareas.size());
         model.addAttribute("tareas", tareas);
-        model.addAttribute("todosLosTecnicos", tecnicoService.findAll());
+        model.addAttribute("todosLosTecnicos", tecnicoService.findAllByTenant());
         model.addAttribute("cantidadActivosDetenidos", activoService.findByStatus("detenida").size());
 
 
@@ -217,7 +217,7 @@ public class Controlador {
     public String layout(Model model) throws IOException {
 
         //traigo todos los activos y mando a la vista variables de falla cuando estan detenidos o de cierre cuando estan liberadas y faltan cerrar
-        List<Activo> activos = activo.findAll();
+        List<Activo> activos = activo.findAllByTenant();
 
 
         for (Activo activo : activos) {
@@ -388,7 +388,7 @@ public class Controlador {
     }
 
     private void cargarDatosGenerales(Model model) {
-       List<Activo> activos = activo.findAll();
+       List<Activo> activos = activo.findAllByTenant();
        for (Activo activo : activos) {
            if (activo.getDisponibilidadHasta() != null && activo.getEstado().equals("disponible"))
                if (TiempoUtils.ahora().isAfter(activo.getDisponibilidadHasta())) {
@@ -438,7 +438,7 @@ public class Controlador {
         tarea.setActivo(activoSeleccionado);
         tarea.setAfectaProduccion("si");
         model.addAttribute("tarea", tarea);
-        model.addAttribute("activos", activo.findAll());
+        model.addAttribute("activos", activo.findAllByTenant());
         model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
         //DMS para el menú
         List<Tecnico> tecnicosFiltrados = tecnicoService.traerHabilitados(TenantContext.getTenantId()).stream()
@@ -506,11 +506,11 @@ public class Controlador {
 
     @GetMapping("/editar/{id}")
     public String editar(Tarea tarea, Model model) {
-        model.addAttribute("activos", activo.findAll());
+        model.addAttribute("activos", activo.findAllByTenant());
         model.addAttribute("estados", Arrays.asList("detenida", "operativa", "disponible"));
         model.addAttribute("estadosTareas", Arrays.asList("abierto", "enProceso", "liberada", "cerrada"));
         model.addAttribute("tarea", servicio.encontrar(tarea));
-        model.addAttribute("todosLosTecnicos", tecnicoService.findAll());
+        model.addAttribute("todosLosTecnicos", tecnicoService.findAllByTenant());
 //        model.addAttribute("asignacion", asignacionService.traerPorTarea(tarea));
 
         // Crear lista de IDs de técnicos asignados
@@ -695,7 +695,7 @@ public class Controlador {
     @GetMapping("/registroActivo/{id}")
     public String registroHistoricoActivo(Model model, Activo activo) {
 
-        List<Tarea> tareas = tareaService.traerCerradas(TiempoUtils.haceAnios(1), TiempoUtils.ahora(),TenantContext.getTenantId());
+//        List<Tarea> tareas = tareaService.traerCerradas(TiempoUtils.haceAnios(1), TiempoUtils.ahora(),TenantContext.getTenantId());
         model.addAttribute("url", Convertidor.aCamelCase(activoDao.findById(activo.getId()).orElse(null).getNombre()));
         model.addAttribute("tareas", tareaService.traerCerradasPorActivo(activo,TiempoUtils.haceAnios(1), TiempoUtils.ahora(),TenantContext.getTenantId()));
         model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());

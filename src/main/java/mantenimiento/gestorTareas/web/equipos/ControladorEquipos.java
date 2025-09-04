@@ -380,7 +380,7 @@ if(inicioDeActividades!=null)
         var tareasActivo = tareaService.traerNoCerradaPorActivo(activo,TenantContext.getTenantId());
         var tareaActivo=(tareasActivo.size()>0)?tareasActivo.get(0):null;
         model.addAttribute("tarea", tareaActivo);
-        model.addAttribute("todosLosTecnicos", tecnicoService.findAll());
+        model.addAttribute("todosLosTecnicos", tecnicoService.findAllByTenant());
         model.addAttribute("cantidadActivosDetenidos",activoService.findByStatus("detenida").size());
         model.addAttribute("promedios", Arrays.asList("1 anio","6 meses","3 meses","1 mes"));
 

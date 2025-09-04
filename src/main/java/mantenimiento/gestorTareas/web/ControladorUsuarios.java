@@ -329,7 +329,7 @@ public class ControladorUsuarios {
 
 //    private void limpiarRoles() {
 //        var roles = new ArrayList<Rol>();
-//        roles = (ArrayList<Rol>) rolDao.findAll();
+//        roles = (ArrayList<Rol>) rolDao.findAllByTenant();
 //
 //        for (Rol r : roles) {
 //            if (r.getIdUsuario() == null) {

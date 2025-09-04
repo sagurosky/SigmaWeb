@@ -5,12 +5,18 @@ import java.util.Optional;
 
 import mantenimiento.gestorTareas.dominio.Activo;
 import mantenimiento.gestorTareas.dominio.Tarea;
+import mantenimiento.gestorTareas.dominio.TenantContext;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ActivoDao extends JpaRepository<Activo, Long> {
+
+    default List<Activo> findAllByTenant() {
+        Long tenantId = TenantContext.getTenantId();
+        return findByTenantId(tenantId);
+    }
 
     List<Activo> findByTenantId(Long tenantId);
 

@@ -1,15 +1,19 @@
 package mantenimiento.gestorTareas.servicio;
 
 import java.util.List;
-import mantenimiento.gestorTareas.dominio.Activo;
-import mantenimiento.gestorTareas.dominio.Preventivo;
-import mantenimiento.gestorTareas.dominio.Tarea;
-import mantenimiento.gestorTareas.dominio.Tecnico;
+
+import mantenimiento.gestorTareas.dominio.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface PreventivoService extends JpaRepository<Preventivo,Long> {
+
+
+    default List<Preventivo> findAllByTenant() {
+        Long tenantId = TenantContext.getTenantId();
+        return findByTenantId(tenantId);
+    }
 
     List<Preventivo> findByTenantId(Long tenantId);
     @Query("SELECT t FROM Preventivo t " +

@@ -29,7 +29,7 @@ public class PreventivoScheduler {
             if (correspondeGenerarNuevo(p)) {
                 Preventivo nuevo = clonarPreventivo(p);
                 preventivoService.save(nuevo);
-                p.setEstado("cerrado y clonado");
+                p.setEstado("cerrado y reiniciado");
                 preventivoService.save(p);
             }
         }

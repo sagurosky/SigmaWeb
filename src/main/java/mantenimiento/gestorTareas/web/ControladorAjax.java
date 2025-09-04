@@ -100,7 +100,7 @@ public class ControladorAjax {
     @ResponseBody//con esta anotacion springboot no va a intentar abrir un htrml con el nombre de lo que pongo en return
     public Object actualizarEstados() {
          //traigo todos los activos y mando a la vista variables de falla cuando estan detenidos o de cierre cuando estan liberadas y faltan cerrar
-        List<Activo> activos = activo.findAll();
+        List<Activo> activos = activo.findAllByTenant();
         String aux = "";
 
       //  Map<String,String> model=new HashMap<>();

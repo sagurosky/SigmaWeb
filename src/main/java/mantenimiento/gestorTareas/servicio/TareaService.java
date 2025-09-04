@@ -7,13 +7,14 @@ import java.util.Map;
 import mantenimiento.gestorTareas.dominio.Activo;
 import mantenimiento.gestorTareas.dominio.Tarea;
 import mantenimiento.gestorTareas.dominio.Tecnico;
+import mantenimiento.gestorTareas.dominio.TenantContext;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface TareaService extends JpaRepository<Tarea,Long> {
-    
- 
+
+
     //DMS limito las tareas que levanta a un año atrás para cuando crezca mucho la base de datos
     @Query("SELECT t FROM Tarea t WHERE " +
             "t.estado != 'cerrada' AND " +
@@ -40,6 +41,7 @@ public interface TareaService extends JpaRepository<Tarea,Long> {
     @Query("SELECT t FROM Tarea t WHERE " +
             "t.estado = 'cerrada' AND " +
             "t.activo = :activo AND " +
+            "t.afectaProduccion = 'si' AND " +
             "t.momentoDetencion BETWEEN :fechaInicio AND :fechaFin AND " +
             "t.tenant.id = :tenantId")
     List<Tarea> traerCerradasPorActivo(@Param("activo") Activo activo,

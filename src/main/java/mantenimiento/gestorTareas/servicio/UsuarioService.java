@@ -54,6 +54,6 @@ public class UsuarioService implements UserDetailsService {
     public List<Usuario> listarUsuarios() {
         Long tenantId = TenantContext.getTenantId();
         if (tenantId != null) return usuarioDao.findByTenantId(tenantId);
-        else return usuarioDao.findAll();
+        else return usuarioDao.findAllByTenant();
     }
 }

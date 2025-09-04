@@ -1,14 +1,17 @@
 package mantenimiento.gestorTareas.datos;
 
 import java.util.List;
-import mantenimiento.gestorTareas.dominio.Activo;
-import mantenimiento.gestorTareas.dominio.Informe;
-import mantenimiento.gestorTareas.dominio.Tarea;
-import mantenimiento.gestorTareas.dominio.Tecnico;
+
+import mantenimiento.gestorTareas.dominio.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 public interface InformeDao extends JpaRepository<Informe,Long>{
+    default List<Informe> findAllByTenant() {
+        Long tenantId = TenantContext.getTenantId();
+        return findByTenantId(tenantId);
+    }
+
     List<Informe> findByTenantId(Long tenantId);
 
     @Query("SELECT i FROM Informe i JOIN i.asignaciones a WHERE a.tecnico = ?1 AND i.tenant.id = ?2")

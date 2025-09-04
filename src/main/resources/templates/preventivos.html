@@ -251,81 +251,75 @@
                         </div>
                         
                         <td sec:authorize="hasRole('ROLE_ADMIN')or hasRole('ROLE_MANT')" th:text="${preventivo.solicita}">Usuario</td>
-                        <td sec:authorize="hasRole('ROLE_ADMIN')or hasRole('ROLE_MANT')"><a th:href="@{/eliminarPreventivo/}+${preventivo.id}"class="btn btn-secondary btn-sm" >eliminar</a></td>
-                        <td  th:if='${preventivo.estado=="cerrado"}'></td>
-                        <td sec:authorize="hasRole('ROLE_ADMIN')or hasRole('ROLE_MANT')" th:if='${preventivo.estado=="pendiente"}'>
-                            <a th:href="@{/validarPreventivo/}+${preventivo.id}" class="btn btn-secondary btn-sm">Validar</a></td>
-                         <td sec:authorize="hasRole('ROLE_ADMIN')or hasRole('ROLE_MANT')or hasRole('ROLE_TECNICO')"th:if='${preventivo.estado=="validado"}'>
-                             
-                             
-<!--                            <select id="tecnicos" name="tecnicosIds" multiple class="form-control" required size="2">
-                                <option th:each="tecnico : ${todosLosTecnicos}" 
-                                        th:value="${tecnico.id}" 
-                                        th:text="${tecnico.apellido} + ' ' + ${tecnico.nombre}"
-                                       >
-                                </option>
-                            </select>
-                             
-                            <a th:href="@{/cerrarPreventivo/}+${preventivo.id}" class="btn btn-secondary btn-sm" >cerrar</a>-->
-                         <form th:action="@{/cerrarPreventivo/{id}(id=${preventivo.id})}" method="post" id="formCerrar">
-                            <select id="tecnicos"  multiple class="tecnicos form-control" required size="2" >
-                                <option th:each="tecnico : ${todosLosTecnicos}" 
-                                        th:value="${tecnico.id}" 
-                                        th:text="${tecnico.apellido} + ' ' + ${tecnico.nombre}">
-                                </option>
-                            </select>
-                             <input type="hidden" id="tecnicosHidden"  class="tecnicosHidden" name="tecnicosIds">
-                            <div th:if="${todosLosTecnicos.size >0}">
-                             <button type="button" onclick="cerrar(this)"class="btn btn-secondary btn-sm">Cerrar</button>
+                        <td sec:authorize="hasRole('ROLE_ADMIN')or hasRole('ROLE_MANT')">
+                            <a th:href="@{/eliminarPreventivo/}+${preventivo.id}"class="btn btn-secondary btn-sm" >eliminar</a>
+                        </td>
+
+
+                         <td sec:authorize="hasRole('ROLE_ADMIN')or hasRole('ROLE_MANT')or hasRole('ROLE_TECNICO')">
+                             <div sec:authorize="hasRole('ROLE_ADMIN')or hasRole('ROLE_MANT')"th:if='${preventivo.estado=="pendiente"}'>
+                                 <a th:href="@{/validarPreventivo/}+${preventivo.id}" class="btn btn-secondary btn-sm">Validar</a>
+                             </div>
+                            <div th:if='${preventivo.estado=="validado"}'>
+                                 <form th:action="@{/cerrarPreventivo/{id}(id=${preventivo.id})}" method="post" id="formCerrar">
+                                    <select id="tecnicos"  multiple class="tecnicos form-control" required size="2" >
+                                        <option th:each="tecnico : ${todosLosTecnicos}"
+                                                th:value="${tecnico.id}"
+                                                th:text="${tecnico.apellido} + ' ' + ${tecnico.nombre}">
+                                        </option>
+                                    </select>
+                                     <input type="hidden" id="tecnicosHidden"  class="tecnicosHidden" name="tecnicosIds">
+                                    <div th:if="${todosLosTecnicos.size >0}">
+                                     <button type="button" onclick="cerrar(this)"class="btn btn-secondary btn-sm">Cerrar</button>
+                                    </div>
+                                    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+                                    <script>
+                                    function cerrar(btn) {
+                                        //DMS tenia problemas para hacer el submit desde el script al intentar usar sweetAlert (no llevaba los selecionados ) asi que resolvimos asi
+                                        // Obtenemos el formulario actual a partir del botón
+                                        const form = btn.closest("form");
+                                        // Obtenemos el select y calculamos los seleccionados de este formulario
+                                        const selectElement = form.querySelector(".tecnicos");
+                                        const seleccionados = Array.from(selectElement.selectedOptions).map(option => option.value);
+
+        //                                console.log("Seleccionados antes de enviar:", seleccionados);
+
+                                        if (seleccionados.length === 0) {
+                                          Swal.fire("Error", "Debe seleccionar al menos un técnico", "warning");
+                                          return;
+                                        }
+
+                                        // Guardamos los valores seleccionados en el input hidden dentro del mismo formulario
+                                        form.querySelector(".tecnicosHidden").value = seleccionados.join(',');
+
+                                        Swal.fire({
+                                          title: "¿Está seguro que desea dar por finalizada la actividad?",
+                                          showDenyButton: true,
+                                          showCancelButton: false,
+        //                                  toast: true,
+        //                                  animation:true,
+                                          confirmButtonText: "Sí, guardar",
+                                          confirmButtonColor:"#0d6efd",
+                                          denyButtonText: "No",
+                                          denyButtonColor:"#0d6efd",
+
+
+
+                                        }).then((result) => {
+                                          if (result.isConfirmed) {
+        //                                    console.log("Enviando formulario con:", form.querySelector(".tecnicosHidden").value);
+                                             form.submit();
+                                          }
+                                        });
+                                      }
+
+
+                                    </script>
+
+
+
+                                </form>
                             </div>
-                            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-                            <script>
-                            function cerrar(btn) { 
-                                //DMS tenia problemas para hacer el submit desde el script al intentar usar sweetAlert (no llevaba los selecionados ) asi que resolvimos asi
-                                // Obtenemos el formulario actual a partir del botón
-                                const form = btn.closest("form");
-                                // Obtenemos el select y calculamos los seleccionados de este formulario
-                                const selectElement = form.querySelector(".tecnicos");
-                                const seleccionados = Array.from(selectElement.selectedOptions).map(option => option.value);
-
-//                                console.log("Seleccionados antes de enviar:", seleccionados);
-
-                                if (seleccionados.length === 0) {
-                                  Swal.fire("Error", "Debe seleccionar al menos un técnico", "warning");
-                                  return;
-                                }
-
-                                // Guardamos los valores seleccionados en el input hidden dentro del mismo formulario
-                                form.querySelector(".tecnicosHidden").value = seleccionados.join(',');
-
-                                Swal.fire({
-                                  title: "¿Está seguro que desea dar por finalizada la actividad?",
-                                  showDenyButton: true,
-                                  showCancelButton: false,
-//                                  toast: true,
-//                                  animation:true,
-                                  confirmButtonText: "Sí, guardar",
-                                  confirmButtonColor:"#0d6efd",
-                                  denyButtonText: "No",
-                                  denyButtonColor:"#0d6efd",
-                                 
-                                
-                                  
-                                }).then((result) => {
-                                  if (result.isConfirmed) {
-//                                    console.log("Enviando formulario con:", form.querySelector(".tecnicosHidden").value);
-                                     form.submit();  
-                                  }
-                                });
-                              }
-
-
-                            </script>
-                             
-                            
-                            
-                        </form>
-
   
 
 
