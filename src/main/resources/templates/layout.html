@@ -12,11 +12,11 @@
 </head>
 <style>
 
-    body{
-        /*background: #4169E1;*/
-        background: url('/recursos/fondoLayout3.jpg') no-repeat center center fixed;
-             background-size: cover;
-    }
+<!--    body{-->
+<!--        /*background: #4169E1;*/-->
+<!--        background: url('/recursos/fondoLayout3.jpg') no-repeat center center fixed;-->
+<!--             background-size: cover;-->
+<!--    }-->
 /*
     .mapadiv{
         widht:70vw;
@@ -48,7 +48,7 @@
     }
 
 </style>
-<body>
+<body th:style="'background: url(' + @{/recursos/fondo.jpg} + ') no-repeat center center fixed; background-size: cover;'">
 <header th:replace="plantillas/plantilla::header">lista de tareas</header>
 <div th:replace="plantillas/plantilla::menu"></div>
 <div th:replace="plantillas/plantilla::logo"></div>
