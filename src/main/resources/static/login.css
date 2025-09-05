@@ -22,7 +22,7 @@ and open the template in the editor.
             align-items: center;
             height: 100vh;
             margin: 0;
-            background: url('/recursos/fondo.jpg') no-repeat center center fixed;
+       /*       background: url('/recursos/fondo.jpg') no-repeat center center fixed;*/
             background-size: cover;
             font-family: Arial, sans-serif;
             position: relative;
