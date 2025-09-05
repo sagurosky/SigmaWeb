@@ -56,4 +56,7 @@ public class UsuarioService implements UserDetailsService {
         if (tenantId != null) return usuarioDao.findByTenantId(tenantId);
         else return usuarioDao.findAllByTenant();
     }
+
+
+
 }
