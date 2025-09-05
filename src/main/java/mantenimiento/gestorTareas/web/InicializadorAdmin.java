@@ -5,6 +5,8 @@
  */
 package mantenimiento.gestorTareas.web;
 
+import mantenimiento.gestorTareas.datos.TenantDao;
+import mantenimiento.gestorTareas.dominio.Tenant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -22,35 +24,61 @@ public class InicializadorAdmin implements CommandLineRunner {
     @Autowired
     private UsuarioDao usuarioDao;
 
+    @Autowired
+    private TenantDao tenantDao;
+
     @Override
     public void run(String... args) {
         if (usuarioDao.count() == 0) {
 
-            Usuario admin = new Usuario();
-            admin.setUsername("admin");
-            admin.setPassword(EncriptarPassword.encriptarPassword("admin"));
+            // Crear tenants temporales
+            Tenant tenant1 = new Tenant();
+            tenant1.setNombre("Empresa1");
+            tenantDao.save(tenant1);
 
-            List<Rol> roles=new ArrayList<>();
-            Rol rol=new Rol();
-            rol.setNombre("ROLE_ADMIN");
-            rol.setUsuario(admin);
-            roles.add(rol);
+            Tenant tenant2 = new Tenant();
+            tenant2.setNombre("Empresa2");
+            tenantDao.save(tenant2);
 
-            Rol rolMant = new Rol();
-            rolMant.setUsuario(rol.getUsuario());
-            rolMant.setNombre("ROLE_MANT");
-            roles.add(rolMant);
+            // Crear admin1
+            Usuario admin1 = new Usuario();
+            admin1.setUsername("admin1");
+            admin1.setPasswordClaro("admin1");
+            admin1.setPassword(EncriptarPassword.encriptarPassword("admin1"));
+            admin1.setTenant(tenant1);
+            admin1.setRoles(crearRoles(admin1));
+            usuarioDao.save(admin1);
 
-            Rol rolProd = new Rol();
-            rolProd.setUsuario(rol.getUsuario());
-            rolProd.setNombre("ROLE_PROD");
-            roles.add(rolProd);
-
-            admin.setRoles(roles);
-
-
-            usuarioDao.save(admin);
+            // Crear admin2
+            Usuario admin2 = new Usuario();
+            admin2.setUsername("admin2");
+            admin2.setPasswordClaro("admin2");
+            admin2.setPassword(EncriptarPassword.encriptarPassword("admin2"));
+            admin2.setTenant(tenant2);
+            admin2.setRoles(crearRoles(admin2));
+            usuarioDao.save(admin2);
         }
+    }
+
+    private List<Rol> crearRoles(Usuario usuario) {
+        List<Rol> roles = new ArrayList<>();
+
+        Rol rolAdmin = new Rol();
+        rolAdmin.setNombre("ROLE_ADMIN");
+        rolAdmin.setUsuario(usuario);
+        roles.add(rolAdmin);
+
+        Rol rolMant = new Rol();
+        rolMant.setNombre("ROLE_MANT");
+        rolMant.setUsuario(usuario);
+        roles.add(rolMant);
+
+        Rol rolProd = new Rol();
+        rolProd.setNombre("ROLE_PROD");
+        rolProd.setUsuario(usuario);
+        roles.add(rolProd);
+
+        return roles;
     }
 }
 

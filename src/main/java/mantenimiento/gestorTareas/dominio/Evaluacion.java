@@ -6,11 +6,9 @@
 package mantenimiento.gestorTareas.dominio;
 
 import java.io.Serializable;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
 /**
@@ -21,12 +19,17 @@ import lombok.Data;
 @Data
 @Entity
 @Table(name = "evaluacion")
-public class Evaluacion implements Serializable {
+@EntityListeners(TenantEntityListener.class)
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+public class Evaluacion implements Serializable, TenantSupport {
 
  @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
- 
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "tenant_id", nullable = true)
+    private Tenant tenant;
  
 private String  satisfaccion;
 private String predisposicion;

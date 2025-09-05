@@ -14,18 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import mantenimiento.gestorTareas.datos.ActivoDao;
 import mantenimiento.gestorTareas.datos.RolDao;
 import mantenimiento.gestorTareas.datos.UsuarioDao;
-import mantenimiento.gestorTareas.dominio.Activo;
-import mantenimiento.gestorTareas.dominio.Asignacion;
-import mantenimiento.gestorTareas.dominio.AsignacionInforme;
-import mantenimiento.gestorTareas.dominio.AsignacionPreventivo;
-import mantenimiento.gestorTareas.dominio.Informe;
-import mantenimiento.gestorTareas.dominio.Preventivo;
-import mantenimiento.gestorTareas.dominio.Produccion;
-import mantenimiento.gestorTareas.dominio.Producto;
-import mantenimiento.gestorTareas.dominio.Rol;
-import mantenimiento.gestorTareas.dominio.Tarea;
-import mantenimiento.gestorTareas.dominio.Tecnico;
-import mantenimiento.gestorTareas.dominio.Usuario;
+import mantenimiento.gestorTareas.dominio.*;
 import mantenimiento.gestorTareas.servicio.ActivoService;
 import mantenimiento.gestorTareas.servicio.AsignacionService;
 import mantenimiento.gestorTareas.servicio.InformeService;
@@ -108,14 +97,14 @@ public class ControladorInformes {
             if (rol.equals("tecnico"))
         {
             
-            Tecnico tecnico = tecnicoService.traerPorUsuario(usuario);
-            List<Tarea> tareasNoEvaluadas=tareaService.traerPorTecnicoYEstadoInforme(tecnico,"noEvaluado", TiempoUtils.haceAnios(1), TiempoUtils.ahora());
+            Tecnico tecnico = tecnicoService.traerPorUsuario(usuario,TenantContext.getTenantId());
+            List<Tarea> tareasNoEvaluadas=tareaService.traerPorTecnicoYEstadoInforme(tecnico,"noEvaluado", TiempoUtils.haceAnios(1), TiempoUtils.ahora(), TenantContext.getTenantId());
             model.addAttribute("tareasNoEvaluadas",tareasNoEvaluadas);
-             List<Tarea> tareasInformePendienteTecnico=tareaService.traerPorTecnicoYEstadoInforme(tecnico,"pendiente",TiempoUtils.haceAnios(1), TiempoUtils.ahora());
-              List<Tarea> tareasInformeEnRevisionTecnico=tareaService.traerPorTecnicoYEstadoInforme(tecnico,"EnRevision",TiempoUtils.haceAnios(1), TiempoUtils.ahora());
+             List<Tarea> tareasInformePendienteTecnico=tareaService.traerPorTecnicoYEstadoInforme(tecnico,"pendiente",TiempoUtils.haceAnios(1), TiempoUtils.ahora(),TenantContext.getTenantId());
+              List<Tarea> tareasInformeEnRevisionTecnico=tareaService.traerPorTecnicoYEstadoInforme(tecnico,"EnRevision",TiempoUtils.haceAnios(1), TiempoUtils.ahora(),TenantContext.getTenantId());
               tareasInformePendienteTecnico.addAll(tareasInformeEnRevisionTecnico);
             model.addAttribute("tareasInformePendienteTecnico",tareasInformePendienteTecnico);
-          List<Tarea> tareasAprobados=tareaService.traerPorEstadoInforme("aprobado",TiempoUtils.haceAnios(1), TiempoUtils.ahora());
+          List<Tarea> tareasAprobados=tareaService.traerPorEstadoInforme("aprobado",TiempoUtils.haceAnios(1), TiempoUtils.ahora(),TenantContext.getTenantId());
             model.addAttribute("tareasAprobados",tareasAprobados);
             
         }
@@ -126,28 +115,28 @@ public class ControladorInformes {
 //            model.addAttribute("tareasNoEvaluadas",tareasNoEvaluadas);
 //            List<Tarea> tareasNoValidadas=tareaService.traerPorEstadoInforme("noValidado");
 //            model.addAttribute("tareasNoValidadas",tareasNoValidadas);
-            List<Tarea> tareasNoEvaluadas=tareaService.traerPorEstadoInforme("noEvaluado",TiempoUtils.haceAnios(1), TiempoUtils.ahora());
+            List<Tarea> tareasNoEvaluadas=tareaService.traerPorEstadoInforme("noEvaluado",TiempoUtils.haceAnios(1), TiempoUtils.ahora(),TenantContext.getTenantId());
             model.addAttribute("tareasNoEvaluadas",tareasNoEvaluadas);
-            List<Tarea> tareasNoAprobadas=tareaService.traerPorEstadoInforme("noAprobado",TiempoUtils.haceAnios(1), TiempoUtils.ahora());
+            List<Tarea> tareasNoAprobadas=tareaService.traerPorEstadoInforme("noAprobado",TiempoUtils.haceAnios(1), TiempoUtils.ahora(),TenantContext.getTenantId());
             model.addAttribute("tareasNoAprobadas",tareasNoAprobadas);
-            List<Tarea> tareasAprobados=tareaService.traerPorEstadoInforme("aprobado",TiempoUtils.haceAnios(1), TiempoUtils.ahora());
+            List<Tarea> tareasAprobados=tareaService.traerPorEstadoInforme("aprobado",TiempoUtils.haceAnios(1), TiempoUtils.ahora(),TenantContext.getTenantId());
             model.addAttribute("tareasAprobados",tareasAprobados);
-            List<Tarea> tareasInformePendiente=tareaService.traerPorEstadoInforme("pendiente",TiempoUtils.haceAnios(1), TiempoUtils.ahora());
-             List<Tarea> tareasInformeEnRevision=tareaService.traerPorEstadoInforme("EnRevision",TiempoUtils.haceAnios(1), TiempoUtils.ahora());
+            List<Tarea> tareasInformePendiente=tareaService.traerPorEstadoInforme("pendiente",TiempoUtils.haceAnios(1), TiempoUtils.ahora(),TenantContext.getTenantId());
+             List<Tarea> tareasInformeEnRevision=tareaService.traerPorEstadoInforme("EnRevision",TiempoUtils.haceAnios(1), TiempoUtils.ahora(),TenantContext.getTenantId());
               tareasInformePendiente.addAll(tareasInformeEnRevision);
             model.addAttribute("tareasInformePendiente",tareasInformePendiente);
         }
        
         else
         {
-          List<Tarea> tareasAprobados=tareaService.traerPorEstadoInforme("aprobado",TiempoUtils.haceAnios(1), TiempoUtils.ahora());
+          List<Tarea> tareasAprobados=tareaService.traerPorEstadoInforme("aprobado",TiempoUtils.haceAnios(1), TiempoUtils.ahora(),TenantContext.getTenantId());
             model.addAttribute("tareasAprobados",tareasAprobados);
         }
         
-         model.addAttribute("todosLosTecnicos",tecnicoService.findAll());
+         model.addAttribute("todosLosTecnicos",tecnicoService.findAllByTenant());
         model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
         //DMS para el menú
-        List<Tecnico> tecnicosFiltrados = tecnicoService.traerHabilitados().stream()
+        List<Tecnico> tecnicosFiltrados = tecnicoService.traerHabilitados(TenantContext.getTenantId()).stream()
                 .filter(t -> t.getUsuario().getRoles().get(0).getNombre().equals("ROLE_TECNICO"))
                 .collect(Collectors.toList());
         model.addAttribute("tecnicos", tecnicosFiltrados);
@@ -163,7 +152,7 @@ public class ControladorInformes {
            Tarea tareaBD =tareaService.findById(id).orElse(null);
            model.addAttribute("tarea",tareaBD);
            model.addAttribute("informe",tareaBD.getInforme());
-           model.addAttribute("todosLosTecnicos",tecnicoService.findAll());
+           model.addAttribute("todosLosTecnicos",tecnicoService.findAllByTenant());
            
 
            // Calcular la diferencia
@@ -210,7 +199,7 @@ public class ControladorInformes {
         
         
        Usuario usuario = usuarioDao.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
-        Tecnico tecnicoGenerador=tecnicoService.traerPorUsuario(usuario);
+        Tecnico tecnicoGenerador=tecnicoService.traerPorUsuario(usuario,TenantContext.getTenantId());
         
         
         
@@ -232,7 +221,7 @@ public class ControladorInformes {
            Tarea tareaBD =tareaService.findById(id).orElse(null);
            model.addAttribute("tarea",tareaBD);
            model.addAttribute("informe",tareaBD.getInforme());
-           model.addAttribute("todosLosTecnicos",tecnicoService.findAll());
+           model.addAttribute("todosLosTecnicos",tecnicoService.findAllByTenant());
            
 
            // Calcular la diferencia
@@ -248,7 +237,7 @@ public class ControladorInformes {
         model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
 
         //DMS para el menú
-        List<Tecnico> tecnicosFiltrados = tecnicoService.traerHabilitados().stream()
+        List<Tecnico> tecnicosFiltrados = tecnicoService.traerHabilitados(TenantContext.getTenantId()).stream()
                 .filter(t -> t.getUsuario().getRoles().get(0).getNombre().equals("ROLE_TECNICO"))
                 .collect(Collectors.toList());
         model.addAttribute("tecnicos", tecnicosFiltrados);

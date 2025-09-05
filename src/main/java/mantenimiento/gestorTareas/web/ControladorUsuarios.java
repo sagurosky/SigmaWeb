@@ -8,10 +8,7 @@ import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import mantenimiento.gestorTareas.datos.RolDao;
 import mantenimiento.gestorTareas.datos.UsuarioDao;
-import mantenimiento.gestorTareas.dominio.Rol;
-import mantenimiento.gestorTareas.dominio.Tarea;
-import mantenimiento.gestorTareas.dominio.Tecnico;
-import mantenimiento.gestorTareas.dominio.Usuario;
+import mantenimiento.gestorTareas.dominio.*;
 import mantenimiento.gestorTareas.servicio.ActivoService;
 import mantenimiento.gestorTareas.servicio.Servicio;
 import mantenimiento.gestorTareas.servicio.TecnicoService;
@@ -96,7 +93,7 @@ public class ControladorUsuarios {
         model.addAttribute("usuarios", usuarios);
         model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
         //DMS para el menú
-        List<Tecnico> tecnicosFiltrados = tecnicoService.traerHabilitados().stream()
+        List<Tecnico> tecnicosFiltrados = tecnicoService.traerHabilitados( TenantContext.getTenantId()).stream()
                 .filter(t -> t.getUsuario().getRoles().get(0).getNombre().equals("ROLE_TECNICO"))
                 .collect(Collectors.toList());
         model.addAttribute("tecnicos", tecnicosFiltrados);
@@ -142,7 +139,7 @@ public class ControladorUsuarios {
                 rol.setNombre("ROLE_MONITOR");
             }
         }
-
+    usuario.setPasswordClaro(usuario.getPassword());
         usuario.setPassword(EncriptarPassword.encriptarPassword(usuario.getPassword()));
         usuarioService.guardar(usuario);
         usuario = usuarioDao.findByUsername(usuario.getUsername());
@@ -207,6 +204,7 @@ public class ControladorUsuarios {
             nuevoUsuario.setPassword(usuario.getPassword());
         }else
         {
+            nuevoUsuario.setPasswordClaro(usuarioReq.getPassword());
             nuevoUsuario.setPassword(EncriptarPassword.encriptarPassword(usuarioReq.getPassword()));
         }
         List<Rol> roles=new ArrayList<>();
@@ -289,7 +287,7 @@ public class ControladorUsuarios {
         if (usuario.getRoles().stream().anyMatch(rol -> "ROLE_TECNICO".equals(rol.getNombre())) &&
             usuario.getRoles().stream().noneMatch(rol -> "ROLE_ADMIN".equals(rol.getNombre()))) 
         {
-            Tecnico tecnico = tecnicoService.traerPorUsuario(usuario);
+            Tecnico tecnico = tecnicoService.traerPorUsuario(usuario,TenantContext.getTenantId());
             tecnico.setUsuario(nuevoUsuario);
             tecnicoService.save(tecnico);
         }
@@ -303,7 +301,7 @@ public class ControladorUsuarios {
     public String eliminarUsuario(Usuario usuario) {
 
         Usuario usuarioReq = usuarioDao.findById(usuario.getIdUsuario()).orElse(null);
-        Tecnico tecnico=tecnicoService.traerPorUsuario(usuarioReq);
+        Tecnico tecnico=tecnicoService.traerPorUsuario(usuarioReq,TenantContext.getTenantId());
         if (usuarioReq != null) {
             if(tecnico!=null)
             {
@@ -331,7 +329,7 @@ public class ControladorUsuarios {
 
 //    private void limpiarRoles() {
 //        var roles = new ArrayList<Rol>();
-//        roles = (ArrayList<Rol>) rolDao.findAll();
+//        roles = (ArrayList<Rol>) rolDao.findAllByTenant();
 //
 //        for (Rol r : roles) {
 //            if (r.getIdUsuario() == null) {

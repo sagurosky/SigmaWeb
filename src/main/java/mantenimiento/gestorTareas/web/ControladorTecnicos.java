@@ -22,11 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import mantenimiento.gestorTareas.datos.ActivoDao;
 import mantenimiento.gestorTareas.datos.RolDao;
 import mantenimiento.gestorTareas.datos.UsuarioDao;
-import mantenimiento.gestorTareas.dominio.Activo;
-import mantenimiento.gestorTareas.dominio.Evaluacion;
-import mantenimiento.gestorTareas.dominio.Tarea;
-import mantenimiento.gestorTareas.dominio.Tecnico;
-import mantenimiento.gestorTareas.dominio.Usuario;
+import mantenimiento.gestorTareas.dominio.*;
 import mantenimiento.gestorTareas.servicio.ActivoService;
 import mantenimiento.gestorTareas.servicio.InformeService;
 import mantenimiento.gestorTareas.servicio.PreventivoService;
@@ -81,12 +77,12 @@ public class ControladorTecnicos {
 //        var tareas = tareaService.traerNoCerradas();
 //        model.addAttribute("tareas", tareas);
         Usuario usuario = usuarioDao.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
-        Tecnico tecnico = tecnicoService.traerPorUsuario(usuario);
+        Tecnico tecnico = tecnicoService.traerPorUsuario(usuario, TenantContext.getTenantId());
         model.addAttribute("tecnico", tecnico);
         model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
 
         //DMS para el menú
-        List<Tecnico> tecnicosFiltrados = tecnicoService.traerHabilitados().stream()
+        List<Tecnico> tecnicosFiltrados = tecnicoService.traerHabilitados(TenantContext.getTenantId()).stream()
                 .filter(t -> t.getUsuario().getRoles().get(0).getNombre().equals("ROLE_TECNICO"))
                 .collect(Collectors.toList());
         model.addAttribute("tecnicos", tecnicosFiltrados);
@@ -150,7 +146,7 @@ public class ControladorTecnicos {
         int formacionContinuaCantidadnNull=0;
         
         //  traigo todas ls tareas en las que participó el tecnico en cuestion
-        List<Tarea> tareas = tareaService.traerPorTecnico(tecnico, TiempoUtils.haceAnios(1),TiempoUtils.ahora());
+        List<Tarea> tareas = tareaService.traerPorTecnico(tecnico, TiempoUtils.haceAnios(1),TiempoUtils.ahora(),TenantContext.getTenantId());
         for (Tarea tarea : tareas) {
             if(!tarea.getEvaluacion().getSatisfaccion().equals("")&&!tarea.getEvaluacion().getSatisfaccion().equals(" ")&&tarea.getEvaluacion().getSatisfaccion()!=null)
             satisfaccion += Double.parseDouble(tarea.getEvaluacion().getSatisfaccion());
@@ -272,9 +268,9 @@ public class ControladorTecnicos {
         tecnico.setPromedioEvaluaciones(Double.toString(Math.round(promedioGral * 100.0) / 100.0));
         
         
-        Integer preventivosTotal=preventivoService.traerPorTecnico(tecnico).size();
-        Integer preventivosMes=preventivoService.traerPorTecnicoEnRangoDeFecha(tecnico, TiempoUtils.ahora().minusMonths(1).toString(), TiempoUtils.ahora().toString()).size();
-        Integer preventivosAnio=preventivoService.traerPorTecnicoEnRangoDeFecha(tecnico, TiempoUtils.haceAnios(1).toString(), TiempoUtils.ahora().toString()).size();
+        Integer preventivosTotal=preventivoService.traerPorTecnico(tecnico,TenantContext.getTenantId()).size();
+        Integer preventivosMes=preventivoService.traerPorTecnicoEnRangoDeFecha(tecnico, TiempoUtils.ahora().minusMonths(1).toString(), TiempoUtils.ahora().toString(),TenantContext.getTenantId()).size();
+        Integer preventivosAnio=preventivoService.traerPorTecnicoEnRangoDeFecha(tecnico, TiempoUtils.haceAnios(1).toString(), TiempoUtils.ahora().toString(),TenantContext.getTenantId()).size();
         
         
         model.addAttribute("cantidadPreventivosTotal",preventivosTotal);
@@ -283,11 +279,11 @@ public class ControladorTecnicos {
         
         
         
-        Integer informesTotal=informeService.traerPorTecnico(tecnico).size();
-        Integer informesMes=informeService.traerPorTecnicoEnRangoDeFecha(tecnico, TiempoUtils.ahora().minusMonths(1).toString(), TiempoUtils.ahora().toString()).size();
-        Integer informesAnio=informeService.traerPorTecnicoEnRangoDeFecha(tecnico, TiempoUtils.haceAnios(1).toString(), TiempoUtils.ahora().toString()).size();
+        Integer informesTotal=informeService.traerPorTecnico(tecnico,TenantContext.getTenantId()).size();
+        Integer informesMes=informeService.traerPorTecnicoEnRangoDeFecha(tecnico, TiempoUtils.ahora().minusMonths(1).toString(), TiempoUtils.ahora().toString(),TenantContext.getTenantId()).size();
+        Integer informesAnio=informeService.traerPorTecnicoEnRangoDeFecha(tecnico, TiempoUtils.haceAnios(1).toString(), TiempoUtils.ahora().toString(),TenantContext.getTenantId()).size();
         
-        Integer informesPendientes=tareaService.traerPorTecnicoYEstadoInforme(tecnico,"pendiente",TiempoUtils.haceAnios(1), TiempoUtils.ahora()).size()+tareaService.traerPorTecnicoYEstadoInforme(tecnico,"EnRevision",TiempoUtils.haceAnios(1), TiempoUtils.ahora()).size();
+        Integer informesPendientes=tareaService.traerPorTecnicoYEstadoInforme(tecnico,"pendiente",TiempoUtils.haceAnios(1), TiempoUtils.ahora(),TenantContext.getTenantId()).size()+tareaService.traerPorTecnicoYEstadoInforme(tecnico,"EnRevision",TiempoUtils.haceAnios(1), TiempoUtils.ahora(),TenantContext.getTenantId()).size();
         
         model.addAttribute("cantidadInformesTotal",informesTotal);
         model.addAttribute("cantidadInformesAnio",informesAnio);
@@ -301,7 +297,7 @@ public class ControladorTecnicos {
         model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
 
         //DMS para el menú
-        List<Tecnico> tecnicosFiltrados = tecnicoService.traerHabilitados().stream()
+        List<Tecnico> tecnicosFiltrados = tecnicoService.traerHabilitados(TenantContext.getTenantId()).stream()
                 .filter(t -> t.getUsuario().getRoles().get(0).getNombre().equals("ROLE_TECNICO"))
                 .collect(Collectors.toList());
         model.addAttribute("tecnicos", tecnicosFiltrados);

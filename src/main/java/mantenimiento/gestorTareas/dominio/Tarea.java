@@ -5,18 +5,27 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 import javax.persistence.*;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
 @Data
 @Entity
 @Table(name = "tareas")
-public class Tarea implements Serializable {
+@EntityListeners(TenantEntityListener.class)
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+public class Tarea implements Serializable, TenantSupport {
 
     private static final long serialVersionUID = 1L;
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "tenant_id", nullable = true)
+    private Tenant tenant;
+
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "activo")
     private Activo activo;

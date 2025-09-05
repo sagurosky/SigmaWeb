@@ -9,21 +9,28 @@ import java.time.Period;
 import java.util.List;
 import java.util.Set;
 import javax.persistence.*;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import mantenimiento.gestorTareas.util.TiempoUtils;
 
 @Data
 @Entity
 @Table(name = "tecnico")
-
-public class Tecnico implements Serializable {
+@EntityListeners(TenantEntityListener.class)
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+public class Tecnico implements Serializable , TenantSupport{
 
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
-    
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "tenant_id", nullable = true)
+    private Tenant tenant;
+
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "usuario")
     private Usuario usuario;

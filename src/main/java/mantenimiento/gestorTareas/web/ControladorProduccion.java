@@ -7,10 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import mantenimiento.gestorTareas.datos.ActivoDao;
 import mantenimiento.gestorTareas.datos.RolDao;
 import mantenimiento.gestorTareas.datos.UsuarioDao;
-import mantenimiento.gestorTareas.dominio.Activo;
-import mantenimiento.gestorTareas.dominio.Preventivo;
-import mantenimiento.gestorTareas.dominio.Produccion;
-import mantenimiento.gestorTareas.dominio.Producto;
+import mantenimiento.gestorTareas.dominio.*;
 import mantenimiento.gestorTareas.servicio.ActivoService;
 import mantenimiento.gestorTareas.servicio.AsignacionService;
 import mantenimiento.gestorTareas.servicio.ProduccionService;
@@ -63,7 +60,7 @@ public class ControladorProduccion {
     @GetMapping("/produccion/{url}")
     public String cargaProduccion(@PathVariable("url") String url, Model model) {
         model.addAttribute("produccion", new Produccion());
-         model.addAttribute("productos",productoService.findAll());
+         model.addAttribute("productos",productoService.findAllByTenant());
 //        log.info("Productos: " + productos);
         List<String> lineas=Arrays.asList(Produccion.LINEA_1,
                                                   Produccion.LINEA_2,
@@ -72,8 +69,8 @@ public class ControladorProduccion {
                                                   Produccion.LINEA_5);
         model.addAttribute("lineas",lineas);
 //        log.info("lineas: " + lineas);
-        model.addAttribute("ordenesAbiertas", produccionService.traerAbiertas());
-        model.addAttribute("ordenesCerradas", produccionService.traerCerradas());
+        model.addAttribute("ordenesAbiertas", produccionService.traerAbiertas(TenantContext.getTenantId()));
+        model.addAttribute("ordenesCerradas", produccionService.traerCerradas(TenantContext.getTenantId()));
 
         model.addAttribute("url", url);
         model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
@@ -89,11 +86,11 @@ public class ControladorProduccion {
                                                   Produccion.LINEA_4,
                                                   Produccion.LINEA_5);
         model.addAttribute("lineas",lineas);
-         model.addAttribute("productos",productoService.findAll());
+         model.addAttribute("productos",productoService.findAllByTenant());
         produccion.setEstado("abierta");
         produccion.setInicio(TiempoUtils.ahora());
         produccionService.save(produccion);
-         model.addAttribute("ordenesAbiertas", produccionService.traerAbiertas());
+         model.addAttribute("ordenesAbiertas", produccionService.traerAbiertas(TenantContext.getTenantId()));
         model.addAttribute("url",url);
         return "redirect:/produccion/"+url;
     }
@@ -105,14 +102,14 @@ public class ControladorProduccion {
         prod.setFin(TiempoUtils.ahora());
         prod.setEstado("cerrada");
         produccionService.save(prod);
-         model.addAttribute("ordenesAbiertas", produccionService.traerAbiertas());
+         model.addAttribute("ordenesAbiertas", produccionService.traerAbiertas(TenantContext.getTenantId()));
           List<String> lineas=Arrays.asList(Produccion.LINEA_1,
                                                   Produccion.LINEA_2,
                                                   Produccion.LINEA_3,
                                                   Produccion.LINEA_4,
                                                   Produccion.LINEA_5);
         model.addAttribute("lineas",lineas);
-         model.addAttribute("productos",productoService.findAll());
+         model.addAttribute("productos",productoService.findAllByTenant());
 //        log.info("id: "+produccion.getId());
         
         model.addAttribute("url",url);
@@ -127,14 +124,14 @@ public class ControladorProduccion {
         prod.setCantidad(cantidad);
         produccionService.save(prod);
         
-         model.addAttribute("ordenesAbiertas", produccionService.traerAbiertas());
+         model.addAttribute("ordenesAbiertas", produccionService.traerAbiertas(TenantContext.getTenantId()));
           List<String> lineas=Arrays.asList(Produccion.LINEA_1,
                                                   Produccion.LINEA_2,
                                                   Produccion.LINEA_3,
                                                   Produccion.LINEA_4,
                                                   Produccion.LINEA_5);
         model.addAttribute("lineas",lineas);
-         model.addAttribute("productos",productoService.findAll());
+         model.addAttribute("productos",productoService.findAllByTenant());
 //        log.info("id: "+produccion.getId());
         
         model.addAttribute("url",url);
@@ -145,14 +142,14 @@ public class ControladorProduccion {
      @GetMapping("/historialOrdenes/{url}")
     public String cerrarOrdenDeTrabajo(  @PathVariable("url") String url, Model model) {
         
-         model.addAttribute("ordenesCerradas", produccionService.traerCerradas());
+         model.addAttribute("ordenesCerradas", produccionService.traerCerradas(TenantContext.getTenantId()));
         model.addAttribute("url",url);
          model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
         return "historialProduccion";
     }
      @GetMapping("/configuracionOrdenes/{url}")
     public String configuracionOrdenes(  @PathVariable("url") String url, Model model) {
-        model.addAttribute("productos",productoService.findAll());
+        model.addAttribute("productos",productoService.findAllByTenant());
        List<String> lineas=Arrays.asList(Produccion.LINEA_1,
                                                   Produccion.LINEA_2,
                                                   Produccion.LINEA_3,
@@ -170,14 +167,14 @@ public class ControladorProduccion {
         model.addAttribute("produccion", new Produccion());
         Produccion prod=produccionService.findById(id).orElse(null);
         produccionService.delete(prod);
-         model.addAttribute("ordenesAbiertas", produccionService.traerAbiertas());
+         model.addAttribute("ordenesAbiertas", produccionService.traerAbiertas(TenantContext.getTenantId()));
          List<String> lineas=Arrays.asList(Produccion.LINEA_1,
                                                   Produccion.LINEA_2,
                                                   Produccion.LINEA_3,
                                                   Produccion.LINEA_4,
                                                   Produccion.LINEA_5);
         model.addAttribute("lineas",lineas);
-         model.addAttribute("productos",productoService.findAll());        
+         model.addAttribute("productos",productoService.findAllByTenant());
 //        produccionService.save(produccion);
         model.addAttribute("url",url);
          model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
@@ -192,7 +189,7 @@ public class ControladorProduccion {
         productoService.save(producto);
        
          model.addAttribute("produccion", new Produccion());
-          model.addAttribute("ordenesAbiertas", produccionService.traerAbiertas());
+          model.addAttribute("ordenesAbiertas", produccionService.traerAbiertas(TenantContext.getTenantId()));
         model.addAttribute("url",url);
          List<String> lineas=Arrays.asList(Produccion.LINEA_1,
                                                   Produccion.LINEA_2,
@@ -201,7 +198,7 @@ public class ControladorProduccion {
                                                   Produccion.LINEA_5);
         model.addAttribute("lineas",lineas);
                model.addAttribute("producto",new Producto());
-         model.addAttribute("productos",productoService.findAll());
+         model.addAttribute("productos",productoService.findAllByTenant());
         return "redirect:/configuracionOrdenes/"+url;
     }
       @GetMapping("/eliminarProducto/{id}")
@@ -211,14 +208,14 @@ public class ControladorProduccion {
         model.addAttribute("produccion", new Produccion());
         Producto prod=productoService.findById(id).orElse(null);
         productoService.delete(prod);
-         model.addAttribute("ordenesAbiertas", produccionService.traerAbiertas());
+         model.addAttribute("ordenesAbiertas", produccionService.traerAbiertas(TenantContext.getTenantId()));
          List<String> lineas=Arrays.asList(Produccion.LINEA_1,
                                                   Produccion.LINEA_2,
                                                   Produccion.LINEA_3,
                                                   Produccion.LINEA_4,
                                                   Produccion.LINEA_5);
         model.addAttribute("lineas",lineas);
-         model.addAttribute("productos",productoService.findAll());
+         model.addAttribute("productos",productoService.findAllByTenant());
          model.addAttribute("producto",new Producto());
         
 //        produccionService.save(produccion);

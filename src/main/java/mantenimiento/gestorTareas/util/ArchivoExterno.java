@@ -1,6 +1,7 @@
 package mantenimiento.gestorTareas.util;
 
 import lombok.extern.slf4j.Slf4j;
+import mantenimiento.gestorTareas.dominio.TenantContext;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -72,8 +73,16 @@ public class ArchivoExterno {
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(layoutDir, "*.svg")) {
             for (Path entry : stream) {
-                nombresLayouts.add(entry.getFileName().toString());
+                String fileName = entry.getFileName().toString();
+                String suffix = "Tenant"+TenantContext.getTenantId() + ".svg";
+
+                if (fileName.endsWith(suffix)) {
+                    // le saco el sufijo tenantId.svg para dejar el nombre original
+                    String originalName = fileName.substring(0, fileName.length() - suffix.length()) + ".svg";
+                    nombresLayouts.add(originalName);
+                }
             }
+
             nombresLayouts.sort(Comparator.comparing(name -> {
                 try {
                     return Files.getLastModifiedTime(layoutDir.resolve(name)).toMillis();

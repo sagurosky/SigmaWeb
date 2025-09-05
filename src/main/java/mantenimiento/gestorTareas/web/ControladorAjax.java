@@ -21,14 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import mantenimiento.gestorTareas.datos.ActivoDao;
 import mantenimiento.gestorTareas.datos.RolDao;
 import mantenimiento.gestorTareas.datos.UsuarioDao;
-import mantenimiento.gestorTareas.dominio.Activo;
-import mantenimiento.gestorTareas.dominio.Asignacion;
-import mantenimiento.gestorTareas.dominio.Evaluacion;
-import mantenimiento.gestorTareas.dominio.Preventivo;
-import mantenimiento.gestorTareas.dominio.Produccion;
-import mantenimiento.gestorTareas.dominio.Tarea;
-import mantenimiento.gestorTareas.dominio.Tecnico;
-import mantenimiento.gestorTareas.dominio.Usuario;
+import mantenimiento.gestorTareas.dominio.*;
 import mantenimiento.gestorTareas.servicio.ActivoService;
 import mantenimiento.gestorTareas.servicio.AsignacionService;
 import mantenimiento.gestorTareas.servicio.PreventivoService;
@@ -70,6 +63,8 @@ public class ControladorAjax {
     @Autowired
     ActivoService activoService;
     @Autowired
+    ActivoDao activoDao;
+    @Autowired
     TareaService tareaService;
     @Autowired
     TecnicoService tecnicoService;
@@ -86,7 +81,7 @@ public class ControladorAjax {
     @ResponseBody//con esta anotacion springboot no va a intentar abrir un htrml con el nombre de lo que pongo en return
     public Object traerPreventivosAlLayout(@RequestParam String nombre,@RequestParam String estado) {
         
-        return preventivoService.traerPreventivosValidadosPorNombreActivo(Convertidor.aCamelCase(nombre));
+        return preventivoService.traerPreventivosValidadosPorNombreActivo(Convertidor.aCamelCase(nombre), TenantContext.getTenantId());
     }
     
     
@@ -105,7 +100,7 @@ public class ControladorAjax {
     @ResponseBody//con esta anotacion springboot no va a intentar abrir un htrml con el nombre de lo que pongo en return
     public Object actualizarEstados() {
          //traigo todos los activos y mando a la vista variables de falla cuando estan detenidos o de cierre cuando estan liberadas y faltan cerrar
-        List<Activo> activos = activo.findAll();
+        List<Activo> activos = activo.findAllByTenant();
         String aux = "";
 
       //  Map<String,String> model=new HashMap<>();
@@ -123,10 +118,10 @@ public class ControladorAjax {
             }else
             {
                 activo.setEstado("operativa");
-                Tarea tarea=tareaService.traerDisponiblePorActivo(activo).get(0);
+                Tarea tarea=tareaService.traerDisponiblePorActivo(activo,TenantContext.getTenantId()).get(0);
                 tarea.setEstado("finDisponible");
                 tareaService.save(tarea);
-                activoService.save(activo);
+                activoDao.save(activo);
             }
 
             Map<String, String> datos = new HashMap<>();
@@ -150,8 +145,8 @@ public class ControladorAjax {
     public Object traerEstadoActivo(@RequestParam String estadoActual,@RequestParam String activo) {
 
         Boolean hayCambioDeEstado=false;
-        Activo activoBD=activoService.getById(Long.parseLong(activo));
-        var tareasActivo = tareaService.traerNoCerradaPorActivo(activoBD);
+        Activo activoBD=activoDao.getById(Long.parseLong(activo));
+        var tareasActivo = tareaService.traerNoCerradaPorActivo(activoBD,TenantContext.getTenantId());
         var tareaActivo=(tareasActivo.size()>0)?tareasActivo.get(0):null;
         
         
@@ -194,7 +189,7 @@ public class ControladorAjax {
         
         
         List<Tarea> tareasEnRango=new ArrayList<>();
-        tareasEnRango=tareaService.traerPorLineaEnRangoDeFecha(Convertidor.deCamelCase(prod.getLinea()), prod.getInicio().toString(), prod.getFin().toString());
+        tareasEnRango=tareaService.traerPorLineaEnRangoDeFecha(Convertidor.deCamelCase(prod.getLinea()), prod.getInicio().toString(), prod.getFin().toString(),TenantContext.getTenantId());
         
         
         

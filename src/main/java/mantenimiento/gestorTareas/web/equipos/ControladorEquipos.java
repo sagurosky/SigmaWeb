@@ -19,12 +19,7 @@ import mantenimiento.gestorTareas.datos.ActivoDao;
 import mantenimiento.gestorTareas.datos.AsignacionPreventivoDao;
 import mantenimiento.gestorTareas.datos.RolDao;
 import mantenimiento.gestorTareas.datos.UsuarioDao;
-import mantenimiento.gestorTareas.dominio.Activo;
-import mantenimiento.gestorTareas.dominio.Asignacion;
-import mantenimiento.gestorTareas.dominio.AsignacionPreventivo;
-import mantenimiento.gestorTareas.dominio.Preventivo;
-import mantenimiento.gestorTareas.dominio.Tarea;
-import mantenimiento.gestorTareas.dominio.Tecnico;
+import mantenimiento.gestorTareas.dominio.*;
 import mantenimiento.gestorTareas.servicio.ActivoService;
 import mantenimiento.gestorTareas.servicio.PreventivoService;
 import mantenimiento.gestorTareas.servicio.Servicio;
@@ -84,8 +79,10 @@ public class ControladorEquipos {
     //planta 3
     @GetMapping("/activo/{nombre}")
     public String activo(Model model, @PathVariable String nombre) throws IOException {
+        log.info("#### "+nombre+" tenant "+TenantContext.getTenantId());
            Activo activo = activoService.findByName(nombre);
-            cargarModel(model, activo);
+//        log.info("#### "+activo!=null?activo.getNombre():"nada");
+           cargarModel(model, activo);
         model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
             return "equipos/activo";
         }
@@ -179,7 +176,7 @@ public class ControladorEquipos {
 //        
         activo.save(activoSeleccionado);
 
-        Tarea tarea=tareaService.traerDisponiblePorActivo(activoSeleccionado).get(0);
+        Tarea tarea=tareaService.traerDisponiblePorActivo(activoSeleccionado, TenantContext.getTenantId()).get(0);
 
         tarea.setEstado("finDisponible");
         tarea.setMomentoLiberacion(TiempoUtils.ahora());
@@ -204,7 +201,7 @@ public class ControladorEquipos {
 //
         activo.save(activoSeleccionado);
 
-        Tarea tarea=tareaService.traerNoCerradaPorActivo(activoSeleccionado).get(0);
+        Tarea tarea=tareaService.traerNoCerradaPorActivo(activoSeleccionado,TenantContext.getTenantId()).get(0);
 
         tarea.setEstado("cerrada");
         tarea.setMomentoLiberacion(TiempoUtils.ahora());
@@ -229,7 +226,7 @@ public class ControladorEquipos {
 
 
         model.addAttribute("activo", activo);
-        List<Tecnico> tecnicos=tecnicoService.traerPorTareaEnActivo(activo);
+        List<Tecnico> tecnicos=tecnicoService.traerPorTareaEnActivo(activo,TenantContext.getTenantId());
         model.addAttribute("tecnicosAsignar", tecnicos);
         List<Tarea> tareas = servicio.listar();
         Integer cantidadMecanicas = 0;
@@ -262,7 +259,7 @@ public class ControladorEquipos {
         model.addAttribute("cantidadNeumaticas", cantidadNeumaticas);
         model.addAttribute("cantidadElectronicas", cantidadElectronicas);
         model.addAttribute("cantidadProgramacion", cantidadProgramacion);
-        model.addAttribute("linkFoto", "/recursos/imagenes/" + activo.getNombreCamelCase().replace(" ", "") + ".jpg");
+        model.addAttribute("linkFoto", "/recursos/imagenes/" + activo.getNombreCamelCase().replace(" ", "") +"Tenant"+ TenantContext.getTenantId()+".jpg");
 
         //indicadores
         //mtbf = promedio de minutos en funcionamiento entre fallas, 
@@ -285,7 +282,7 @@ public class ControladorEquipos {
         //promedioMovil mes, 3 meses, 6 meses, 1 año. ver como configurarlo, lo hardcodeo a un año
         String haceUnAnio= TiempoUtils.haceAnios(1).toString();
         String hoy=TiempoUtils.ahora().toString();
-        List<Tarea> tareasUltimoAnio = tareaService.traerCerradasPorActivoEnRangoDeFecha(activo,haceUnAnio,hoy);
+        List<Tarea> tareasUltimoAnio = tareaService.traerCerradasPorActivoEnRangoDeFecha(activo,haceUnAnio,hoy,TenantContext.getTenantId());
 
         Map<String,Long> minutosMes=new LinkedHashMap<>();
 
@@ -340,7 +337,7 @@ if(inicioDeActividades!=null)
 
 
 
-        Map<String, Object> resultado = tareaService.calcularIndicadores(desde, TiempoUtils.ahora(),activo);
+        Map<String, Object> resultado = tareaService.calcularIndicadores(desde, TiempoUtils.ahora(),activo,TenantContext.getTenantId());
 //        for (Map.Entry<String, Object> entry : resultado.entrySet()) {
 //            System.out.println("Clave: " + entry.getKey() + ", Valor: " + entry.getValue());
 //        }
@@ -380,10 +377,10 @@ if(inicioDeActividades!=null)
 
         model.addAttribute("estados", Arrays.asList("detenida", "operativa", "disponible","operativa condicionada"));
         
-        var tareasActivo = tareaService.traerNoCerradaPorActivo(activo);
+        var tareasActivo = tareaService.traerNoCerradaPorActivo(activo,TenantContext.getTenantId());
         var tareaActivo=(tareasActivo.size()>0)?tareasActivo.get(0):null;
         model.addAttribute("tarea", tareaActivo);
-        model.addAttribute("todosLosTecnicos", tecnicoService.findAll());
+        model.addAttribute("todosLosTecnicos", tecnicoService.findAllByTenant());
         model.addAttribute("cantidadActivosDetenidos",activoService.findByStatus("detenida").size());
         model.addAttribute("promedios", Arrays.asList("1 anio","6 meses","3 meses","1 mes"));
 
@@ -412,7 +409,7 @@ if(inicioDeActividades!=null)
 
 
         //DMS para el menú
-        List<Tecnico> tecnicosFiltrados = tecnicoService.traerHabilitados().stream()
+        List<Tecnico> tecnicosFiltrados = tecnicoService.traerHabilitados(TenantContext.getTenantId()).stream()
                 .filter(t -> t.getUsuario().getRoles().get(0).getNombre().equals("ROLE_TECNICO"))
                 .collect(Collectors.toList());
         model.addAttribute("tecnicos", tecnicosFiltrados);

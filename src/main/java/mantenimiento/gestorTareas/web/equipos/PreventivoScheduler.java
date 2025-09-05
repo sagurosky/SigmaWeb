@@ -2,6 +2,7 @@ package mantenimiento.gestorTareas.web.equipos;
 
 import lombok.extern.slf4j.Slf4j;
 import mantenimiento.gestorTareas.dominio.Preventivo;
+import mantenimiento.gestorTareas.dominio.TenantContext;
 import mantenimiento.gestorTareas.servicio.PreventivoService;
 import mantenimiento.gestorTareas.util.TiempoUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,13 +23,13 @@ public class PreventivoScheduler {
     @Scheduled(cron = "0 0 0 * * *") // Todos los días a medianoche
    //@Scheduled(cron = "*/5 * * * * *")     //para debug, se ejecuta cada 5 seg
     public void generarPreventivosPeriodicos() {
-        List<Preventivo> cerradosPeriodicos = preventivoService.traerPreventivosCerradosPeriodicos();
+        List<Preventivo> cerradosPeriodicos = preventivoService.traerPreventivosCerradosPeriodicos(TenantContext.getTenantId());
 
         for (Preventivo p : cerradosPeriodicos) {
             if (correspondeGenerarNuevo(p)) {
                 Preventivo nuevo = clonarPreventivo(p);
                 preventivoService.save(nuevo);
-                p.setEstado("cerrado y clonado");
+                p.setEstado("cerrado y reiniciado");
                 preventivoService.save(p);
             }
         }
