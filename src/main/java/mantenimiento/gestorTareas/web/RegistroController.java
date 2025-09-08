@@ -43,6 +43,8 @@ public class RegistroController {
             @RequestParam("g-recaptcha-response") String captchaResponse
     ) {
         Map<String, Object> response = new HashMap<>();
+
+        System.out.println("captcha tocken: "+captchaResponse);
         if (!captchaService.validarCaptcha(captchaResponse)) {
             response.put("success", false);
             response.put("message", "Captcha inválido, intente nuevamente.");
