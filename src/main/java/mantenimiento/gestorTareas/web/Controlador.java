@@ -126,7 +126,7 @@ public class Controlador {
 
 
         boolean existeLayout = false;
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(layoutDir, "*.svg")) {
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(layoutDir, "*Tenant"+TenantContext.getTenantId()+".svg")) {
             existeLayout = stream.iterator().hasNext(); // true si hay al menos un archivo .svg
         } catch (IOException e) {
             e.printStackTrace(); // Manejo básico de errores. Puedes loguearlo o lanzar excepción si lo prefieres.

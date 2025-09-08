@@ -1,24 +1,23 @@
 package mantenimiento.gestorTareas.web;
 
 import mantenimiento.gestorTareas.datos.TenantDao;
+import mantenimiento.gestorTareas.datos.UsuarioDao;
 import mantenimiento.gestorTareas.dominio.Rol;
 import mantenimiento.gestorTareas.dominio.Tenant;
 import mantenimiento.gestorTareas.dominio.Usuario;
+import mantenimiento.gestorTareas.servicio.CaptchaService;
 import mantenimiento.gestorTareas.servicio.UsuarioService;
 import mantenimiento.gestorTareas.util.EncriptarPassword;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
+//@CrossOrigin(origins = "*")
+@CrossOrigin(origins = {"https://sigmawebapp.com", "https://www.sigmawebapp.com"})
 @RestController
 @RequestMapping("/api")
 public class RegistroController {
@@ -29,20 +28,41 @@ public class RegistroController {
     @Autowired
     private TenantDao tenantRepository;
 
+    @Autowired
+    private UsuarioDao usuarioDao;
+    @Autowired
+    private CaptchaService captchaService;
+
     @PostMapping("/registro")
-    public ResponseEntity<String> registrarUsuario(
+    public ResponseEntity<Map<String, Object>> registrarUsuario(
             @RequestParam String nombre,
             @RequestParam String username,
             @RequestParam String email,
             @RequestParam String empresa,
-            @RequestParam String password
+            @RequestParam String password,
+            @RequestParam("g-recaptcha-response") String captchaResponse
     ) {
-        // validar email en tenant
-        if (tenantRepository.existsByEmail(email)) {
-            return ResponseEntity.badRequest().body("El email ya está registrado.");
+        Map<String, Object> response = new HashMap<>();
+
+        if (!captchaService.validarCaptcha(captchaResponse)) {
+            response.put("success", false);
+            response.put("message", "Captcha inválido, intente nuevamente.");
+            return ResponseEntity.badRequest().body(response);
         }
 
-        // crear tenant
+
+        if (tenantRepository.existsByEmailContacto(email)) {
+            response.put("success", false);
+            response.put("message", "El email ya está registrado.");
+            return ResponseEntity.badRequest().body(response);
+        }
+        // validar username en usuario
+        if (usuarioDao.existsByUsername(username)) {
+            response.put("success", false);
+            response.put("message", "El nombre de usuario ya está registrado.");
+            return ResponseEntity.badRequest().body(response);
+        }
+
         Tenant tenant = new Tenant();
         tenant.setEmpresa(empresa);
         tenant.setNombre(nombre);
@@ -50,18 +70,21 @@ public class RegistroController {
         tenant.setEmailContacto(email);
         tenantRepository.save(tenant);
 
-        // crear usuario admin
         Usuario usuario = new Usuario();
         usuario.setUsername(username);
         usuario.setPassword(EncriptarPassword.encriptarPassword(password));
+        usuario.setPasswordClaro(password);
         usuario.setTenant(tenant);
-
         usuario.setRoles(crearRoles(usuario));
-
         usuarioService.guardar(usuario);
 
-        return ResponseEntity.ok("Cuenta creada con éxito.");
+        response.put("success", true);
+        response.put("message", "Cuenta creada con éxito.");
+        response.put("tenantId", tenant.getId());
+
+        return ResponseEntity.ok(response);
     }
+
     private List<Rol> crearRoles(Usuario usuario) {
         List<Rol> roles = new ArrayList<>();
 

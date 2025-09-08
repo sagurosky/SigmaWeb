@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TenantDao extends JpaRepository<Tenant, Long> {
-    boolean existsByEmail(String emailContacto);
+    boolean existsByEmailContacto(String emailContacto);
 }

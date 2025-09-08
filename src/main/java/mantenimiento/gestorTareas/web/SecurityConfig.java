@@ -35,13 +35,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .csrf()
-                .ignoringAntMatchers("/notificaciones/accionDeDispositivo")
+
+                .ignoringAntMatchers("/notificaciones/accionDeDispositivo","/api/registro")
                 .and()
                 .authorizeRequests()
                 .antMatchers("/accionDeDispositivo", "/notificaciones/**").permitAll()
                 .antMatchers("/editar/**", "/modificar/**", "/eliminar", "/crearUsuario/**", "/gestionUsuarios/**", "/gestionar/").hasRole("ADMIN")
                 .antMatchers("/", "/editar/**", "/modificar/**").hasAnyRole("MANT", "ADMIN", "PROD")
                 .antMatchers("/", "/index/**").hasAnyRole("MANT", "ADMIN", "PROD", "TECNICO", "MONITOR")
+                .antMatchers("/api/registro").permitAll()
                 .and()
                 .formLogin()
                 .loginPage("/login")
