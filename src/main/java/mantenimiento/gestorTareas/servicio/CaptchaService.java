@@ -27,6 +27,9 @@ public class CaptchaService {
         ResponseEntity<Map> recaptchaResponse =
                 restTemplate.postForEntity(GOOGLE_RECAPTCHA_VERIFY_URL, body, Map.class);
 
+
+        System.out.println("Respuesta CAPTCHA: " + recaptchaResponse.getBody());
+
         if (recaptchaResponse.getBody() == null) return false;
 
         return (Boolean) recaptchaResponse.getBody().get("success");
