@@ -14,7 +14,7 @@ public class CaptchaService {
     private static final String GOOGLE_RECAPTCHA_VERIFY_URL =
             "https://www.google.com/recaptcha/api/siteverify";
 
-    @Value("${google.recaptcha.secret}")
+    @Value("${recaptcha.secret}")
     private String recaptchaSecret;
 
     private final RestTemplate restTemplate = new RestTemplate();
