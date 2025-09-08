@@ -17,6 +17,7 @@ public class CaptchaService {
 
     private String recaptchaSecret= ArchivoExterno.getString("captcha_secret");
 
+
     private final RestTemplate restTemplate = new RestTemplate();
 
     public boolean validarCaptcha(String responseToken) {
@@ -27,7 +28,7 @@ public class CaptchaService {
         ResponseEntity<Map> recaptchaResponse =
                 restTemplate.postForEntity(GOOGLE_RECAPTCHA_VERIFY_URL, body, Map.class);
 
-
+        System.out.println("Secret: "+recaptchaSecret );
         System.out.println("Respuesta CAPTCHA: " + recaptchaResponse.getBody());
 
         if (recaptchaResponse.getBody() == null) return false;
