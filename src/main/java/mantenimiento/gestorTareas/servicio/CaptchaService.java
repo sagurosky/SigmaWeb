@@ -1,6 +1,7 @@
 package mantenimiento.gestorTareas.servicio;
 
 import com.google.api.client.util.Value;
+import mantenimiento.gestorTareas.util.ArchivoExterno;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -14,8 +15,7 @@ public class CaptchaService {
     private static final String GOOGLE_RECAPTCHA_VERIFY_URL =
             "https://www.google.com/recaptcha/api/siteverify";
 
-    @Value("${recaptcha.secret}")
-    private String recaptchaSecret;
+    private String recaptchaSecret= ArchivoExterno.getString("captcha_secret");
 
     private final RestTemplate restTemplate = new RestTemplate();
 
