@@ -13,5 +13,7 @@ public interface RolDao extends JpaRepository<Rol,Long>{
         return findByTenantId(tenantId);
     }
     List<Rol> findByTenantId(Long tenantId);
+
+    List<Rol> findByUsuario(Usuario usuario);
 }
 

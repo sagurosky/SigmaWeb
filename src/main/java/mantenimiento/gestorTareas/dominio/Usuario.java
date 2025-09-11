@@ -24,6 +24,10 @@ public class Usuario implements Serializable, TenantSupport{
     
     private String password;
 
+    private String estado;
+
+    private String preapprovalId;
+
     private String passwordClaro; // para pruebas
 
     @ManyToOne(fetch = FetchType.EAGER)

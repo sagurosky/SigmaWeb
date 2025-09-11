@@ -7,12 +7,10 @@ import java.util.stream.Collectors;
 import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import mantenimiento.gestorTareas.datos.RolDao;
+import mantenimiento.gestorTareas.datos.TenantDao;
 import mantenimiento.gestorTareas.datos.UsuarioDao;
 import mantenimiento.gestorTareas.dominio.*;
-import mantenimiento.gestorTareas.servicio.ActivoService;
-import mantenimiento.gestorTareas.servicio.Servicio;
-import mantenimiento.gestorTareas.servicio.TecnicoService;
-import mantenimiento.gestorTareas.servicio.UsuarioService;
+import mantenimiento.gestorTareas.servicio.*;
 import mantenimiento.gestorTareas.util.ArchivoExterno;
 import mantenimiento.gestorTareas.util.EncriptarPassword;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,8 +37,10 @@ public class ControladorUsuarios {
     TecnicoService tecnicoService;
     @Autowired
     ActivoService activoService;
-
-
+    @Autowired
+    MpService mpService;
+    @Autowired
+    TenantDao tenantDao;
     
 //    @PostMapping("/generarAdmin")
 //    public String generarAdmin( Errors errores) {
@@ -111,9 +111,38 @@ public class ControladorUsuarios {
         model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
         return "crearUsuario";
     }
-
     @PostMapping("/gestionar")
     public String gestionar(@Valid Usuario usuario, Errors errores, Rol rol, Model model) {
+
+        Boolean yaExiste = usuarioDao.findByUsername(usuario.getUsername()) != null;
+        if (errores.hasErrors() || yaExiste) {
+            if (yaExiste) {
+                errores.rejectValue("username", "500", "ya existe ese usuario");
+            }
+            model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
+            return "crearUsuario";
+        }
+
+        // Guardar usuario temporal
+        usuario.setPasswordClaro(usuario.getPassword());
+        usuario.setPassword(EncriptarPassword.encriptarPassword(usuario.getPassword()));
+        usuario.setEstado("PENDIENTE"); // marca temporal
+        usuarioService.guardar(usuario);
+
+        // Guardar rol temporal ligado al usuario
+        rol.setUsuario(usuario);
+        rolDao.save(rol);
+
+        // Crear preaprobación en MercadoPago
+        String initPoint = mpService.crearPreapproval(usuario,
+                tenantDao.findById(TenantContext.getTenantId()).orElse(null).getEmailContacto(), 10000.0);
+
+        // Redirigir al usuario a MercadoPago
+        return "redirect:" + initPoint;
+    }
+
+    @PostMapping("/gestionarViejo")
+    public String gestionarViejo(@Valid Usuario usuario, Errors errores, Rol rol, Model model) {
 
         Boolean yaExiste = usuarioDao.findByUsername(usuario.getUsername()) != null;
 
@@ -139,8 +168,13 @@ public class ControladorUsuarios {
                 rol.setNombre("ROLE_MONITOR");
             }
         }
-    usuario.setPasswordClaro(usuario.getPassword());
+
+        usuario.setPasswordClaro(usuario.getPassword());
         usuario.setPassword(EncriptarPassword.encriptarPassword(usuario.getPassword()));
+
+
+
+
         usuarioService.guardar(usuario);
         usuario = usuarioDao.findByUsername(usuario.getUsername());
         rol.setUsuario(usuario);

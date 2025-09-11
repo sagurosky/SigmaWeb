@@ -23,5 +23,7 @@ public interface UsuarioDao extends JpaRepository<Usuario, Long> {
     List<Usuario> findByTenantId(Long tenantId);
 
 
+    Usuario findByPreapprovalId(String preapprovalId);
+
 }
 
