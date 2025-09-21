@@ -109,6 +109,8 @@ public class ControladorUsuarios {
         //DMS esto es por si quieren hacer trampa poniendo en la url el endpoint
         if(!ArchivoExterno.getString("editarUsuarios").equals("si"))return "redirect:/layout";
         model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
+
+
         return "crearUsuario";
     }
     @PostMapping("/gestionar")
@@ -134,8 +136,9 @@ public class ControladorUsuarios {
         rolDao.save(rol);
 
         // Crear preaprobación en MercadoPago
+        Double monto=Double.parseDouble(ArchivoExterno.getString("monto"));
         String initPoint = mpService.crearPreapproval(usuario,
-                tenantDao.findById(TenantContext.getTenantId()).orElse(null).getEmailContacto(), 10000.0);
+                tenantDao.findById(TenantContext.getTenantId()).orElse(null).getEmailContacto(), monto);
 
         // Redirigir al usuario a MercadoPago
         return "redirect:" + initPoint;

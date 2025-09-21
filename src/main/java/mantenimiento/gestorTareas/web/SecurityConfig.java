@@ -37,6 +37,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf()
 
                 .ignoringAntMatchers("/notificaciones/accionDeDispositivo","/api/registro")
+                .ignoringAntMatchers("/api/usuario/pagoWebhook") // permitir POST sin CSRF
                 .and()
                 .authorizeRequests()
                 .antMatchers("/accionDeDispositivo", "/notificaciones/**").permitAll()
@@ -44,6 +45,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/", "/editar/**", "/modificar/**").hasAnyRole("MANT", "ADMIN", "PROD")
                 .antMatchers("/", "/index/**").hasAnyRole("MANT", "ADMIN", "PROD", "TECNICO", "MONITOR")
                 .antMatchers("/api/registro").permitAll()
+                .antMatchers("/api/usuario/pagoWebhook").permitAll()
                 .and()
                 .formLogin()
                 .loginPage("/login")

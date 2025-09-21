@@ -35,11 +35,12 @@ public class MpService {
 
     public String crearPreapproval(Usuario usuario, String email, Double monto) {
         try {
-            String url = "https://api.mercadopago.com/preapproval_plan";
-
+            String url = "https://api.mercadopago.com/preapproval";
+            log.info("Usando token MP: {}", accessToken);
+            log.info("token mp: "+ArchivoExterno.getString("mp_access_token"));
             Map<String, Object> json = new HashMap<>();
             json.put("reason", "Usuario agregado - " + usuario.getUsername());
-
+            json.put("payer_email", email); // MP valida este email
             Map<String, Object> autoRecurring = new HashMap<>();
             autoRecurring.put("frequency", 1);
             autoRecurring.put("frequency_type", "months");
@@ -58,7 +59,7 @@ public class MpService {
             ));
 
 //            json.put("back_url", "https://sigmawebapp.com/api/usuario/pagoExitoso");
-            json.put("back_url", "https://localhost:8090/inicio/api/usuario/pagoExitoso");
+            json.put("back_url", "https://30c719d7b2a1.ngrok-free.app/api/usuario/pagoExitoso");
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
