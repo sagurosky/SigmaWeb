@@ -245,8 +245,9 @@
          return; // ⛔ Detiene la ejecución si está vacío
      }
 
-
-     const endpoint = /*[[${#httpServletRequest.contextPath}]]*/ '' + '/guardarSvg';
+//DMS esto parece que esta dando problemas cuando hablo en https con ec2 y cloudfront, mando ruta absoluta a ver que pasa
+//     const endpoint = /*[[${#httpServletRequest.contextPath}]]*/ '' + '/guardarSvg';
+     const endpoint = '/guardarSvg';
      const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
      const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
      const clone = svg.cloneNode(true);
@@ -263,9 +264,9 @@
 
          anchor.appendChild(path);
      });
-//DMS elimino la proiedad fill antes de guardarlo en el servidor porquie me esta dando problemas con los parpadeos
+    //DMS elimino la proiedad fill antes de guardarlo en el servidor porquie me esta dando problemas con los parpadeos
 
-clone.querySelectorAll('path').forEach(path => path.removeAttribute('fill'));
+    clone.querySelectorAll('path').forEach(path => path.removeAttribute('fill'));
 
 
      clone.querySelectorAll('image').forEach(img => {
@@ -276,15 +277,15 @@ clone.querySelectorAll('path').forEach(path => path.removeAttribute('fill'));
          }
      });
 
-//DMS codigo insertado para hacer responsiva la imagen
-// Ajustar el SVG para hacerlo responsivo
-clone.removeAttribute("width");
-clone.removeAttribute("height");
-clone.setAttribute("viewBox", "0 0 900 600");
-clone.setAttribute("preserveAspectRatio", "xMidYMid meet");
-clone.style.width = "100vw";
-clone.style.height = "85vh";
-clone.style.display = "block";
+    //DMS codigo insertado para hacer responsiva la imagen
+    // Ajustar el SVG para hacerlo responsivo
+    clone.removeAttribute("width");
+    clone.removeAttribute("height");
+    clone.setAttribute("viewBox", "0 0 900 600");
+    clone.setAttribute("preserveAspectRatio", "xMidYMid meet");
+    clone.style.width = "100vw";
+    clone.style.height = "85vh";
+    clone.style.display = "block";
 
 
 
