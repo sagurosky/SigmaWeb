@@ -67,7 +67,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           port: ${{ secrets.EC2_PORT }}
-          source: "spring-boot-app/*.jar"   # 👈 Ajuste clave
+          source: "gestorTareas-1.0.jar"   # 👈 el nombre exacto que ves en el ls
           target: "/home/ubuntu/app/"
 
       - name: Replace JAR and restart service
