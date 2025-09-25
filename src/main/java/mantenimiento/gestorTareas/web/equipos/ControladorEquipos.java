@@ -77,7 +77,7 @@ public class ControladorEquipos {
 //    }
 
     //planta 3
-    @GetMapping("/activo/{nombre}")
+    @GetMapping("/inicio/activo/{nombre}")
     public String activo(Model model, @PathVariable String nombre) throws IOException {
         log.info("#### "+nombre+" tenant "+TenantContext.getTenantId());
            Activo activo = activoService.findByName(nombre);
@@ -90,7 +90,7 @@ public class ControladorEquipos {
 
     
     //endpoint usado para volver a la pagina del activo desde crear tarea
-    @GetMapping("/activoReturn/{id}")
+    @GetMapping("/inicio/activoReturn/{id}")
     public String activoVolver(Model model, Tarea tarea, Activo activoRequest) {
 
         Activo activoSeleccionado = activo.findById(activoRequest.getId()).orElse(null);
