@@ -55,10 +55,13 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: List files
+      - name: Debug paths
         run: |
           pwd
-          ls -R
+          ls -l
+          ls -l SigmaWeb
+      - name: Move jar to workspace root
+        run: mv SigmaWeb/*.jar .
 
       - name: Copy JAR to EC2 via SSH
         uses: appleboy/scp-action@master
@@ -67,7 +70,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           port: ${{ secrets.EC2_PORT }}
-          source: "SigmaWeb/*.jar"
+          source: "*.jar"
           target: "/home/ubuntu/app/"
 
       - name: Replace JAR and restart service
