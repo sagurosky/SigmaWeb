@@ -323,7 +323,7 @@
              icon: 'success',
              confirmButtonText: 'Aceptar'
            }).then(() => {
-             window.location.href = '/crearLayout';
+             window.location.href = '/inicio/crearLayout';
            });
          } else {
            Swal.fire('Error', 'Ocurrió un problema al guardar.', 'error');
