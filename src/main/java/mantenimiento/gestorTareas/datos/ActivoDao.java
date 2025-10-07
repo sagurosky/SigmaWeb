@@ -20,10 +20,10 @@ public interface ActivoDao extends JpaRepository<Activo, Long> {
 
     List<Activo> findByTenantId(Long tenantId);
 
-    @Query("SELECT t FROM Activo t WHERE t.nombreCamelCase LIKE %?1% AND t.tenant.id = ?2")
+    @Query("SELECT t FROM Activo t WHERE t.nombreCamelCase = ?1 AND t.tenant.id = ?2")
     Activo findByNameAndTenantId(String nombre, Long tenantId);
 
-    @Query("SELECT t FROM Activo t WHERE t.estado LIKE %?1% AND t.tenant.id = ?2")
+    @Query("SELECT t FROM Activo t WHERE t.estado = ?1 AND t.tenant.id = ?2")
     List<Activo> findByStatusAndTenantId(String estado, Long tenantId);
 
     // 🚀 Dejá que Spring Data genere el query automáticamente

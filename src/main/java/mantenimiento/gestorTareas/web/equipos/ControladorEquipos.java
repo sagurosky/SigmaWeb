@@ -83,7 +83,7 @@ public class ControladorEquipos {
 //        log.info("#### "+activo!=null?activo.getNombre():"nada");
            cargarModel(model, activo);
         model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
-            return "/equipos/activo";
+            return "/inicio/equipos/activo";
         }
 
 
