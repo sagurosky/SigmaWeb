@@ -257,7 +257,7 @@
         // id = toCamelCase(id);
          path.setAttribute("id", id);
          const anchor = document.createElementNS(svg.namespaceURI, 'a');
-         anchor.setAttribute('href', `/activo/${toCamelCase(id)}`);
+         anchor.setAttribute('href', `/inicio/activo/${toCamelCase(id)}`);
          path.parentNode.replaceChild(anchor, path);
          //DMS agrego data.estado
          path.setAttribute("data-estado", "operativa");
