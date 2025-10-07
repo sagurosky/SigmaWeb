@@ -167,7 +167,7 @@ public class ControladorInformes {
            model.addAttribute("tiempoDetenido",diferenciaFormateada);
         model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
 
-        return "/inicio/informe";
+        return "informe";
     } 
     @GetMapping("/seleccionarTareaParaInforme/{id}")
     public String seleccionarTareaParaInforme(Model model,@PathVariable("id") Long id)
@@ -247,7 +247,7 @@ public class ControladorInformes {
         model.addAttribute("tiempoRefresco", ArchivoExterno.getString("tiempoRefresco"));
 
 
-        return "/inicio/informe";
+        return "informe";
     } 
     @GetMapping("/validar/{id}")
     public String validar(Model model,@PathVariable("id") Long id)

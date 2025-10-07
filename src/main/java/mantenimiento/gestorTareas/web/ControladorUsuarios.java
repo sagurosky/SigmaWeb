@@ -52,7 +52,7 @@ public class ControladorUsuarios {
 //            if (yaExiste) {
 //                errores.rejectValue("username", "500", "ya existe ese usuario");
 //            }
-//            return "/inicio/login";
+//            return "login";
 //        }
 //        
 //        
@@ -82,7 +82,7 @@ public class ControladorUsuarios {
 //        usuarioService.guardar(usuario);
         
         
-//        return "/inicio/login";
+//        return "login";
 //    }
     
     @GetMapping("/gestionUsuarios")
