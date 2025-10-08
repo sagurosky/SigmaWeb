@@ -621,7 +621,7 @@ setInterval(function() {
 
 function traerEstados(){
     $.ajax({
-        url: '/actualizarEstados/',   // La URL del método en tu controlador
+        url: '/inicio/actualizarEstados/',   // La URL del método en tu controlador
         type: 'GET',                  // Método HTTP  
         success: function(response) {
             
@@ -727,7 +727,7 @@ var funcionTimeout;
 
 function ajax(nombre,estado){
      $.ajax({
-            url: '/traerPreventivosAlLayout/',   // La URL del método en tu controlador
+            url: '/inicio/traerPreventivosAlLayout/',   // La URL del método en tu controlador
             type: 'GET',// Método HTTP  
             data:{nombre:nombre,
                   estado:estado  },// Enviar el nombre del activo como parámetro
