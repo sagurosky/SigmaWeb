@@ -258,7 +258,7 @@ public class ControladorEquipos {
         model.addAttribute("cantidadNeumaticas", cantidadNeumaticas);
         model.addAttribute("cantidadElectronicas", cantidadElectronicas);
         model.addAttribute("cantidadProgramacion", cantidadProgramacion);
-        model.addAttribute("linkFoto", "/recursos/imagenes/" + activo.getNombreCamelCase().replace(" ", "") +"Tenant"+ TenantContext.getTenantId()+".jpg");
+        model.addAttribute("linkFoto", "/inicio/recursos/imagenes/" + activo.getNombreCamelCase().replace(" ", "") +"Tenant"+ TenantContext.getTenantId()+".jpg");
 
         //indicadores
         //mtbf = promedio de minutos en funcionamiento entre fallas, 

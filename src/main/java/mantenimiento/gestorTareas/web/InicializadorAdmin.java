@@ -34,10 +34,14 @@ public class InicializadorAdmin implements CommandLineRunner {
             // Crear tenants temporales
             Tenant tenant1 = new Tenant();
             tenant1.setNombre("Empresa1");
+            tenant1.setEmpresa("Empresa1");
+            tenant1.setEmailContacto("Empresa1@sigmawebapp.com");
             tenantDao.save(tenant1);
 
             Tenant tenant2 = new Tenant();
             tenant2.setNombre("Empresa2");
+            tenant2.setEmpresa("Empresa2");
+            tenant2.setEmailContacto("Empresa2@sigmawebapp.com");
             tenantDao.save(tenant2);
 
             // Crear admin1

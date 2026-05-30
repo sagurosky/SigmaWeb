@@ -18,22 +18,41 @@ import java.util.List;
 import java.util.Properties;
 @Slf4j
 public class ArchivoExterno {
-//DMS AWS
-    private static final String CONFIG_PATH = "/media/sf_personal/sigmaweb/recursos/configuracion.properties";
-//DMS docker
-//    private static final String CONFIG_PATH = "/app/recursos/configuracion.properties";
+    private static final String CONFIG_PATH_LOCAL = "recursos/configuracion.properties";
+    private static final String CONFIG_PATH_CLOUD = "/media/sf_personal/sigmaweb/recursos/configuracion.properties";
+    private static final String CONFIG_PATH_DOCKER = "/app/recursos/configuracion.properties";
+    
     private static final Properties properties = new Properties();
 
     static {
-        try (FileInputStream fis = new FileInputStream(CONFIG_PATH)) {
-            properties.load(fis);
-        } catch (IOException e) {
-            System.err.println("Error cargando archivo de configuración externa: " + e.getMessage());
+        loadProperties();
+    }
+
+    private static void loadProperties() {
+        String[] paths = {CONFIG_PATH_LOCAL, CONFIG_PATH_CLOUD, CONFIG_PATH_DOCKER};
+        boolean loaded = false;
+        for (String path : paths) {
+            try (FileInputStream fis = new FileInputStream(path)) {
+                properties.load(fis);
+                log.info("Archivo de configuración cargado desde: " + path);
+                loaded = true;
+                break;
+            } catch (IOException e) {
+                // Sigue al siguiente path
+            }
+        }
+        if (!loaded) {
+            log.warn("No se pudo cargar ningún archivo de configuración externa. Usando valores por defecto.");
+            // Valores por defecto para local
+            properties.setProperty("nube", "no");
+            properties.setProperty("editorLayout", "si");
+            properties.setProperty("editarUsuarios", "si");
+            properties.setProperty("tiempoRefresco", "5000");
         }
     }
     //DMS prueba CI  
     public static String getString(String key) {
-        return properties.getProperty(key);
+        return properties.getProperty(key, "");
     }
 
     public static Integer getInt(String key) {
@@ -47,34 +66,47 @@ public class ArchivoExterno {
     }
 
     public static void recargar() {
-        try (FileInputStream fis = new FileInputStream(CONFIG_PATH)) {
-            properties.clear();
-            properties.load(fis);
-            log.info("archivo externo recargado");
-        } catch (IOException e) {
-            System.err.println("Error recargando archivo de configuración: " + e.getMessage());
+        properties.clear();
+        loadProperties();
+    }
+
+    public static String getBasePath() {
+        if (getString("nube").equals("si")) {
+            return "/media/sf_personal/sigmaweb/recursos/";
+        } else if (Files.exists(Paths.get("recursos"))) {
+            return "recursos/";
+        } else {
+            return "/app/recursos/";
         }
     }
 
-    public static List<String> nombresLayouts(){
+    public static String getLayoutPath() {
+        return getBasePath() + "layouts/";
+    }
 
-        String  direccion = "";
+    public static String getImagenesPath() {
+        return getBasePath() + "imagenes/";
+    }
 
-        if(ArchivoExterno.getString("nube").equals("si"))
-        {
-            direccion = "/media/sf_personal/sigmaweb/recursos/layouts/";
-        }else
-        {
-            direccion = "/app/recursos/layouts/";
+    public static List<String> nombresLayouts() {
+        String direccion = getLayoutPath();
+        Path layoutDir = Paths.get(direccion);
+
+        if (!Files.exists(layoutDir)) {
+            try {
+                Files.createDirectories(layoutDir);
+            } catch (IOException e) {
+                log.error("Error creando directorio de layouts: " + e.getMessage());
+                return new ArrayList<>();
+            }
         }
-       Path  layoutDir = Paths.get(direccion);
 
         List<String> nombresLayouts = new ArrayList<>();
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(layoutDir, "*.svg")) {
             for (Path entry : stream) {
                 String fileName = entry.getFileName().toString();
-                String suffix = "Tenant"+TenantContext.getTenantId() + ".svg";
+                String suffix = "Tenant" + TenantContext.getTenantId() + ".svg";
 
                 if (fileName.endsWith(suffix)) {
                     // le saco el sufijo tenantId.svg para dejar el nombre original

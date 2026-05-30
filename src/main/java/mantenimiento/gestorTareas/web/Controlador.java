@@ -90,16 +90,17 @@ public class Controlador {
     @Autowired
     private ServletContext servletContext;
 
-
     @GetMapping("/")
     public String inicio(Model model) throws IOException {
-        //si el usuario logueado es un técnico y el apellido es null significa que fue recien creado
-        //por lo tanto lo redirijo a tecnicoDatosPersonales para que cargue su informacion;
+        // si el usuario logueado es un técnico y el apellido es null significa que fue
+        // recien creado
+        // por lo tanto lo redirijo a tecnicoDatosPersonales para que cargue su
+        // informacion;
         String nombreUsuario = SecurityContextHolder.getContext().getAuthentication().getName();
         Usuario usuario = usuarioDao.findByUsername(nombreUsuario);
         if (usuario.getRoles().get(0).getNombre().equals("ROLE_TECNICO")) {
 
-            Tecnico tecnico = tecnicoService.traerPorUsuario(usuario,TenantContext.getTenantId());
+            Tecnico tecnico = tecnicoService.traerPorUsuario(usuario, TenantContext.getTenantId());
 
             if (tecnico.getApellido() == null) {
                 model.addAttribute("tecnico", tecnico);
@@ -109,48 +110,47 @@ public class Controlador {
         }
         Boolean admin = false;
         for (Rol rolUsuario : usuario.getRoles()) {
-            if (rolUsuario.getNombre().equals("ROLE_ADMIN")) admin = true;
+            if (rolUsuario.getNombre().equals("ROLE_ADMIN"))
+                admin = true;
         }
-        if (!admin) return "redirect:/layout";
+        if (!admin)
+            return "redirect:/layout";
 
-//DMS si ya se generó el svg salto al layout. Si quiero volver tengo que redireccionar a "/"
+        // DMS si ya se generó el svg salto al layout. Si quiero volver tengo que
+        // redireccionar a "/"
 
-        Path layoutDir=null;
-        if(ArchivoExterno.getString("nube").equals("si"))
-        {
-            layoutDir = Path.of("/media/sf_personal/sigmaweb/recursos/layouts/");
-        }else
-        {
-            layoutDir = Path.of("/app/recursos/layouts/");
-        }
-
+        Path layoutDir = Path.of(ArchivoExterno.getLayoutPath());
 
         boolean existeLayout = false;
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(layoutDir, "*Tenant"+TenantContext.getTenantId()+".svg")) {
-            existeLayout = stream.iterator().hasNext(); // true si hay al menos un archivo .svg
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(layoutDir,
+                "*Tenant" + TenantContext.getTenantId() + ".svg")) {
+            existeLayout = stream.iterator().hasNext();
         } catch (IOException e) {
-            e.printStackTrace(); // Manejo básico de errores. Puedes loguearlo o lanzar excepción si lo prefieres.
+            log.error("Error buscando layouts: " + e.getMessage());
         }
 
         model.addAttribute("existeLayout", existeLayout);
 
-        if (existeLayout) return "redirect:/layout";
+        if (existeLayout)
+            return "redirect:/layout";
         model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
         model.addAttribute("noTraerEstados", "no");
         return "crearLayout";
 
-
     }
+
     @GetMapping("/recargar-config")
     public String recargar() {
         log.info("configuracion cargada ok");
         ArchivoExterno.recargar();
 
-    return "redirect:/";
+        return "redirect:/";
     }
+
     @GetMapping("/crearLayout")
     public String crearLayout(Model model) throws IOException {
-        if(!ArchivoExterno.getString("editorLayout").equals("si"))return "redirect:/layout";
+        if (!ArchivoExterno.getString("editorLayout").equals("si"))
+            return "redirect:/layout";
 
         model.addAttribute("existeLayout", !ArchivoExterno.nombresLayouts().isEmpty());
         model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
@@ -158,22 +158,15 @@ public class Controlador {
 
         return "crearLayout";
 
-
     }
 
     @PostMapping("/eliminarLayout/{nombre}")
     public String eliminarLayout(@PathVariable String nombre) {
         try {
 
-            Path path=null;
-            nombre=nombre.substring(0,nombre.length()-4);//DMS le quito el .svg
-            if(ArchivoExterno.getString("nube").equals("si"))
-            {
-                 path = Paths.get("/media/sf_personal/sigmaweb/recursos/layouts/", nombre+"Tenant"+TenantContext.getTenantId()+".svg");
-            }else
-            {
-                path = Paths.get("/app/recursos/layouts/",nombre);
-            }
+            nombre = nombre.substring(0, nombre.length() - 4);
+            Path path = Paths.get(ArchivoExterno.getLayoutPath(),
+                    nombre + "Tenant" + TenantContext.getTenantId() + ".svg");
 
             Files.deleteIfExists(path);
         } catch (IOException e) {
@@ -182,26 +175,17 @@ public class Controlador {
         return "redirect:/crearLayout";
     }
 
-
-
-
-
-
-
-
-
-
     @GetMapping("/tareas")
     public String tareas(Model model) {
-        var tareas = tareaService.traerNoCerradas(TiempoUtils.haceAnios(1), TiempoUtils.ahora(),TenantContext.getTenantId());
-        log.info("cantidad: "+tareas.size());
+        var tareas = tareaService.traerNoCerradas(TiempoUtils.haceAnios(1), TiempoUtils.ahora(),
+                TenantContext.getTenantId());
+        log.info("cantidad: " + tareas.size());
         model.addAttribute("tareas", tareas);
         model.addAttribute("todosLosTecnicos", tecnicoService.findAllByTenant());
         model.addAttribute("cantidadActivosDetenidos", activoService.findByStatus("detenida").size());
 
-
         model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
-        //DMS para el menú
+        // DMS para el menú
         List<Tecnico> tecnicosFiltrados = tecnicoService.traerHabilitados(TenantContext.getTenantId()).stream()
                 .filter(t -> t.getUsuario().getRoles().get(0).getNombre().equals("ROLE_TECNICO"))
                 .collect(Collectors.toList());
@@ -212,174 +196,179 @@ public class Controlador {
         model.addAttribute("tiempoRefresco", ArchivoExterno.getString("tiempoRefresco"));
         return "tareas";
     }
-//DMS controlador antes de que me lo de vuelta chatGPT
-   /* @GetMapping("/layout")
-    public String layout(Model model) throws IOException {
+    // DMS controlador antes de que me lo de vuelta chatGPT
+    /*
+     * @GetMapping("/layout")
+     * public String layout(Model model) throws IOException {
+     * 
+     * //traigo todos los activos y mando a la vista variables de falla cuando estan
+     * detenidos o de cierre cuando estan liberadas y faltan cerrar
+     * List<Activo> activos = activo.findAllByTenant();
+     * 
+     * 
+     * for (Activo activo : activos) {
+     * //le paso la variable disponible si la hora cargada de la disponibilidad es
+     * mayor a la hora actual
+     * if (activo.getDisponibilidadHasta() != null &&
+     * activo.getEstado().equals("disponible"))
+     * if (TiempoUtils.ahora().isAfter(activo.getDisponibilidadHasta())) {
+     * activo.setEstado("operativa");
+     * activoService.save(activo);
+     * Tarea tarea=tareaService.traerDisponiblePorActivo(activo).get(0);
+     * tarea.setEstado("finDisponible");
+     * tareaService.save(tarea);
+     * 
+     * }
+     * 
+     * }
+     * 
+     * //cuando el tecnico no tiene rol tecnico(porque lo promovieron) lko saco de
+     * la lista
+     * List<Tecnico> tecnicos=tecnicoService.traerHabilitados();
+     * List<Tecnico> tecnicosFiltrados=new ArrayList<>();
+     * 
+     * for(Tecnico tecnico:tecnicos)
+     * {
+     * if(tecnico.getUsuario().getRoles().get(0).getNombre().equals("ROLE_TECNICO"))
+     * tecnicosFiltrados.add(tecnico);
+     * }
+     * model.addAttribute("tecnicos", tecnicosFiltrados);
+     * 
+     * List<Produccion> oTs = produccionService.traerAbiertas();
+     * 
+     * if (oTs != null)
+     * model.addAttribute("oTs", oTs);
+     * 
+     * 
+     * //DMS 27/3 datos para notificaciones toastr
+     * model.addAttribute("cantidadActivosDetenidos",
+     * activoService.findByStatus("detenida").size());
+     * model.addAttribute("preventivosNoValidados",
+     * preventivoService.traerPreventivosNoValidados());
+     * 
+     * List<Informe> informesSupervisor = new ArrayList<>();
+     * List<Tarea> tareasNoEvaluadas =
+     * tareaService.traerPorEstadoInforme("noEvaluado",TiempoUtils.haceAnios(1),
+     * TiempoUtils.ahora());
+     * ;
+     * tareasNoEvaluadas.addAll(tareaService.traerPorEstadoInforme("noAprobado",
+     * TiempoUtils.haceAnios(1), TiempoUtils.ahora()));
+     * 
+     * for (Tarea tarea : tareasNoEvaluadas) {
+     * informesSupervisor.add(tarea.getInforme());
+     * }
+     * 
+     * 
+     * model.addAttribute("informesPendientesSupervisor", informesSupervisor);
+     * 
+     * String nombreUsuario =
+     * SecurityContextHolder.getContext().getAuthentication().getName();
+     * Usuario usuario = usuarioDao.findByUsername(nombreUsuario);
+     * if (usuario.getRoles().get(0).getNombre().equals("ROLE_TECNICO")) {
+     * Tecnico tecnico = tecnicoService.traerPorUsuario(usuario);
+     * List<Tarea> tareasInformePendienteTecnico =
+     * tareaService.traerPorTecnicoYEstadoInforme(tecnico,
+     * "pendiente",TiempoUtils.haceAnios(1), TiempoUtils.ahora());
+     * List<Tarea> tareasInformeEnRevisionTecnico =
+     * tareaService.traerPorTecnicoYEstadoInforme(tecnico,
+     * "EnRevision",TiempoUtils.haceAnios(1), TiempoUtils.ahora());
+     * tareasInformePendienteTecnico.addAll(tareasInformeEnRevisionTecnico);
+     * 
+     * model.addAttribute("tareasConInformesPendientesTecnico",
+     * tareasInformePendienteTecnico);
+     * }
+     * //DMS 27/3 fin datos para notificaciones toastr
+     * String carpetaLayouts = "/media/sf_personal/sigmaweb/recursos/layouts/";
+     * Path carpeta = Path.of(carpetaLayouts);
+     * String svgContent = "";
+     * List<String> nombresLayouts = new ArrayList<>();
+     * 
+     * try {
+     * if (Files.exists(carpeta) && Files.isDirectory(carpeta)) {
+     * // Obtener todos los archivos .svg ordenados por fecha de modificación (más
+     * antiguos primero)
+     * List<Path> archivosSvg = Files.list(carpeta)
+     * .filter(p -> p.toString().endsWith(".svg"))
+     * .sorted(Comparator.comparingLong(p -> p.toFile().lastModified()))
+     * .collect(Collectors.toList());
+     * 
+     * // Cargar el contenido del más antiguo
+     * if (!archivosSvg.isEmpty()) {
+     * Path archivoMasAntiguo = archivosSvg.get(0);
+     * svgContent = Files.readString(archivoMasAntiguo);
+     * 
+     * // Obtener los nombres de todos los archivos (ordenados)
+     * nombresLayouts = archivosSvg.stream()
+     * .map(p -> p.getFileName().toString())
+     * .collect(Collectors.toList());
+     * } else {
+     * svgContent = "No se encontraron archivos SVG en la carpeta.";
+     * }
+     * } else {
+     * svgContent = "La carpeta de layouts no existe.";
+     * }
+     * } catch (IOException e) {
+     * svgContent = "Error al leer archivos SVG.";
+     * e.printStackTrace();
+     * }
+     * 
+     * // Agregar al modelo
+     * model.addAttribute("svgContent", svgContent);
+     * model.addAttribute("existeLayout", !nombresLayouts.isEmpty());
+     * model.addAttribute("nombresLayouts", nombresLayouts);
+     * 
+     * model.addAttribute("habilitarGestionUsuarios",
+     * ArchivoExterno.getString("editarUsuarios"));
+     * model.addAttribute("habilitarEditorLayout",
+     * ArchivoExterno.getString("editorLayout"));
+     * model.addAttribute("tiempoRefresco",
+     * ArchivoExterno.getString("tiempoRefresco"));
+     * 
+     * return "layout";
+     * }
+     * 
+     */
 
-        //traigo todos los activos y mando a la vista variables de falla cuando estan detenidos o de cierre cuando estan liberadas y faltan cerrar
-        List<Activo> activos = activo.findAllByTenant();
-
-
-        for (Activo activo : activos) {
-//le paso la variable disponible si la hora cargada de la disponibilidad es mayor a la hora actual  
-            if (activo.getDisponibilidadHasta() != null && activo.getEstado().equals("disponible"))
-                if (TiempoUtils.ahora().isAfter(activo.getDisponibilidadHasta())) {
-                    activo.setEstado("operativa");
-                    activoService.save(activo);
-                    Tarea tarea=tareaService.traerDisponiblePorActivo(activo).get(0);
-                    tarea.setEstado("finDisponible");
-                    tareaService.save(tarea);
-
-                }
-
-        }
-
-        //cuando el tecnico no tiene rol tecnico(porque lo promovieron) lko saco de la lista
-        List<Tecnico> tecnicos=tecnicoService.traerHabilitados();
-        List<Tecnico> tecnicosFiltrados=new ArrayList<>();
-
-        for(Tecnico tecnico:tecnicos)
-        {
-            if(tecnico.getUsuario().getRoles().get(0).getNombre().equals("ROLE_TECNICO"))tecnicosFiltrados.add(tecnico);
-        }
-        model.addAttribute("tecnicos", tecnicosFiltrados);
-
-        List<Produccion> oTs = produccionService.traerAbiertas();
-
-        if (oTs != null)
-            model.addAttribute("oTs", oTs);
-
-
-        //DMS 27/3 datos para notificaciones toastr
-        model.addAttribute("cantidadActivosDetenidos", activoService.findByStatus("detenida").size());
-        model.addAttribute("preventivosNoValidados", preventivoService.traerPreventivosNoValidados());
-
-        List<Informe> informesSupervisor = new ArrayList<>();
-        List<Tarea> tareasNoEvaluadas = tareaService.traerPorEstadoInforme("noEvaluado",TiempoUtils.haceAnios(1), TiempoUtils.ahora());
-        ;
-        tareasNoEvaluadas.addAll(tareaService.traerPorEstadoInforme("noAprobado",TiempoUtils.haceAnios(1), TiempoUtils.ahora()));
-
-        for (Tarea tarea : tareasNoEvaluadas) {
-            informesSupervisor.add(tarea.getInforme());
-        }
-
-
-        model.addAttribute("informesPendientesSupervisor", informesSupervisor);
-
-        String nombreUsuario = SecurityContextHolder.getContext().getAuthentication().getName();
-        Usuario usuario = usuarioDao.findByUsername(nombreUsuario);
-        if (usuario.getRoles().get(0).getNombre().equals("ROLE_TECNICO")) {
-            Tecnico tecnico = tecnicoService.traerPorUsuario(usuario);
-            List<Tarea> tareasInformePendienteTecnico = tareaService.traerPorTecnicoYEstadoInforme(tecnico, "pendiente",TiempoUtils.haceAnios(1), TiempoUtils.ahora());
-            List<Tarea> tareasInformeEnRevisionTecnico = tareaService.traerPorTecnicoYEstadoInforme(tecnico, "EnRevision",TiempoUtils.haceAnios(1), TiempoUtils.ahora());
-            tareasInformePendienteTecnico.addAll(tareasInformeEnRevisionTecnico);
-
-            model.addAttribute("tareasConInformesPendientesTecnico", tareasInformePendienteTecnico);
-        }
-        //DMS 27/3 fin datos para notificaciones toastr
-        String carpetaLayouts = "/media/sf_personal/sigmaweb/recursos/layouts/";
-        Path carpeta = Path.of(carpetaLayouts);
-        String svgContent = "";
+    @GetMapping("/layout")
+    public String layoutDefault(Model model) throws IOException {
+        cargarDatosGenerales(model);
+        Path carpeta = Path.of(ArchivoExterno.getLayoutPath());
         List<String> nombresLayouts = new ArrayList<>();
+        String svgContent = "";
+        if (Files.exists(carpeta) && Files.isDirectory(carpeta)) {
+            List<Path> archivosSvg = Files.list(carpeta)
+                    .filter(p -> p.toString().endsWith("Tenant" + TenantContext.getTenantId() + ".svg"))
+                    .sorted(Comparator.comparingLong(p -> p.toFile().lastModified()))
+                    .collect(Collectors.toList());
 
-        try {
-            if (Files.exists(carpeta) && Files.isDirectory(carpeta)) {
-                // Obtener todos los archivos .svg ordenados por fecha de modificación (más antiguos primero)
-                List<Path> archivosSvg = Files.list(carpeta)
-                        .filter(p -> p.toString().endsWith(".svg"))
-                        .sorted(Comparator.comparingLong(p -> p.toFile().lastModified()))
-                        .collect(Collectors.toList());
-
-                // Cargar el contenido del más antiguo
-                if (!archivosSvg.isEmpty()) {
-                    Path archivoMasAntiguo = archivosSvg.get(0);
-                    svgContent = Files.readString(archivoMasAntiguo);
-
-                    // Obtener los nombres de todos los archivos (ordenados)
-                    nombresLayouts = archivosSvg.stream()
-                            .map(p -> p.getFileName().toString())
-                            .collect(Collectors.toList());
-                } else {
-                    svgContent = "No se encontraron archivos SVG en la carpeta.";
-                }
+            if (!archivosSvg.isEmpty()) {
+                Path primero = archivosSvg.get(0);
+                svgContent = Files.readString(primero);
+                nombresLayouts = archivosSvg.stream().map(p -> p.getFileName().toString()).collect(Collectors.toList());
             } else {
-                svgContent = "La carpeta de layouts no existe.";
+                svgContent = "No se encontraron archivos SVG en la carpeta.";
             }
-        } catch (IOException e) {
-            svgContent = "Error al leer archivos SVG.";
-            e.printStackTrace();
         }
-
-// Agregar al modelo
         model.addAttribute("svgContent", svgContent);
-        model.addAttribute("existeLayout", !nombresLayouts.isEmpty());
-        model.addAttribute("nombresLayouts", nombresLayouts);
-
-        model.addAttribute("habilitarGestionUsuarios", ArchivoExterno.getString("editarUsuarios"));
-        model.addAttribute("habilitarEditorLayout", ArchivoExterno.getString("editorLayout"));
-        model.addAttribute("tiempoRefresco", ArchivoExterno.getString("tiempoRefresco"));
-
+        model.addAttribute("existeLayout", !ArchivoExterno.nombresLayouts().isEmpty());
+        model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
         return "layout";
     }
 
-*/
-
-
-   @GetMapping("/layout")
-   public String layoutDefault(Model model) throws IOException {
-       cargarDatosGenerales(model);
-       Path carpeta=null;
-       if(ArchivoExterno.getString("nube").equals("si"))
-       {
-           carpeta = Path.of("/media/sf_personal/sigmaweb/recursos/layouts/");
-       }else
-       {
-           carpeta = Path.of("/app/recursos/layouts/");
-       }
-       List<String> nombresLayouts = new ArrayList<>();
-       String svgContent = "";
-       if (Files.exists(carpeta) && Files.isDirectory(carpeta)) {
-           List<Path> archivosSvg = Files.list(carpeta)
-                   .filter(p -> p.toString().endsWith("Tenant"+TenantContext.getTenantId()+".svg"))
-                   .sorted(Comparator.comparingLong(p -> p.toFile().lastModified()))
-                   .collect(Collectors.toList());
-
-           if (!archivosSvg.isEmpty()) {
-               Path primero = archivosSvg.get(0);
-               svgContent = Files.readString(primero);
-               nombresLayouts = archivosSvg.stream().map(p -> p.getFileName().toString()).collect(Collectors.toList());
-           } else {
-               svgContent = "No se encontraron archivos SVG en la carpeta.";
-           }
-       }
-       model.addAttribute("svgContent", svgContent);
-       model.addAttribute("existeLayout", !ArchivoExterno.nombresLayouts().isEmpty());
-       model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
-       return "layout";
-   }
     @GetMapping("/layout/{nombreArchivo}")
     public String layoutPorNombre(@PathVariable String nombreArchivo, Model model) throws IOException {
         cargarDatosGenerales(model);
 
-        Path carpeta=null;
-        if(ArchivoExterno.getString("nube").equals("si"))
-        {
-            carpeta = Path.of("/media/sf_personal/sigmaweb/recursos/layouts/");
-        }else
-        {
-            carpeta = Path.of("/app/recursos/layouts/");
-        }
-        nombreArchivo=nombreArchivo.substring( 0,nombreArchivo.length()-4 );
+        Path carpeta = Path.of(ArchivoExterno.getLayoutPath());
+        nombreArchivo = nombreArchivo.substring(0, nombreArchivo.length() - 4);
 
-        Path archivo = carpeta.resolve(nombreArchivo+"Tenant"+TenantContext.getTenantId()+".svg");
+        Path archivo = carpeta.resolve(nombreArchivo + "Tenant" + TenantContext.getTenantId() + ".svg");
         String svgContent;
         if (Files.exists(archivo)) {
             svgContent = Files.readString(archivo);
         } else {
             svgContent = "Archivo no encontrado: " + nombreArchivo;
         }
-
-
 
         model.addAttribute("svgContent", svgContent);
         model.addAttribute("existeLayout", !ArchivoExterno.nombresLayouts().isEmpty());
@@ -388,48 +377,54 @@ public class Controlador {
     }
 
     private void cargarDatosGenerales(Model model) {
-       List<Activo> activos = activo.findAllByTenant();
-       for (Activo activo : activos) {
-           if (activo.getDisponibilidadHasta() != null && activo.getEstado().equals("disponible"))
-               if (TiempoUtils.ahora().isAfter(activo.getDisponibilidadHasta())) {
-                   activo.setEstado("operativa");
-                   activoDao.save(activo);
-                   Tarea tarea = tareaService.traerDisponiblePorActivo(activo,TenantContext.getTenantId()).get(0);
-                   tarea.setEstado("finDisponible");
-                   tareaService.save(tarea);
-               }
-       }
+        List<Activo> activos = activo.findAllByTenant();
+        for (Activo activo : activos) {
+            if (activo.getDisponibilidadHasta() != null && activo.getEstado().equals("disponible"))
+                if (TiempoUtils.ahora().isAfter(activo.getDisponibilidadHasta())) {
+                    activo.setEstado("operativa");
+                    activoDao.save(activo);
+                    Tarea tarea = tareaService.traerDisponiblePorActivo(activo, TenantContext.getTenantId()).get(0);
+                    tarea.setEstado("finDisponible");
+                    tareaService.save(tarea);
+                }
+        }
 
-       List<Tecnico> tecnicosFiltrados = tecnicoService.traerHabilitados(TenantContext.getTenantId()).stream()
-               .filter(t -> t.getUsuario().getRoles().get(0).getNombre().equals("ROLE_TECNICO"))
-               .collect(Collectors.toList());
-       model.addAttribute("tecnicos", tecnicosFiltrados);
+        List<Tecnico> tecnicosFiltrados = tecnicoService.traerHabilitados(TenantContext.getTenantId()).stream()
+                .filter(t -> t.getUsuario().getRoles().get(0).getNombre().equals("ROLE_TECNICO"))
+                .collect(Collectors.toList());
+        model.addAttribute("tecnicos", tecnicosFiltrados);
 
-       List<Produccion> oTs = produccionService.traerAbiertas(TenantContext.getTenantId());
-       if (oTs != null) model.addAttribute("oTs", oTs);
+        List<Produccion> oTs = produccionService.traerAbiertas(TenantContext.getTenantId());
+        if (oTs != null)
+            model.addAttribute("oTs", oTs);
 
-       model.addAttribute("cantidadActivosDetenidos", activoService.findByStatus("detenida").size());
-       model.addAttribute("preventivosNoValidados", preventivoService.traerPreventivosNoValidados(TenantContext.getTenantId()));
+        model.addAttribute("cantidadActivosDetenidos", activoService.findByStatus("detenida").size());
+        model.addAttribute("preventivosNoValidados",
+                preventivoService.traerPreventivosNoValidados(TenantContext.getTenantId()));
 
-       List<Tarea> tareasNoEvaluadas = tareaService.traerPorEstadoInforme("noEvaluado", TiempoUtils.haceAnios(1), TiempoUtils.ahora(),TenantContext.getTenantId());
-       tareasNoEvaluadas.addAll(tareaService.traerPorEstadoInforme("noAprobado", TiempoUtils.haceAnios(1), TiempoUtils.ahora(),TenantContext.getTenantId()));
-       List<Informe> informesSupervisor = tareasNoEvaluadas.stream().map(Tarea::getInforme).collect(Collectors.toList());
-       model.addAttribute("informesPendientesSupervisor", informesSupervisor);
+        List<Tarea> tareasNoEvaluadas = tareaService.traerPorEstadoInforme("noEvaluado", TiempoUtils.haceAnios(1),
+                TiempoUtils.ahora(), TenantContext.getTenantId());
+        tareasNoEvaluadas.addAll(tareaService.traerPorEstadoInforme("noAprobado", TiempoUtils.haceAnios(1),
+                TiempoUtils.ahora(), TenantContext.getTenantId()));
+        List<Informe> informesSupervisor = tareasNoEvaluadas.stream().map(Tarea::getInforme)
+                .collect(Collectors.toList());
+        model.addAttribute("informesPendientesSupervisor", informesSupervisor);
 
-       String nombreUsuario = SecurityContextHolder.getContext().getAuthentication().getName();
-       Usuario usuario = usuarioDao.findByUsername(nombreUsuario);
-       if (usuario.getRoles().get(0).getNombre().equals("ROLE_TECNICO")) {
-           Tecnico tecnico = tecnicoService.traerPorUsuario(usuario,TenantContext.getTenantId());
-           List<Tarea> pendientes = tareaService.traerPorTecnicoYEstadoInforme(tecnico, "pendiente", TiempoUtils.haceAnios(1), TiempoUtils.ahora(),TenantContext.getTenantId());
-           pendientes.addAll(tareaService.traerPorTecnicoYEstadoInforme(tecnico, "EnRevision", TiempoUtils.haceAnios(1), TiempoUtils.ahora(),TenantContext.getTenantId()));
-           model.addAttribute("tareasConInformesPendientesTecnico", pendientes);
-       }
+        String nombreUsuario = SecurityContextHolder.getContext().getAuthentication().getName();
+        Usuario usuario = usuarioDao.findByUsername(nombreUsuario);
+        if (usuario.getRoles().get(0).getNombre().equals("ROLE_TECNICO")) {
+            Tecnico tecnico = tecnicoService.traerPorUsuario(usuario, TenantContext.getTenantId());
+            List<Tarea> pendientes = tareaService.traerPorTecnicoYEstadoInforme(tecnico, "pendiente",
+                    TiempoUtils.haceAnios(1), TiempoUtils.ahora(), TenantContext.getTenantId());
+            pendientes.addAll(tareaService.traerPorTecnicoYEstadoInforme(tecnico, "EnRevision",
+                    TiempoUtils.haceAnios(1), TiempoUtils.ahora(), TenantContext.getTenantId()));
+            model.addAttribute("tareasConInformesPendientesTecnico", pendientes);
+        }
 
-       model.addAttribute("habilitarGestionUsuarios", ArchivoExterno.getString("editarUsuarios"));
-       model.addAttribute("habilitarEditorLayout", ArchivoExterno.getString("editorLayout"));
-       model.addAttribute("tiempoRefresco", ArchivoExterno.getString("tiempoRefresco"));
-   }
-
+        model.addAttribute("habilitarGestionUsuarios", ArchivoExterno.getString("editarUsuarios"));
+        model.addAttribute("habilitarEditorLayout", ArchivoExterno.getString("editorLayout"));
+        model.addAttribute("tiempoRefresco", ArchivoExterno.getString("tiempoRefresco"));
+    }
 
     @GetMapping("/crearTarea/{id}")
     public String modificar(Model model, Tarea tarea, Activo activoRequest) {
@@ -440,7 +435,7 @@ public class Controlador {
         model.addAttribute("tarea", tarea);
         model.addAttribute("activos", activo.findAllByTenant());
         model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
-        //DMS para el menú
+        // DMS para el menú
         List<Tecnico> tecnicosFiltrados = tecnicoService.traerHabilitados(TenantContext.getTenantId()).stream()
                 .filter(t -> t.getUsuario().getRoles().get(0).getNombre().equals("ROLE_TECNICO"))
                 .collect(Collectors.toList());
@@ -454,18 +449,20 @@ public class Controlador {
     }
 
     @PostMapping("/guardar")
-    public String guardar(Model model, @Valid Tarea tarea, Errors errores, @RequestParam("file") MultipartFile imagen, @RequestParam(value = "activo", required = false) String activoReq) {
+    public String guardar(Model model, @Valid Tarea tarea, Errors errores, @RequestParam("file") MultipartFile imagen,
+            @RequestParam(value = "activo", required = false) String activoReq) {
 
         if (errores.hasErrors()) {
             model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
             return "crearTarea";
         }
         if (!imagen.isEmpty()) {
-            // Path directorioImagenes = Paths.get("src//main//resources//static//imagenes");
+            // Path directorioImagenes =
+            // Paths.get("src//main//resources//static//imagenes");
             // String ruta = directorioImagenes.toFile().getAbsolutePath();
-            //voy a usar un directorio no relativo para evitar la necesidad de actualizar
-            //cada vez que se agrega una imagen nueva
-            String ruta = "c://AppTareas//recursos";
+            // voy a usar un directorio no relativo para evitar la necesidad de actualizar
+            // cada vez que se agrega una imagen nueva
+            String ruta = ArchivoExterno.getBasePath();
             try {
                 byte[] bytes = imagen.getBytes();
                 Path rutaCompleta = Paths.get(ruta + "//" + imagen.getOriginalFilename());
@@ -477,14 +474,15 @@ public class Controlador {
         }
         Authentication aut = SecurityContextHolder.getContext().getAuthentication();
         tarea.setSolicita(aut.getName());
-        //al solicitar la tarea pasa a estado abierto automaticamente
+        // al solicitar la tarea pasa a estado abierto automaticamente
         tarea.setEstado("abierto");
-        //se guarda el momento de la solicitud para calcular el tiempo de parada
+        // se guarda el momento de la solicitud para calcular el tiempo de parada
         tarea.getActivo().setMomentoDetencion(TiempoUtils.ahora());
         tarea.setMomentoDetencion(TiempoUtils.ahora());
-        if (tarea.getAfectaProduccion().equals("no")) tarea.getActivo().setEstado("operativa condicionada");
-        else tarea.getActivo().setEstado("detenida");
-
+        if (tarea.getAfectaProduccion().equals("no"))
+            tarea.getActivo().setEstado("operativa condicionada");
+        else
+            tarea.getActivo().setEstado("detenida");
 
         // si no es de mantenimiento no genero informe
         if (tarea.getDepartamentoResponsable().equals("mantenimiento")) {
@@ -496,7 +494,8 @@ public class Controlador {
         activo.save(tarea.getActivo());
 
         servicio.guardar(tarea);
-        model.addAttribute("tareas", tareaService.traerNoCerradas(TiempoUtils.haceAnios(1), TiempoUtils.ahora(),TenantContext.getTenantId()));
+        model.addAttribute("tareas", tareaService.traerNoCerradas(TiempoUtils.haceAnios(1), TiempoUtils.ahora(),
+                TenantContext.getTenantId()));
         String url = activoDao.findById(Long.parseLong(activoReq)).orElse(null).getNombre();
         if (activoReq != null) {
             return "redirect:/activo/" + Convertidor.aCamelCase(url);
@@ -511,7 +510,7 @@ public class Controlador {
         model.addAttribute("estadosTareas", Arrays.asList("abierto", "enProceso", "liberada", "cerrada"));
         model.addAttribute("tarea", servicio.encontrar(tarea));
         model.addAttribute("todosLosTecnicos", tecnicoService.findAllByTenant());
-//        model.addAttribute("asignacion", asignacionService.traerPorTarea(tarea));
+        // model.addAttribute("asignacion", asignacionService.traerPorTarea(tarea));
 
         // Crear lista de IDs de técnicos asignados
         Tarea t = servicio.encontrar(tarea);
@@ -525,17 +524,15 @@ public class Controlador {
     }
 
     @PostMapping("/guardarEdicion")
-    public String guardarEdicion(Model model, @Valid Tarea tarea, @RequestParam(value = "tecnicosIds", required = false) List<Long> tecnicosIds) {
+    public String guardarEdicion(Model model, @Valid Tarea tarea,
+            @RequestParam(value = "tecnicosIds", required = false) List<Long> tecnicosIds) {
 
-
-        List<Asignacion> asignaciones = asignacionService.traerPorTarea(tarea,TenantContext.getTenantId());
-
+        List<Asignacion> asignaciones = asignacionService.traerPorTarea(tarea, TenantContext.getTenantId());
 
         if (tecnicosIds != null) {
             for (Asignacion asignacion : asignaciones) {
                 asignacionService.delete(asignacion);
             }
-
 
             for (Long idTecnico : tecnicosIds) {
                 Tecnico tecnico = tecnicoService.getById(idTecnico);
@@ -546,10 +543,10 @@ public class Controlador {
             }
         }
 
-
         servicio.guardar(tarea);
 
-        model.addAttribute("tareas", tareaService.traerNoCerradas(TiempoUtils.haceAnios(1), TiempoUtils.ahora(),TenantContext.getTenantId()));
+        model.addAttribute("tareas", tareaService.traerNoCerradas(TiempoUtils.haceAnios(1), TiempoUtils.ahora(),
+                TenantContext.getTenantId()));
         return "redirect:/tareas";
     }
 
@@ -557,23 +554,34 @@ public class Controlador {
     public String eliminar(Model model, Tarea tarea) {
 
         servicio.eliminar(tarea);
-        model.addAttribute("tareas", tareaService.traerNoCerradas(TiempoUtils.haceAnios(1), TiempoUtils.ahora(),TenantContext.getTenantId()));
+        model.addAttribute("tareas", tareaService.traerNoCerradas(TiempoUtils.haceAnios(1), TiempoUtils.ahora(),
+                TenantContext.getTenantId()));
         return "redirect:/tareas";
     }
 
     @GetMapping("/liberarSolicitud/{id}")
     public String liberar(@RequestHeader(value = "Referer", required = false) String origen, Model model, Tarea tarea) {
+        System.out.println("1");
+
         Tarea t = servicio.encontrar(tarea);
+        System.out.println("2");
         t.setEstado("liberada");
+        System.out.println("3");
+
         t.getActivo().setEstado("liberada");
+        System.out.println("4");
+
         t.setMomentoLiberacion(TiempoUtils.ahora());
+        System.out.println("5");
+
         servicio.guardar(t);
         if (origen.contains(Convertidor.aCamelCase(t.getActivo().getNombre()))) {
             String url = activoDao.findById(t.getActivo().getId()).orElse(null).getNombre();
             return "redirect:/activo/" + Convertidor.aCamelCase(url);
         }
 
-        model.addAttribute("tareas", tareaService.traerNoCerradas(TiempoUtils.haceAnios(1), TiempoUtils.ahora(),TenantContext.getTenantId()));
+        model.addAttribute("tareas", tareaService.traerNoCerradas(TiempoUtils.haceAnios(1), TiempoUtils.ahora(),
+                TenantContext.getTenantId()));
         return "redirect:/tareas";
     }
 
@@ -599,7 +607,8 @@ public class Controlador {
         t.setMomentoAsignacion(TiempoUtils.ahora());
         t.setMotivoDemoraAsignacion(motivoDemoraAsignacion);
         servicio.guardar(t);
-        model.addAttribute("tareas", tareaService.traerNoCerradas(TiempoUtils.haceAnios(1), TiempoUtils.ahora(),TenantContext.getTenantId()));
+        model.addAttribute("tareas", tareaService.traerNoCerradas(TiempoUtils.haceAnios(1), TiempoUtils.ahora(),
+                TenantContext.getTenantId()));
         model.addAttribute("tarea", t);
         String url = activoDao.findById(Long.parseLong(activoReq)).orElse(null).getNombre();
         if (activoReq != null) {
@@ -657,12 +666,11 @@ public class Controlador {
 
         t.setMomentoCierre(TiempoUtils.ahora());
 
-
         if (!t.getDepartamentoResponsable().equals("mantenimiento")) {
             t.setMomentoLiberacion(TiempoUtils.ahora());
         }
 
-//        t.getActivo().setMomentoDetencion(null);
+        // t.getActivo().setMomentoDetencion(null);
         servicio.guardar(t);
 
         if (origen.contains(Convertidor.aCamelCase(t.getActivo().getNombre()))) {
@@ -670,17 +678,18 @@ public class Controlador {
             return "redirect:/activo/" + Convertidor.aCamelCase(url);
         }
 
-
-        model.addAttribute("tareas", tareaService.traerNoCerradas(TiempoUtils.haceAnios(1), TiempoUtils.ahora(),TenantContext.getTenantId()));
+        model.addAttribute("tareas", tareaService.traerNoCerradas(TiempoUtils.haceAnios(1), TiempoUtils.ahora(),
+                TenantContext.getTenantId()));
         return "redirect:/tareas";
     }
 
     @GetMapping("/registro")
     public String registroHistorico(Model model) {
 
-        model.addAttribute("tareas", tareaService.traerCerradas(TiempoUtils.haceAnios(1), TiempoUtils.ahora(),TenantContext.getTenantId()));
+        model.addAttribute("tareas",
+                tareaService.traerCerradas(TiempoUtils.haceAnios(1), TiempoUtils.ahora(), TenantContext.getTenantId()));
         model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
-        //DMS para el menú
+        // DMS para el menú
         List<Tecnico> tecnicosFiltrados = tecnicoService.traerHabilitados(TenantContext.getTenantId()).stream()
                 .filter(t -> t.getUsuario().getRoles().get(0).getNombre().equals("ROLE_TECNICO"))
                 .collect(Collectors.toList());
@@ -695,11 +704,13 @@ public class Controlador {
     @GetMapping("/registroActivo/{id}")
     public String registroHistoricoActivo(Model model, Activo activo) {
 
-//        List<Tarea> tareas = tareaService.traerCerradas(TiempoUtils.haceAnios(1), TiempoUtils.ahora(),TenantContext.getTenantId());
+        // List<Tarea> tareas = tareaService.traerCerradas(TiempoUtils.haceAnios(1),
+        // TiempoUtils.ahora(),TenantContext.getTenantId());
         model.addAttribute("url", Convertidor.aCamelCase(activoDao.findById(activo.getId()).orElse(null).getNombre()));
-        model.addAttribute("tareas", tareaService.traerCerradasPorActivo(activo,TiempoUtils.haceAnios(1), TiempoUtils.ahora(),TenantContext.getTenantId()));
+        model.addAttribute("tareas", tareaService.traerCerradasPorActivo(activo, TiempoUtils.haceAnios(1),
+                TiempoUtils.ahora(), TenantContext.getTenantId()));
         model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
-        //DMS para el menú
+        // DMS para el menú
         List<Tecnico> tecnicosFiltrados = tecnicoService.traerHabilitados(TenantContext.getTenantId()).stream()
                 .filter(t -> t.getUsuario().getRoles().get(0).getNombre().equals("ROLE_TECNICO"))
                 .collect(Collectors.toList());
@@ -712,8 +723,7 @@ public class Controlador {
         return "registro";
     }
 
-
-    //@CrossOrigin(origins = "*")
+    // @CrossOrigin(origins = "*")
     @PostMapping(value = "/guardarSvg", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> saveSvg(
             @RequestParam("svg") MultipartFile svgFile,
@@ -721,19 +731,9 @@ public class Controlador {
             @RequestParam Map<String, MultipartFile> imagenesAdjuntas) { // Recibe todas las imágenes
         try {
             // Guarda el SVG
-            Path svgDestino=null;
-            Path carpetaLayouts=null;
-            if(ArchivoExterno.getString("nube").equals("si"))
-            {
-                svgDestino = Paths.get("/media/sf_personal/sigmaweb/recursos/layouts/" + nombreLayout +"Tenant"+ TenantContext.getTenantId()+".svg");
-                 carpetaLayouts = Paths.get("/media/sf_personal/sigmaweb/recursos/layouts/");
-            }else
-            {
-                svgDestino = Paths.get("/app/recursos/layouts/" + nombreLayout + "Tenant"+TenantContext.getTenantId() +".svg");
-                 carpetaLayouts = Paths.get("/app/recursos/layouts/");
-            }
-
-
+            Path svgDestino = Paths.get(
+                    ArchivoExterno.getLayoutPath() + nombreLayout + "Tenant" + TenantContext.getTenantId() + ".svg");
+            Path carpetaLayouts = Paths.get(ArchivoExterno.getLayoutPath());
 
             // Crear carpeta layouts si no existe
             if (!Files.exists(carpetaLayouts)) {
@@ -741,20 +741,12 @@ public class Controlador {
                 log.info("Carpeta 'layouts' creada en: " + carpetaLayouts.toAbsolutePath());
             }
 
-
-
-            Files.write(svgDestino, svgFile.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            Files.write(svgDestino, svgFile.getBytes(), StandardOpenOption.CREATE,
+                    StandardOpenOption.TRUNCATE_EXISTING);
 
             // Guarda las imágenes en la subcarpeta "imagenes/"
 
-            Path carpetaImagenes=null;
-            if(ArchivoExterno.getString("nube").equals("si"))
-            {
-                carpetaImagenes = Paths.get("/media/sf_personal/sigmaweb/recursos/imagenes/");
-            }else
-            {
-                carpetaImagenes = Paths.get("/app/recursos/imagenes/");
-            }
+            Path carpetaImagenes = Paths.get(ArchivoExterno.getImagenesPath());
 
             // Crear la carpeta si no existe
             if (!Files.exists(carpetaImagenes)) {
@@ -765,7 +757,11 @@ public class Controlador {
                 if ("svg".equals(entrada.getKey())) {
                     continue; // Saltar la clave "svg" para que no se procese como imagen
                 }
-                String nombreArchivo = toCamelCase(entrada.getKey()) +"Tenant"+ TenantContext.getTenantId()+".jpg"; // Mantiene el nombre correcto (idName)
+                String nombreArchivo = toCamelCase(entrada.getKey()) + "Tenant" + TenantContext.getTenantId() + ".jpg"; // Mantiene
+                                                                                                                        // el
+                                                                                                                        // nombre
+                                                                                                                        // correcto
+                                                                                                                        // (idName)
                 MultipartFile archivo = entrada.getValue();
 
                 // Ajuste para evitar errores en la ruta
@@ -775,12 +771,12 @@ public class Controlador {
                     Files.createDirectories(rutaImagen.getParent()); // Asegurar que la carpeta esté creada
                 }
 
-                Files.write(rutaImagen, archivo.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                Files.write(rutaImagen, archivo.getBytes(), StandardOpenOption.CREATE,
+                        StandardOpenOption.TRUNCATE_EXISTING);
                 log.info("Imagen guardada: " + rutaImagen);
             }
 
-
-            generarDatos(new String(svgFile.getBytes(), StandardCharsets.UTF_8),nombreLayout);
+            generarDatos(new String(svgFile.getBytes(), StandardCharsets.UTF_8), nombreLayout);
 
             return ResponseEntity.ok().build();
 
@@ -790,8 +786,7 @@ public class Controlador {
         }
     }
 
-
-    private void generarDatos(String svgContent,String nombreLayout) {
+    private void generarDatos(String svgContent, String nombreLayout) {
         List<String> ids = new ArrayList<>();
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -811,11 +806,12 @@ public class Controlador {
             e.printStackTrace();
         }
 
-
         // Para cada ID, crear un nuevo activo si no existe
         ids.forEach(id -> {
-//            if (!activoService.existsByNombre(id)) { // Asegurate que este método exista en el service/repository
-            if (activoService.findByName(toCamelCase(id))==null) { // Asegurate que este método exista en el service/repository
+            // if (!activoService.existsByNombre(id)) { // Asegurate que este método exista
+            // en el service/repository
+            if (activoService.findByName(toCamelCase(id)) == null) { // Asegurate que este método exista en el
+                                                                     // service/repository
                 Activo activo = new Activo();
                 activo.setNombreCamelCase(Convertidor.aCamelCase(id));
                 activo.setNombre(id);
@@ -826,8 +822,7 @@ public class Controlador {
         });
     }
 
-
-    //    DMS si llego a necesitar la funcion to camel case aca esta
+    // DMS si llego a necesitar la funcion to camel case aca esta
     private String toCamelCase(String str) {
         // Normaliza y elimina acentos
         String normalized = Normalizer.normalize(str, Normalizer.Form.NFD);
@@ -848,11 +843,8 @@ public class Controlador {
                         .append(words[i].substring(1));
             }
 
-
         }
         return camelCaseString.toString();
 
-
     }
 }
-

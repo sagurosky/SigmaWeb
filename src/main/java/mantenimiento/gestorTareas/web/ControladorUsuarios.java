@@ -113,7 +113,7 @@ public class ControladorUsuarios {
 
         return "crearUsuario";
     }
-    @PostMapping("/gestionar")
+//    @PostMapping("/gestionar")
     public String gestionar(@Valid Usuario usuario, Errors errores, Rol rol, Model model) {
 
         Boolean yaExiste = usuarioDao.findByUsername(usuario.getUsername()) != null;
@@ -144,7 +144,7 @@ public class ControladorUsuarios {
         return "redirect:" + initPoint;
     }
 
-    @PostMapping("/gestionarViejo")
+    @PostMapping("/gestionar")
     public String gestionarViejo(@Valid Usuario usuario, Errors errores, Rol rol, Model model) {
 
         Boolean yaExiste = usuarioDao.findByUsername(usuario.getUsername()) != null;

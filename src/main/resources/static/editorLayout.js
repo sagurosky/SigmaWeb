@@ -260,7 +260,7 @@
          anchor.setAttribute('href', `/inicio/activo/${toCamelCase(id)}`);
          path.parentNode.replaceChild(anchor, path);
          //DMS agrego data.estado
-         path.setAttribute("data-estado", "operativa");
+if (!path.hasAttribute('data-estado')) { path.setAttribute('data-estado', 'operativa'); }
 
          anchor.appendChild(path);
      });

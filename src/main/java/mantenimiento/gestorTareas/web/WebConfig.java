@@ -1,6 +1,7 @@
 package mantenimiento.gestorTareas.web;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
@@ -63,7 +64,12 @@ public class WebConfig implements WebMvcConfigurer{
         WebMvcConfigurer.super.addResourceHandlers(registry); //To change body of generated methods, choose Tools | Templates.
 
             //DMS para AWS
-        registry.addResourceHandler("/recursos/**").addResourceLocations("file:/media/sf_personal/sigmaweb/recursos/");
+        String base = ArchivoExterno.getBasePath();
+        if (!base.startsWith("/")) {
+            // Es una ruta relativa para local, la convertimos a absoluta para Spring
+            base = Paths.get(base).toAbsolutePath().toString() + "/";
+        }
+        registry.addResourceHandler("/recursos/**").addResourceLocations("file:" + base);
 
             //DMS docker
 //            registry.addResourceHandler("/recursos/**").addResourceLocations("file:/app/recursos/");
