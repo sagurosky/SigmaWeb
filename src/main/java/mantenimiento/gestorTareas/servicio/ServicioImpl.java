@@ -26,6 +26,8 @@ public class ServicioImpl implements Servicio {
     UsuarioDao usuarioDao;
     @Autowired
     AsignacionDao asignacionDao;
+    @Autowired
+    ActivoService activoService;
 
     @Transactional(readOnly = true)
     @Override
@@ -112,6 +114,7 @@ public class ServicioImpl implements Servicio {
             t.setMomentoLiberacion(TiempoUtils.ahora());
         }
         guardar(t);
+        activoService.save(t.getActivo()); // Desencadenar notificaciones WebSocket
     }
 
     @Autowired
@@ -151,6 +154,7 @@ public class ServicioImpl implements Servicio {
         t.getActivo().setEstado("liberada");
         t.setMomentoLiberacion(TiempoUtils.ahora());
         guardar(t);
+        activoService.save(t.getActivo()); // Desencadenar notificaciones WebSocket
     }
 
 }

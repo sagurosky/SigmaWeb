@@ -491,7 +491,7 @@ public class Controlador {
             tarea.setInforme(informe);
 
         }
-        activo.save(tarea.getActivo());
+        activoService.save(tarea.getActivo());
 
         servicio.guardar(tarea);
         model.addAttribute("tareas", tareaService.traerNoCerradas(TiempoUtils.haceAnios(1), TiempoUtils.ahora(),

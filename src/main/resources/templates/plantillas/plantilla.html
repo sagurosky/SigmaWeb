@@ -196,15 +196,18 @@ let isYellow;
     // Traer estado inicial
     traerEstados();
 
-    // Conectar WebSocket para recibir actualizaciones en tiempo real
-    var socket = new SockJS('/ws-sigmaweb');
+    // Conectar WebSocket - usar el context path de la app
+    var contextPath = /*[[@{/}]]*/ '/inicio/';
+    var wsUrl = contextPath + 'ws-sigmaweb';
+    var socket = new SockJS(wsUrl);
     var stompClient = Stomp.over(socket);
     stompClient.debug = null; // Ocultar logs en consola
 
     stompClient.connect({}, function (frame) {
-        console.log('Conectado a WebSocket de Sigmaweb');
+        console.log('Conectado a WebSocket de Sigmaweb en: ' + wsUrl);
         stompClient.subscribe('/topic/activos', function (message) {
             var activoActualizado = JSON.parse(message.body);
+            console.log('WS recibido:', activoActualizado);
             // Actualizar el estado en el mapa local
             elementosParpadeantes[activoActualizado.nombre] = {
                 estado: activoActualizado.estado,
@@ -212,7 +215,9 @@ let isYellow;
             };
         });
     }, function(error) {
-        console.error("Error conectando a WebSocket", error);
+        console.error("Error conectando a WebSocket, activando polling de respaldo", error);
+        // Fallback: si no conecta, volver al polling
+        setInterval(function() { traerEstados(); }, tiempoRefresco);
     });
 }
 

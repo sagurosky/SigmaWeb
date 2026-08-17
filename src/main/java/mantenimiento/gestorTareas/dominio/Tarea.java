@@ -8,6 +8,8 @@ import javax.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @Data
 @Entity
@@ -35,8 +37,9 @@ public class Tarea implements Serializable, TenantSupport {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "evaluacion")
     private Evaluacion evaluacion;
-    // DMS el JsonIgnore evita el error de recursividad infinita (si lo saco falla al cargar activo). Considerar si falla con preventivos o informes
     @JsonIgnore
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     @OneToMany( cascade=CascadeType.ALL, mappedBy = "tarea")
     private List<Asignacion> asignaciones;
     

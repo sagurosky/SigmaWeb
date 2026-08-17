@@ -38,6 +38,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
                 .ignoringAntMatchers("/notificaciones/accionDeDispositivo","/api/registro")
                 .ignoringAntMatchers("/api/usuario/pagoWebhook") // permitir POST sin CSRF
+                .ignoringAntMatchers("/ws-sigmaweb/**") // permitir handshake de WebSocket sin CSRF
                 .and()
                 .authorizeRequests()
                 .antMatchers("/accionDeDispositivo", "/notificaciones/**").permitAll()
