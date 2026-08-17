@@ -12,6 +12,10 @@ import mantenimiento.gestorTareas.dominio.Usuario;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import mantenimiento.gestorTareas.dominio.Evaluacion;
+import mantenimiento.gestorTareas.dominio.Tecnico;
+import mantenimiento.gestorTareas.dominio.Asignacion;
+import mantenimiento.gestorTareas.util.TiempoUtils;
 
 @Service
 public class ServicioImpl implements Servicio {
@@ -94,6 +98,59 @@ public class ServicioImpl implements Servicio {
         tareaDao.delete(t);
     }
 
-  
+    @Transactional
+    @Override
+    public void cerrarSolicitud(Tarea tarea, Evaluacion evaluacion) {
+        Tarea t = encontrar(tarea);
+        t.getActivo().setEstado("operativa");
+        t.setEstado("cerrada");
+        
+        t.setEvaluacion(evaluacion);
+        t.setMomentoCierre(TiempoUtils.ahora());
+
+        if (t.getDepartamentoResponsable() != null && !t.getDepartamentoResponsable().equals("mantenimiento")) {
+            t.setMomentoLiberacion(TiempoUtils.ahora());
+        }
+        guardar(t);
+    }
+
+    @Autowired
+    TecnicoService tecnicoService;
+    
+    @Autowired
+    AsignacionService asignacionService;
+
+    @Transactional
+    @Override
+    public void asignarSolicitud(Tarea tarea, java.util.List<Long> tecnicosIds, String motivoDemoraAsignacion) {
+        Tarea t = encontrar(tarea);
+        java.util.List<Asignacion> asignaciones = new java.util.ArrayList<>();
+
+        if (tecnicosIds != null) {
+            for (Long idTecnico : tecnicosIds) {
+                Tecnico tecnico = tecnicoService.getById(idTecnico);
+                Asignacion asignacion = new Asignacion();
+                asignacion.setTecnico(tecnico);
+                asignacion.setTarea(tarea);
+                asignaciones.add(asignacion);
+            }
+        }
+
+        t.setAsignaciones(asignaciones);
+        t.setEstado("enProceso");
+        t.setMomentoAsignacion(TiempoUtils.ahora());
+        t.setMotivoDemoraAsignacion(motivoDemoraAsignacion);
+        guardar(t);
+    }
+
+    @Transactional
+    @Override
+    public void liberarSolicitud(Tarea tarea) {
+        Tarea t = encontrar(tarea);
+        t.setEstado("liberada");
+        t.getActivo().setEstado("liberada");
+        t.setMomentoLiberacion(TiempoUtils.ahora());
+        guardar(t);
+    }
 
 }

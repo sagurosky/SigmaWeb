@@ -561,21 +561,10 @@ public class Controlador {
 
     @GetMapping("/liberarSolicitud/{id}")
     public String liberar(@RequestHeader(value = "Referer", required = false) String origen, Model model, Tarea tarea) {
-        System.out.println("1");
-
         Tarea t = servicio.encontrar(tarea);
-        System.out.println("2");
-        t.setEstado("liberada");
-        System.out.println("3");
-
-        t.getActivo().setEstado("liberada");
-        System.out.println("4");
-
-        t.setMomentoLiberacion(TiempoUtils.ahora());
-        System.out.println("5");
-
-        servicio.guardar(t);
-        if (origen.contains(Convertidor.aCamelCase(t.getActivo().getNombre()))) {
+        servicio.liberarSolicitud(t);
+        
+        if (origen != null && origen.contains(Convertidor.aCamelCase(t.getActivo().getNombre()))) {
             String url = activoDao.findById(t.getActivo().getId()).orElse(null).getNombre();
             return "redirect:/activo/" + Convertidor.aCamelCase(url);
         }
@@ -591,27 +580,16 @@ public class Controlador {
             @RequestParam(value = "activoReq", required = false) String activoReq,
             @RequestParam(value = "tecnicosIds", required = false) List<Long> tecnicosIds,
             Model model, Tarea tarea) {
-        Tarea t = servicio.encontrar(tarea);
-        List<Asignacion> asignaciones = new ArrayList<>();
-
-        for (Long idTecnico : tecnicosIds) {
-            Tecnico tecnico = tecnicoService.getById(idTecnico);
-            Asignacion asignacion = new Asignacion();
-            asignacion.setTecnico(tecnico);
-            asignacion.setTarea(tarea);
-            asignaciones.add(asignacion);
-        }
-
-        t.setAsignaciones(asignaciones);
-        t.setEstado("enProceso");
-        t.setMomentoAsignacion(TiempoUtils.ahora());
-        t.setMotivoDemoraAsignacion(motivoDemoraAsignacion);
-        servicio.guardar(t);
+        
+        servicio.asignarSolicitud(tarea, tecnicosIds, motivoDemoraAsignacion);
+        
         model.addAttribute("tareas", tareaService.traerNoCerradas(TiempoUtils.haceAnios(1), TiempoUtils.ahora(),
                 TenantContext.getTenantId()));
+        Tarea t = servicio.encontrar(tarea);
         model.addAttribute("tarea", t);
-        String url = activoDao.findById(Long.parseLong(activoReq)).orElse(null).getNombre();
+        
         if (activoReq != null) {
+            String url = activoDao.findById(Long.parseLong(activoReq)).orElse(null).getNombre();
             return "redirect:/activo/" + Convertidor.aCamelCase(url);
         }
         return "redirect:/tareas";
@@ -639,10 +617,6 @@ public class Controlador {
             @RequestHeader(value = "Referer", required = false) String origen,
             Model model, Tarea tarea) {
 
-        Tarea t = servicio.encontrar(tarea);
-        t.getActivo().setEstado("operativa");
-        t.setEstado("cerrada");
-
         Evaluacion evaluacion = new Evaluacion();
         evaluacion.setSatisfaccion(satisfaccion);
         evaluacion.setPredisposicion(predisposicion);
@@ -662,18 +636,10 @@ public class Controlador {
         evaluacion.setAutogestion(autogestion);
         evaluacion.setFormacionContinua(formacionContinua);
 
-        t.setEvaluacion(evaluacion);
+        servicio.cerrarSolicitud(tarea, evaluacion);
+        Tarea t = servicio.encontrar(tarea);
 
-        t.setMomentoCierre(TiempoUtils.ahora());
-
-        if (!t.getDepartamentoResponsable().equals("mantenimiento")) {
-            t.setMomentoLiberacion(TiempoUtils.ahora());
-        }
-
-        // t.getActivo().setMomentoDetencion(null);
-        servicio.guardar(t);
-
-        if (origen.contains(Convertidor.aCamelCase(t.getActivo().getNombre()))) {
+        if (origen != null && origen.contains(Convertidor.aCamelCase(t.getActivo().getNombre()))) {
             String url = activoDao.findById(t.getActivo().getId()).orElse(null).getNombre();
             return "redirect:/activo/" + Convertidor.aCamelCase(url);
         }

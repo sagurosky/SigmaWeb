@@ -15,6 +15,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.mvc.WebContentInterceptor;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 
@@ -47,6 +48,13 @@ public class WebConfig implements WebMvcConfigurer{
     @Override
     public void addInterceptors(InterceptorRegistry registro){
         registro.addInterceptor(localeChangeInterceptor());
+        
+        WebContentInterceptor cacheInterceptor = new WebContentInterceptor();
+        cacheInterceptor.setCacheSeconds(0);
+        cacheInterceptor.setUseExpiresHeader(true);
+        cacheInterceptor.setUseCacheControlHeader(true);
+        cacheInterceptor.setUseCacheControlNoStore(true);
+        registro.addInterceptor(cacheInterceptor);
     }
     
     @Override

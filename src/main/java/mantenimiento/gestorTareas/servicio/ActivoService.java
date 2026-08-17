@@ -11,7 +11,10 @@ import mantenimiento.gestorTareas.dominio.TenantContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import java.util.HashMap;
+import java.util.Map;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -22,6 +25,9 @@ public class ActivoService {
 
     @Autowired
     private TenantDao tenantDao;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     public List<Activo> listar() {
         Long tenantId = TenantContext.getTenantId();
@@ -46,7 +52,16 @@ public class ActivoService {
                             "Tenant con id " + TenantContext.getTenantId() + " no encontrado"));
             activo.setTenant(tenant);
         }
-        return activoDao.save(activo);
+        Activo savedActivo = activoDao.save(activo);
+        
+        // Push notification of the asset state via WebSockets
+        Map<String, String> payload = new HashMap<>();
+        payload.put("nombre", savedActivo.getNombre());
+        payload.put("estado", savedActivo.getEstado());
+        payload.put("layout", savedActivo.getLayout());
+        messagingTemplate.convertAndSend("/topic/activos", payload);
+        
+        return savedActivo;
     }
 
     @Transactional

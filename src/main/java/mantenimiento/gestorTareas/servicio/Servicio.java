@@ -12,5 +12,8 @@ public interface Servicio  {
     public Usuario encontrarUsuario(Usuario usuario);
     public void guardar(Tarea tarea);
     public void eliminar(Tarea tarea);
+    public void cerrarSolicitud(Tarea tarea, mantenimiento.gestorTareas.dominio.Evaluacion evaluacion);
+    public void asignarSolicitud(Tarea tarea, List<Long> tecnicosIds, String motivoDemoraAsignacion);
+    public void liberarSolicitud(Tarea tarea);
     
 }

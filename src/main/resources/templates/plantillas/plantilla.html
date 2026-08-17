@@ -12,6 +12,8 @@
         <script th:src="@{/webjars/popper.js/umd/popper.min.js}"></script>
         <script th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
         <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css'>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 
     </head>
 
@@ -190,11 +192,29 @@ let isYellow;
 
 //console.log("traer estados: "+noTraerEstados);
 
- if(noTraerEstados!='no'||noTraerEstados==null)
-setInterval(function() {
-   traerEstados();
-}, tiempoRefresco);  //  milisegundos
+ if(noTraerEstados!='no'||noTraerEstados==null) {
+    // Traer estado inicial
+    traerEstados();
 
+    // Conectar WebSocket para recibir actualizaciones en tiempo real
+    var socket = new SockJS('/ws-sigmaweb');
+    var stompClient = Stomp.over(socket);
+    stompClient.debug = null; // Ocultar logs en consola
+
+    stompClient.connect({}, function (frame) {
+        console.log('Conectado a WebSocket de Sigmaweb');
+        stompClient.subscribe('/topic/activos', function (message) {
+            var activoActualizado = JSON.parse(message.body);
+            // Actualizar el estado en el mapa local
+            elementosParpadeantes[activoActualizado.nombre] = {
+                estado: activoActualizado.estado,
+                layout: activoActualizado.layout
+            };
+        });
+    }, function(error) {
+        console.error("Error conectando a WebSocket", error);
+    });
+}
 
 
 
