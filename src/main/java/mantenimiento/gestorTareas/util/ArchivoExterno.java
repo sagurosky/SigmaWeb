@@ -71,12 +71,20 @@ public class ArchivoExterno {
     }
 
     public static String getBasePath() {
-        if (getString("nube").equals("si")) {
+        if ("si".equals(getString("nube"))) {
             return "/media/sf_personal/sigmaweb/recursos/";
-        } else if (Files.exists(Paths.get("recursos"))) {
-            return "recursos/";
-        } else {
+        } else if (Files.exists(Paths.get("/app/recursos"))) {
             return "/app/recursos/";
+        } else {
+            Path localRecursos = Paths.get("recursos");
+            if (!Files.exists(localRecursos)) {
+                try {
+                    Files.createDirectories(localRecursos);
+                } catch (IOException e) {
+                    log.error("Error creando directorio recursos local: " + e.getMessage());
+                }
+            }
+            return "recursos/";
         }
     }
 
@@ -117,7 +125,9 @@ public class ArchivoExterno {
 
             nombresLayouts.sort(Comparator.comparing(name -> {
                 try {
-                    return Files.getLastModifiedTime(layoutDir.resolve(name)).toMillis();
+                    String suffix = "Tenant" + TenantContext.getTenantId() + ".svg";
+                    String realFileName = name.endsWith(".svg") ? name.substring(0, name.length() - 4) + suffix : name;
+                    return Files.getLastModifiedTime(layoutDir.resolve(realFileName)).toMillis();
                 } catch (IOException e) {
                     return 0L;
                 }

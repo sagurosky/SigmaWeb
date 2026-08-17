@@ -388,13 +388,13 @@ if(inicioDeActividades!=null)
 //        else
             model.addAttribute("pocosDatos",true);
 
-        Path carpeta=null;
-        if(ArchivoExterno.getString("nube").equals("si"))
-        {
-             carpeta = Path.of("/media/sf_personal/sigmaweb/recursos/layouts/");
-        }else
-        {
-             carpeta = Path.of("/app/recursos/layouts/");
+        Path carpeta = Path.of(ArchivoExterno.getLayoutPath());
+        if (!Files.exists(carpeta)) {
+            try {
+                Files.createDirectories(carpeta);
+            } catch (IOException e) {
+                // Manejar error si ocurre al crear la carpeta
+            }
         }
 
 

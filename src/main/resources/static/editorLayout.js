@@ -35,13 +35,23 @@
    const reader = new FileReader();
    reader.onload = evt => {
      const href = evt.target.result;
-     if (backgroundImage) backgroundImage.remove();
-     const imgEl = document.createElementNS(svg.namespaceURI, 'image');
-     imgEl.setAttributeNS('http://www.w3.org/1999/xlink','href', href);
-     imgEl.setAttribute('x',0); imgEl.setAttribute('y',0);
-     imgEl.setAttribute('width', svg.getAttribute('width'));
-     imgEl.setAttribute('height', svg.getAttribute('height'));
-     svg.prepend(imgEl); backgroundImage = imgEl;
+     const tempImg = new Image();
+     tempImg.onload = () => {
+       const w = tempImg.naturalWidth || 900;
+       const h = tempImg.naturalHeight || 600;
+       svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+       svg.setAttribute('width', w);
+       svg.setAttribute('height', h);
+
+       if (backgroundImage) backgroundImage.remove();
+       const imgEl = document.createElementNS(svg.namespaceURI, 'image');
+       imgEl.setAttributeNS('http://www.w3.org/1999/xlink','href', href);
+       imgEl.setAttribute('x',0); imgEl.setAttribute('y',0);
+       imgEl.setAttribute('width', w);
+       imgEl.setAttribute('height', h);
+       svg.prepend(imgEl); backgroundImage = imgEl;
+     };
+     tempImg.src = href;
    };
    reader.readAsDataURL(file); imgInput.value='';
  });
@@ -68,73 +78,85 @@
    }
  }
 
- // Eventos de mouse
- svg.addEventListener('mousedown', e=>{
-  // if (deleteMode && e.target.tagName==='path') { e.target.remove(); return; }
-   if (deleteMode && (e.target.tagName==='path'||e.target.tagName==='rect'||e.target.tagName==='ellipse')) { e.target.remove(); return; }
-   if (activeHandle) return;
-   if (mode==='edit' && (e.target.tagName==='rect'||e.target.tagName==='ellipse')) {
-     selectedShape=e.target; isDragging=true; addHandles(selectedShape);
-     if (selectedShape.tagName==='rect'){
-       dragOffset.x=e.offsetX-+selectedShape.getAttribute('x');
-       dragOffset.y=e.offsetY-+selectedShape.getAttribute('y');
-     } else {
-       dragOffset.x=e.offsetX-+selectedShape.getAttribute('cx');
-       dragOffset.y=e.offsetY-+selectedShape.getAttribute('cy');
-     }
-     return;
-   }
-   if (!mode) return;
-   startX=e.offsetX; startY=e.offsetY;
-   if (mode==='rect'){
-     shape=document.createElementNS(svg.namespaceURI,'rect');
-     shape.setAttribute('x',startX); shape.setAttribute('y',startY);
-     shape.setAttribute('width',0); shape.setAttribute('height',0);
-   } else {
-     shape=document.createElementNS(svg.namespaceURI,'ellipse');
-     shape.setAttribute('cx',startX); shape.setAttribute('cy',startY);
-     shape.setAttribute('rx',0); shape.setAttribute('ry',0);
-   }
-   shape.setAttribute('fill','rgb(173,216,230)');
-   shape.setAttribute('stroke','none');
-   svg.appendChild(shape);
- });
+  // Conversión precisa de coordenadas de pantalla a coordenadas del sistema SVG
+  function getSVGCoords(e) {
+    const pt = svg.createSVGPoint();
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+    return pt.matrixTransform(svg.getScreenCTM().inverse());
+  }
 
- svg.addEventListener('mousemove', e=>{
-   if (activeHandle) {
-     const el=activeHandle.shape;
-     if (el.tagName==='rect'){
-       const x=+el.getAttribute('x'), y=+el.getAttribute('y');
-       el.setAttribute('width',Math.max(10,e.offsetX-x));
-       el.setAttribute('height',Math.max(10,e.offsetY-y));
-     } else {
-       const cx=+el.getAttribute('cx'), cy=+el.getAttribute('cy');
-       el.setAttribute('rx',Math.abs(e.offsetX-cx));
-       el.setAttribute('ry',Math.abs(e.offsetY-cy));
-     }
-     addHandles(el); return;
-   }
-   if (isDragging && selectedShape) {
-     if(selectedShape.tagName==='rect'){
-       selectedShape.setAttribute('x',e.offsetX-dragOffset.x);
-       selectedShape.setAttribute('y',e.offsetY-dragOffset.y);
-     } else {
-       selectedShape.setAttribute('cx',e.offsetX-dragOffset.x);
-       selectedShape.setAttribute('cy',e.offsetY-dragOffset.y);
-     }
-     addHandles(selectedShape); return;
-   }
-   if (!shape) return;
-   const w=e.offsetX-startX, h=e.offsetY-startY;
-   if(mode==='rect'){
-     shape.setAttribute('width',Math.abs(w)); shape.setAttribute('height',Math.abs(h));
-     if(w<0) shape.setAttribute('x',startX+w);
-     if(h<0) shape.setAttribute('y',startY+h);
-   } else {
-     shape.setAttribute('rx',Math.abs(w/2)); shape.setAttribute('ry',Math.abs(h/2));
-     shape.setAttribute('cx',startX+w/2); shape.setAttribute('cy',startY+h/2);
-   }
- });
+  // Eventos de mouse
+  svg.addEventListener('mousedown', e => {
+    if (deleteMode && (e.target.tagName === 'path' || e.target.tagName === 'rect' || e.target.tagName === 'ellipse')) {
+      e.target.remove();
+      return;
+    }
+    if (activeHandle) return;
+    const pt = getSVGCoords(e);
+    if (mode === 'edit' && (e.target.tagName === 'rect' || e.target.tagName === 'ellipse')) {
+      selectedShape = e.target; isDragging = true; addHandles(selectedShape);
+      if (selectedShape.tagName === 'rect') {
+        dragOffset.x = pt.x - (+selectedShape.getAttribute('x'));
+        dragOffset.y = pt.y - (+selectedShape.getAttribute('y'));
+      } else {
+        dragOffset.x = pt.x - (+selectedShape.getAttribute('cx'));
+        dragOffset.y = pt.y - (+selectedShape.getAttribute('cy'));
+      }
+      return;
+    }
+    if (!mode) return;
+    startX = pt.x; startY = pt.y;
+    if (mode === 'rect') {
+      shape = document.createElementNS(svg.namespaceURI, 'rect');
+      shape.setAttribute('x', startX); shape.setAttribute('y', startY);
+      shape.setAttribute('width', 0); shape.setAttribute('height', 0);
+    } else {
+      shape = document.createElementNS(svg.namespaceURI, 'ellipse');
+      shape.setAttribute('cx', startX); shape.setAttribute('cy', startY);
+      shape.setAttribute('rx', 0); shape.setAttribute('ry', 0);
+    }
+    shape.setAttribute('fill', 'rgb(173,216,230)');
+    shape.setAttribute('stroke', 'none');
+    svg.appendChild(shape);
+  });
+
+  svg.addEventListener('mousemove', e => {
+    const pt = getSVGCoords(e);
+    if (activeHandle) {
+      const el = activeHandle.shape;
+      if (el.tagName === 'rect') {
+        const x = +el.getAttribute('x'), y = +el.getAttribute('y');
+        el.setAttribute('width', Math.max(10, pt.x - x));
+        el.setAttribute('height', Math.max(10, pt.y - y));
+      } else {
+        const cx = +el.getAttribute('cx'), cy = +el.getAttribute('cy');
+        el.setAttribute('rx', Math.abs(pt.x - cx));
+        el.setAttribute('ry', Math.abs(pt.y - cy));
+      }
+      addHandles(el); return;
+    }
+    if (isDragging && selectedShape) {
+      if (selectedShape.tagName === 'rect') {
+        selectedShape.setAttribute('x', pt.x - dragOffset.x);
+        selectedShape.setAttribute('y', pt.y - dragOffset.y);
+      } else {
+        selectedShape.setAttribute('cx', pt.x - dragOffset.x);
+        selectedShape.setAttribute('cy', pt.y - dragOffset.y);
+      }
+      addHandles(selectedShape); return;
+    }
+    if (!shape) return;
+    const w = pt.x - startX, h = pt.y - startY;
+    if (mode === 'rect') {
+      shape.setAttribute('width', Math.abs(w)); shape.setAttribute('height', Math.abs(h));
+      if (w < 0) shape.setAttribute('x', startX + w);
+      if (h < 0) shape.setAttribute('y', startY + h);
+    } else {
+      shape.setAttribute('rx', Math.abs(w / 2)); shape.setAttribute('ry', Math.abs(h / 2));
+      shape.setAttribute('cx', startX + w / 2); shape.setAttribute('cy', startY + h / 2);
+    }
+  });
  svg.addEventListener('mouseup', ()=>{ shape=null; isDragging=false; activeHandle=null; });
 
  // Merge figuras
@@ -279,12 +301,14 @@ if (!path.hasAttribute('data-estado')) { path.setAttribute('data-estado', 'opera
 
     //DMS codigo insertado para hacer responsiva la imagen
     // Ajustar el SVG para hacerlo responsivo
-    clone.removeAttribute("width");
+    const currentViewBox = svg.getAttribute("viewBox") || `0 0 ${svg.getAttribute('width') || 900} ${svg.getAttribute('height') || 600}`;
+    clone.setAttribute("width", "100%");
     clone.removeAttribute("height");
-    clone.setAttribute("viewBox", "0 0 900 600");
+    clone.setAttribute("viewBox", currentViewBox);
     clone.setAttribute("preserveAspectRatio", "xMidYMid meet");
-    clone.style.width = "100vw";
-    clone.style.height = "85vh";
+    clone.style.width = "100%";
+    clone.style.height = "auto";
+    clone.style.maxHeight = "85vh";
     clone.style.display = "block";
 
 

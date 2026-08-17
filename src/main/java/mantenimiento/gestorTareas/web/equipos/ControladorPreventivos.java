@@ -122,13 +122,14 @@ public class ControladorPreventivos {
             //voy a usar un directorio no relativo para evitar la necesidad de actualizar
             //cada vez que se agrega una imagen nueva
 
-            String ruta=null;
-            if(ArchivoExterno.getString("nube").equals("si"))
-            {
-                ruta = "/media/sf_personal/sigmaweb/recursos/imagenes/";
-            }else
-            {
-                ruta = "/app/recursos/imagenes/";
+            String ruta = ArchivoExterno.getImagenesPath();
+            Path carpetaImagenes = Paths.get(ruta);
+            if (!Files.exists(carpetaImagenes)) {
+                try {
+                    Files.createDirectories(carpetaImagenes);
+                } catch (IOException e) {
+                    // Manejar error si ocurre al crear la carpeta
+                }
             }
             
 
