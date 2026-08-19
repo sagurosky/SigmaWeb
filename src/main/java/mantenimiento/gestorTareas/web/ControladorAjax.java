@@ -121,7 +121,7 @@ public class ControladorAjax {
                 Tarea tarea=tareaService.traerDisponiblePorActivo(activo,TenantContext.getTenantId()).get(0);
                 tarea.setEstado("finDisponible");
                 tareaService.save(tarea);
-                activoDao.save(activo);
+                activoService.save(activo);
             }
 
             Map<String, String> datos = new HashMap<>();

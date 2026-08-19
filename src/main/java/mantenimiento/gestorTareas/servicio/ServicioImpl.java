@@ -144,6 +144,7 @@ public class ServicioImpl implements Servicio {
         t.setMomentoAsignacion(TiempoUtils.ahora());
         t.setMotivoDemoraAsignacion(motivoDemoraAsignacion);
         guardar(t);
+        activoService.save(t.getActivo()); // Desencadenar notificaciones WebSocket
     }
 
     @Transactional

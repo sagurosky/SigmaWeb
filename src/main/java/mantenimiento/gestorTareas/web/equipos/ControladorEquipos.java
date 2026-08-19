@@ -107,7 +107,7 @@ public class ControladorEquipos {
     public String cambiarEstado( Model model,  Activo activoRequest) {
         Activo activoSeleccionado = activo.findById(activoRequest.getId()).orElse(null);
         activoSeleccionado.setEstado(activoRequest.getEstado());
-        activo.save(activoSeleccionado);
+        activoService.save(activoSeleccionado);
         
         String url = Convertidor.aCamelCase(activoSeleccionado.getNombre());
         
@@ -154,7 +154,7 @@ public class ControladorEquipos {
 
         tareaService.save(tarea);
 
-        activo.save(activoSeleccionado);
+        activoService.save(activoSeleccionado);
         
         String url = Convertidor.aCamelCase(activoSeleccionado.getNombre());
         
@@ -173,7 +173,7 @@ public class ControladorEquipos {
         activoSeleccionado.setEstado("operativa");
         activoSeleccionado.setDisponibilidadHasta(null);
 //        
-        activo.save(activoSeleccionado);
+        activoService.save(activoSeleccionado);
 
         Tarea tarea=tareaService.traerDisponiblePorActivo(activoSeleccionado, TenantContext.getTenantId()).get(0);
 
@@ -198,7 +198,7 @@ public class ControladorEquipos {
         activoSeleccionado.setEstado("operativa");
         activoSeleccionado.setDisponibilidadHasta(null);
 //
-        activo.save(activoSeleccionado);
+        activoService.save(activoSeleccionado);
 
         Tarea tarea=tareaService.traerNoCerradaPorActivo(activoSeleccionado,TenantContext.getTenantId()).get(0);
 

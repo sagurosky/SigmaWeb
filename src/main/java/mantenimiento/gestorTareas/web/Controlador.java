@@ -382,7 +382,7 @@ public class Controlador {
             if (activo.getDisponibilidadHasta() != null && activo.getEstado().equals("disponible"))
                 if (TiempoUtils.ahora().isAfter(activo.getDisponibilidadHasta())) {
                     activo.setEstado("operativa");
-                    activoDao.save(activo);
+                    activoService.save(activo);
                     Tarea tarea = tareaService.traerDisponiblePorActivo(activo, TenantContext.getTenantId()).get(0);
                     tarea.setEstado("finDisponible");
                     tareaService.save(tarea);

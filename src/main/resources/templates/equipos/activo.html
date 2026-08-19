@@ -591,11 +591,7 @@
                                             </div>
                                         </div>
 
-                                        <!--                                                   
-                                                    <label th:text="'evaluación del trabajo realizado: '"/>
-                                                    <textArea th:id="evaluacion" th:name="evaluacion" class="form-control"></textArea>
-                                                    <label th:text="'si existió demora en cierre ingrese motivo: '"/>
-                                                    <textArea th:id="motivoDemoraCierre" th:name="motivoDemoraCierre" class="form-control"></textArea>    -->
+                                       
                                     </div>
                                     <div class="modal-footer">
                                         <button class="btn btn-primary" th:type="submit">Guardar y cerrar</button>
@@ -1146,58 +1142,30 @@
     <script th:inline="javascript">
 
         $(document).ready(function () {
-            // cada 5 seg traigo el estado del activo, si cambia recargo la pagina (por si otro usuario lo modifica)
+            var activo = [[${ activo }]];
 
-            //necesito el dato cuando esta en proceso que es estado de la tarea, pero no siempre esta presente la tarea por eso utilizo logica con estado activo
-            var activo = [[${ activo }]];;
-            var tarea = [[${ tarea }]];;
+            // Conectar WebSocket para recibir actualizaciones en tiempo real de este activo
+            var contextPath = /*[[@{/}]]*/ '/inicio/';
+            var wsUrl = contextPath + 'ws-sigmaweb';
+            var socket = new SockJS(wsUrl);
+            var stompClient = Stomp.over(socket);
+            stompClient.debug = null; // Ocultar logs en consola
 
-            var estado;
-
-            setInterval(function () {
-                if (activo.estado == "detenida" && tarea != null) {
-                    if (tarea.estado == "abierto")
-                        estado = "detenida";
-                    if (tarea.estado == "enProceso")
-                        estado = "enProceso";
-                } else {
-                    estado = activo.estado;
-                }
-                ajax(estado, activo.id);
-            }, 5000);  // 5000 milisegundos = 5 segundos
-
-
-
-            function ajax(estadoActual, activo) {
-                $.ajax({
-                    url: '/inicio/traerEstadoActivo/',   // La URL del método en tu controlador
-                    type: 'GET',// Método HTTP  
-                    data: {
-                        estadoActual: estadoActual,
-                        activo: activo
-                    },// Enviar el estado y el id del activo como parámetro
-                    dataType: 'text', // Esto evita que jQuery lo convierta en un objeto
-                    success: function (response) {
-                        // Si cambia el estado refresco la pagina
-                        if (response == 'true') location.reload();
-
-                    },
-                    error: function (error) {
-                        console.error("Error en la petición", error);
+            stompClient.connect({}, function (frame) {
+                stompClient.subscribe('/topic/activos', function (message) {
+                    var activoActualizado = JSON.parse(message.body);
+                    if (activoActualizado && activoActualizado.nombre === activo.nombre) {
+                        location.reload();
                     }
                 });
-            }
-
-
-
+            }, function (error) {
+                console.error("Error en WebSocket de activo:", error);
+            });
 
             if (activo.estado === "disponible") {
                 document.getElementById("disponibilidadHasta").setAttribute("disabled", "disabled");
             }
-
-
-
-        })
+        });
     </script>
 </body>
 
