@@ -518,7 +518,7 @@
                 <div class="row">
                     <div class="col-md-2" >
 
-                        <button onclick="history.back()" class="btn btn-primary btn-block">Volver</button>
+                        <a th:href="@{${url != null ? '/activo/' + url : '/layout'}}" class="btn btn-primary btn-block">Volver</a>
                     </div>
 
                 </div>

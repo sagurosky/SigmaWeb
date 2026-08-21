@@ -196,138 +196,6 @@ public class Controlador {
         model.addAttribute("tiempoRefresco", ArchivoExterno.getString("tiempoRefresco"));
         return "tareas";
     }
-    // DMS controlador antes de que me lo de vuelta chatGPT
-    /*
-     * @GetMapping("/layout")
-     * public String layout(Model model) throws IOException {
-     * 
-     * //traigo todos los activos y mando a la vista variables de falla cuando estan
-     * detenidos o de cierre cuando estan liberadas y faltan cerrar
-     * List<Activo> activos = activo.findAllByTenant();
-     * 
-     * 
-     * for (Activo activo : activos) {
-     * //le paso la variable disponible si la hora cargada de la disponibilidad es
-     * mayor a la hora actual
-     * if (activo.getDisponibilidadHasta() != null &&
-     * activo.getEstado().equals("disponible"))
-     * if (TiempoUtils.ahora().isAfter(activo.getDisponibilidadHasta())) {
-     * activo.setEstado("operativa");
-     * activoService.save(activo);
-     * Tarea tarea=tareaService.traerDisponiblePorActivo(activo).get(0);
-     * tarea.setEstado("finDisponible");
-     * tareaService.save(tarea);
-     * 
-     * }
-     * 
-     * }
-     * 
-     * //cuando el tecnico no tiene rol tecnico(porque lo promovieron) lko saco de
-     * la lista
-     * List<Tecnico> tecnicos=tecnicoService.traerHabilitados();
-     * List<Tecnico> tecnicosFiltrados=new ArrayList<>();
-     * 
-     * for(Tecnico tecnico:tecnicos)
-     * {
-     * if(tecnico.getUsuario().getRoles().get(0).getNombre().equals("ROLE_TECNICO"))
-     * tecnicosFiltrados.add(tecnico);
-     * }
-     * model.addAttribute("tecnicos", tecnicosFiltrados);
-     * 
-     * List<Produccion> oTs = produccionService.traerAbiertas();
-     * 
-     * if (oTs != null)
-     * model.addAttribute("oTs", oTs);
-     * 
-     * 
-     * //DMS 27/3 datos para notificaciones toastr
-     * model.addAttribute("cantidadActivosDetenidos",
-     * activoService.findByStatus("detenida").size());
-     * model.addAttribute("preventivosNoValidados",
-     * preventivoService.traerPreventivosNoValidados());
-     * 
-     * List<Informe> informesSupervisor = new ArrayList<>();
-     * List<Tarea> tareasNoEvaluadas =
-     * tareaService.traerPorEstadoInforme("noEvaluado",TiempoUtils.haceAnios(1),
-     * TiempoUtils.ahora());
-     * ;
-     * tareasNoEvaluadas.addAll(tareaService.traerPorEstadoInforme("noAprobado",
-     * TiempoUtils.haceAnios(1), TiempoUtils.ahora()));
-     * 
-     * for (Tarea tarea : tareasNoEvaluadas) {
-     * informesSupervisor.add(tarea.getInforme());
-     * }
-     * 
-     * 
-     * model.addAttribute("informesPendientesSupervisor", informesSupervisor);
-     * 
-     * String nombreUsuario =
-     * SecurityContextHolder.getContext().getAuthentication().getName();
-     * Usuario usuario = usuarioDao.findByUsername(nombreUsuario);
-     * if (usuario.getRoles().get(0).getNombre().equals("ROLE_TECNICO")) {
-     * Tecnico tecnico = tecnicoService.traerPorUsuario(usuario);
-     * List<Tarea> tareasInformePendienteTecnico =
-     * tareaService.traerPorTecnicoYEstadoInforme(tecnico,
-     * "pendiente",TiempoUtils.haceAnios(1), TiempoUtils.ahora());
-     * List<Tarea> tareasInformeEnRevisionTecnico =
-     * tareaService.traerPorTecnicoYEstadoInforme(tecnico,
-     * "EnRevision",TiempoUtils.haceAnios(1), TiempoUtils.ahora());
-     * tareasInformePendienteTecnico.addAll(tareasInformeEnRevisionTecnico);
-     * 
-     * model.addAttribute("tareasConInformesPendientesTecnico",
-     * tareasInformePendienteTecnico);
-     * }
-     * //DMS 27/3 fin datos para notificaciones toastr
-     * String carpetaLayouts = "/media/sf_personal/sigmaweb/recursos/layouts/";
-     * Path carpeta = Path.of(carpetaLayouts);
-     * String svgContent = "";
-     * List<String> nombresLayouts = new ArrayList<>();
-     * 
-     * try {
-     * if (Files.exists(carpeta) && Files.isDirectory(carpeta)) {
-     * // Obtener todos los archivos .svg ordenados por fecha de modificación (más
-     * antiguos primero)
-     * List<Path> archivosSvg = Files.list(carpeta)
-     * .filter(p -> p.toString().endsWith(".svg"))
-     * .sorted(Comparator.comparingLong(p -> p.toFile().lastModified()))
-     * .collect(Collectors.toList());
-     * 
-     * // Cargar el contenido del más antiguo
-     * if (!archivosSvg.isEmpty()) {
-     * Path archivoMasAntiguo = archivosSvg.get(0);
-     * svgContent = Files.readString(archivoMasAntiguo);
-     * 
-     * // Obtener los nombres de todos los archivos (ordenados)
-     * nombresLayouts = archivosSvg.stream()
-     * .map(p -> p.getFileName().toString())
-     * .collect(Collectors.toList());
-     * } else {
-     * svgContent = "No se encontraron archivos SVG en la carpeta.";
-     * }
-     * } else {
-     * svgContent = "La carpeta de layouts no existe.";
-     * }
-     * } catch (IOException e) {
-     * svgContent = "Error al leer archivos SVG.";
-     * e.printStackTrace();
-     * }
-     * 
-     * // Agregar al modelo
-     * model.addAttribute("svgContent", svgContent);
-     * model.addAttribute("existeLayout", !nombresLayouts.isEmpty());
-     * model.addAttribute("nombresLayouts", nombresLayouts);
-     * 
-     * model.addAttribute("habilitarGestionUsuarios",
-     * ArchivoExterno.getString("editarUsuarios"));
-     * model.addAttribute("habilitarEditorLayout",
-     * ArchivoExterno.getString("editorLayout"));
-     * model.addAttribute("tiempoRefresco",
-     * ArchivoExterno.getString("tiempoRefresco"));
-     * 
-     * return "layout";
-     * }
-     * 
-     */
 
     @GetMapping("/layout")
     public String layoutDefault(Model model) throws IOException {
@@ -563,7 +431,7 @@ public class Controlador {
     public String liberar(@RequestHeader(value = "Referer", required = false) String origen, Model model, Tarea tarea) {
         Tarea t = servicio.encontrar(tarea);
         servicio.liberarSolicitud(t);
-        
+
         if (origen != null && origen.contains(Convertidor.aCamelCase(t.getActivo().getNombre()))) {
             String url = activoDao.findById(t.getActivo().getId()).orElse(null).getNombre();
             return "redirect:/activo/" + Convertidor.aCamelCase(url);
@@ -580,14 +448,14 @@ public class Controlador {
             @RequestParam(value = "activoReq", required = false) String activoReq,
             @RequestParam(value = "tecnicosIds", required = false) List<Long> tecnicosIds,
             Model model, Tarea tarea) {
-        
+
         servicio.asignarSolicitud(tarea, tecnicosIds, motivoDemoraAsignacion);
-        
+
         model.addAttribute("tareas", tareaService.traerNoCerradas(TiempoUtils.haceAnios(1), TiempoUtils.ahora(),
                 TenantContext.getTenantId()));
         Tarea t = servicio.encontrar(tarea);
         model.addAttribute("tarea", t);
-        
+
         if (activoReq != null) {
             String url = activoDao.findById(Long.parseLong(activoReq)).orElse(null).getNombre();
             return "redirect:/activo/" + Convertidor.aCamelCase(url);

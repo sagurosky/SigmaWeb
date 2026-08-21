@@ -208,9 +208,8 @@ public class ControladorInformes {
         informe.setEstadoInforme("noAprobado");
         
         informeService.save(informe);
-         model.addAttribute("url",url);
         
-        return informes(model);
+        return "redirect:/informes";
     }
     
     
@@ -289,15 +288,7 @@ public class ControladorInformes {
            informeBd.setRevision(informe.getRevision());
            informeBd.setEstadoInforme("enRevision");
            informeService.save(informeBd);
-           
-           
-        return informes(model);
+            return "redirect:/informes";
     } 
-    
-    
-    
-    
-    
-    
-    
+
 }

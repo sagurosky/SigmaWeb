@@ -18,6 +18,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -209,13 +210,19 @@ public class ControladorUsuarios {
         }
         //si es un técnico que vaya a la pagina para cargar sus datos
         if (rol.getNombre().equals("ROLE_TECNICO")) {
-            Tecnico tecnico=new Tecnico();
-            tecnico.setUsuario(usuario);
-            model.addAttribute("tecnico", tecnico);
-            model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
-            return "tecnicoDatosEmpresa";
+            return "redirect:/tecnicoDatosEmpresa/" + usuario.getIdUsuario();
         }
         return "redirect:/gestionUsuarios";
+    }
+
+    @GetMapping("/tecnicoDatosEmpresa/{idUsuario}")
+    public String tecnicoDatosEmpresa(@PathVariable("idUsuario") Long idUsuario, Model model) {
+        Usuario usuario = usuarioDao.findById(idUsuario).orElse(null);
+        Tecnico tecnico = new Tecnico();
+        tecnico.setUsuario(usuario);
+        model.addAttribute("tecnico", tecnico);
+        model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
+        return "tecnicoDatosEmpresa";
     }
 
     @GetMapping("/editarUsuario/{idUsuario}")

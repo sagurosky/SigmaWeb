@@ -99,44 +99,23 @@ public class ControladorProduccion {
     public String cerrarOrdenDeTrabajo(  @PathVariable("id") Long id,@RequestParam("url")String url, Model model,  Produccion produccion) {
         
         Produccion prod=produccionService.findById(produccion.getId()).orElse(null);
-        prod.setFin(TiempoUtils.ahora());
-        prod.setEstado("cerrada");
-        produccionService.save(prod);
-         model.addAttribute("ordenesAbiertas", produccionService.traerAbiertas(TenantContext.getTenantId()));
-          List<String> lineas=Arrays.asList(Produccion.LINEA_1,
-                                                  Produccion.LINEA_2,
-                                                  Produccion.LINEA_3,
-                                                  Produccion.LINEA_4,
-                                                  Produccion.LINEA_5);
-        model.addAttribute("lineas",lineas);
-         model.addAttribute("productos",productoService.findAllByTenant());
-//        log.info("id: "+produccion.getId());
-        
-        model.addAttribute("url",url);
-         model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
-        return "produccion";
+        if (prod != null) {
+            prod.setFin(TiempoUtils.ahora());
+            prod.setEstado("cerrada");
+            produccionService.save(prod);
+        }
+        return "redirect:/produccion/" + url;
     }
      @PostMapping("/modificarCantidad/{id}")
     public String modificarCantidad(  @RequestParam("url")String url,@RequestParam("cantidad")String cantidad, Model model,  Produccion produccion) {
         
-        
         Produccion prod=produccionService.findById(produccion.getId()).orElse(null);
-        prod.setCantidad(cantidad);
-        produccionService.save(prod);
+        if (prod != null) {
+            prod.setCantidad(cantidad);
+            produccionService.save(prod);
+        }
         
-         model.addAttribute("ordenesAbiertas", produccionService.traerAbiertas(TenantContext.getTenantId()));
-          List<String> lineas=Arrays.asList(Produccion.LINEA_1,
-                                                  Produccion.LINEA_2,
-                                                  Produccion.LINEA_3,
-                                                  Produccion.LINEA_4,
-                                                  Produccion.LINEA_5);
-        model.addAttribute("lineas",lineas);
-         model.addAttribute("productos",productoService.findAllByTenant());
-//        log.info("id: "+produccion.getId());
-        
-        model.addAttribute("url",url);
-         model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
-        return "produccion";
+        return "redirect:/produccion/" + url;
     }
     
      @GetMapping("/historialOrdenes/{url}")
@@ -164,21 +143,11 @@ public class ControladorProduccion {
     }
      @GetMapping("/eliminarOrden/{id}")
     public String eliminarOrden(  @PathVariable("id") Long id,@RequestParam("url")String url, Model model ) {
-        model.addAttribute("produccion", new Produccion());
         Produccion prod=produccionService.findById(id).orElse(null);
-        produccionService.delete(prod);
-         model.addAttribute("ordenesAbiertas", produccionService.traerAbiertas(TenantContext.getTenantId()));
-         List<String> lineas=Arrays.asList(Produccion.LINEA_1,
-                                                  Produccion.LINEA_2,
-                                                  Produccion.LINEA_3,
-                                                  Produccion.LINEA_4,
-                                                  Produccion.LINEA_5);
-        model.addAttribute("lineas",lineas);
-         model.addAttribute("productos",productoService.findAllByTenant());
-//        produccionService.save(produccion);
-        model.addAttribute("url",url);
-         model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
-        return "produccion";
+        if (prod != null) {
+            produccionService.delete(prod);
+        }
+        return "redirect:/produccion/" + url;
     }
     
     

@@ -58,12 +58,10 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import mantenimiento.gestorTareas.dominio.Repuesto;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @Slf4j
@@ -95,15 +93,14 @@ public class ControladorRepuestos {
 
     // Muestra la vista para cargar el archivo
     @GetMapping("/repuestos")
-    public String showUploadForm() {
-//        DMS cuando siga con esto cargar el model
-//        model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
-        return "repuestos"; // Nombre de la vista (por ejemplo, uploadForm.html)
+    public String showUploadForm(Model model) {
+        model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
+        return "repuestos";
     }
 
     // Procesa el archivo enviado desde el formulario
     @PostMapping("/cargarExcel")
-    public String cargarExcel(@RequestParam("file") MultipartFile file, Model model) {
+    public String cargarExcel(@RequestParam("file") MultipartFile file, RedirectAttributes redirectAttributes) {
        
         
         
@@ -182,7 +179,7 @@ public class ControladorRepuestos {
         
         
         
-        model.addAttribute("mensaje", "Archivo procesado y datos persistidos correctamente.");
+        redirectAttributes.addFlashAttribute("mensaje", "Archivo procesado y datos persistidos correctamente.");
 
 
 
@@ -193,9 +190,8 @@ public class ControladorRepuestos {
 
 
 
-        model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
         
-        return "uploadForm";
+        return "redirect:/repuestos";
     }
     
     
