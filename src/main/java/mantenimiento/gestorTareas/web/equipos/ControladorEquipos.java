@@ -170,24 +170,27 @@ public class ControladorEquipos {
     @PostMapping("/cancelarDisponibilidad/{id}")
     public String cancelarDisponibilidad( Model model,  Activo activoRequest) {
         Activo activoSeleccionado = activo.findById(activoRequest.getId()).orElse(null);
-        activoSeleccionado.setEstado("operativa");
-        activoSeleccionado.setDisponibilidadHasta(null);
-//        
-        activoService.save(activoSeleccionado);
+        if (activoSeleccionado != null) {
+            List<Tarea> tareasDisponibles = tareaService.traerDisponiblePorActivo(activoSeleccionado, TenantContext.getTenantId());
+            if (tareasDisponibles != null && !tareasDisponibles.isEmpty()) {
+                Tarea tarea = tareasDisponibles.get(0);
+                tarea.setEstado("finDisponible");
+                tarea.setMomentoLiberacion(TiempoUtils.ahora());
+                tareaService.save(tarea);
+            }
 
-        Tarea tarea=tareaService.traerDisponiblePorActivo(activoSeleccionado, TenantContext.getTenantId()).get(0);
-
-        tarea.setEstado("finDisponible");
-        tarea.setMomentoLiberacion(TiempoUtils.ahora());
-
-        tareaService.save(tarea);
+            activoSeleccionado.setEstado("operativa");
+            activoSeleccionado.setDisponibilidadHasta(null);
+            activoService.save(activoSeleccionado);
+        }
         
-        String url = Convertidor.aCamelCase(activoSeleccionado.getNombre());
+        String url = Convertidor.aCamelCase(activoSeleccionado != null ? activoSeleccionado.getNombre() : "");
         
         //me aseguro que el primer caracter sea minuscula sino falla
-        char primerCaracterMinuscula = Character.toLowerCase(url.charAt(0));
-        url=url.substring(1);
-        url=primerCaracterMinuscula+url;
+        if (!url.isEmpty()) {
+            char primerCaracterMinuscula = Character.toLowerCase(url.charAt(0));
+            url = primerCaracterMinuscula + url.substring(1);
+        }
         
         return "redirect:/activo/" + url;
     }
@@ -195,24 +198,59 @@ public class ControladorEquipos {
     @PostMapping("/cerrarCondicionada/{id}")
     public String cerrarCondicionada( Model model,  Activo activoRequest) {
         Activo activoSeleccionado = activo.findById(activoRequest.getId()).orElse(null);
-        activoSeleccionado.setEstado("operativa");
-        activoSeleccionado.setDisponibilidadHasta(null);
-//
-        activoService.save(activoSeleccionado);
+        if (activoSeleccionado != null) {
+            List<Tarea> tareasNoCerradas = tareaService.traerNoCerradaPorActivo(activoSeleccionado, TenantContext.getTenantId());
+            if (tareasNoCerradas != null && !tareasNoCerradas.isEmpty()) {
+                Tarea tarea = tareasNoCerradas.get(0);
+                tarea.setEstado("cerrada");
+                tarea.setMomentoLiberacion(TiempoUtils.ahora());
+                tareaService.save(tarea);
+            }
 
-        Tarea tarea=tareaService.traerNoCerradaPorActivo(activoSeleccionado,TenantContext.getTenantId()).get(0);
+            activoSeleccionado.setEstado("operativa");
+            activoSeleccionado.setDisponibilidadHasta(null);
+            activoService.save(activoSeleccionado);
+        }
 
-        tarea.setEstado("cerrada");
-        tarea.setMomentoLiberacion(TiempoUtils.ahora());
-
-        tareaService.save(tarea);
-
-        String url = Convertidor.aCamelCase(activoSeleccionado.getNombre());
+        String url = Convertidor.aCamelCase(activoSeleccionado != null ? activoSeleccionado.getNombre() : "");
 
         //me aseguro que el primer caracter sea minuscula sino falla
-        char primerCaracterMinuscula = Character.toLowerCase(url.charAt(0));
-        url=url.substring(1);
-        url=primerCaracterMinuscula+url;
+        if (!url.isEmpty()) {
+            char primerCaracterMinuscula = Character.toLowerCase(url.charAt(0));
+            url = primerCaracterMinuscula + url.substring(1);
+        }
+
+        return "redirect:/activo/" + url;
+    }
+
+    @PostMapping("/notificarDetencionCondicionada/{id}")
+    public String notificarDetencionCondicionada( Model model,  Activo activoRequest) {
+        Activo activoSeleccionado = activo.findById(activoRequest.getId()).orElse(null);
+        if (activoSeleccionado != null) {
+            List<Tarea> tareasNoCerradas = tareaService.traerNoCerradaPorActivo(activoSeleccionado, TenantContext.getTenantId());
+            if (tareasNoCerradas != null && !tareasNoCerradas.isEmpty()) {
+                Tarea tarea = tareasNoCerradas.get(0);
+                tarea.setAfectaProduccion("si");
+                tarea.setMomentoDetencion(TiempoUtils.ahora());
+                Authentication aut = SecurityContextHolder.getContext().getAuthentication();
+                if (aut != null && aut.getName() != null) {
+                    tarea.setSolicita(aut.getName());
+                }
+                tareaService.save(tarea);
+            }
+
+            activoSeleccionado.setEstado("detenida");
+            activoSeleccionado.setMomentoDetencion(TiempoUtils.ahora());
+            activoService.save(activoSeleccionado);
+        }
+
+        String url = Convertidor.aCamelCase(activoSeleccionado != null ? activoSeleccionado.getNombre() : "");
+
+        //me aseguro que el primer caracter sea minuscula sino falla
+        if (!url.isEmpty()) {
+            char primerCaracterMinuscula = Character.toLowerCase(url.charAt(0));
+            url = primerCaracterMinuscula + url.substring(1);
+        }
 
         return "redirect:/activo/" + url;
     }
@@ -297,9 +335,10 @@ public class ControladorEquipos {
 
             
             for (Tarea tarea : tareasUltimoAnio) {
-                if(tarea.getMomentoDetencion().isAfter(mesAnterior)&&tarea.getMomentoDetencion().isBefore(finMesAnterior))
+                if (tarea.getMomentoDetencion() != null && tarea.getMomentoLiberacion() != null
+                        && tarea.getMomentoDetencion().isAfter(mesAnterior) && tarea.getMomentoDetencion().isBefore(finMesAnterior))
                 {
-                    minutosDetencion+=Duration.between(tarea.getMomentoDetencion(), tarea.getMomentoLiberacion()).toMinutes();
+                    minutosDetencion += Duration.between(tarea.getMomentoDetencion(), tarea.getMomentoLiberacion()).toMinutes();
                 }   
             }
             

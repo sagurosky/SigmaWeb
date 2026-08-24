@@ -305,7 +305,7 @@ setInterval(function () {
                 elementoSvg.style.fill = '';
                 elementoSvg.setAttribute("data-estado", "operativa");
             }
-if(nombre==='materiasPrimas')console.log(elementoSvg.style.fill);
+
         }
     });
 }, 500);
@@ -382,7 +382,7 @@ if(nombre==='materiasPrimas')console.log(elementoSvg.style.fill);
 </style>
 
             <div class="vertical-menu-content">
-                <!-- Aquí va tu contenido original del menú -->
+                <!-- Aquí va el contenido original del menú -->
                 <div sec:authorize="not hasRole('ROLE_MONITOR') or hasRole('ROLE_ADMIN')">
 
                     <div sec:authorize="hasRole('ROLE_PROD')">
@@ -418,9 +418,9 @@ if(nombre==='materiasPrimas')console.log(elementoSvg.style.fill);
                                     </select>
                                 </div>
                                 <br/>
-                                <div class="row">
-                                    <div th:if="${tecnicos.size > 0}">
-                                        <button type="submit" class="btn btn-primary btn-block">Ver</button>
+                                 <div class="row">
+                                     <div th:if="${tecnicos != null and tecnicos.size > 0}">
+                                         <button type="submit" class="btn btn-primary btn-block">Ver</button>
                                     </div>
                                 </div>
                             </div>

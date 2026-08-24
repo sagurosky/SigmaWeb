@@ -58,7 +58,7 @@
 
 
                         </h4>
-                        <div th:if="${activo.estado=='operativa condicionada'} and not ${tarea.estado=='enProceso'}">
+                        <div th:if="${activo.estado=='operativa condicionada'} and not (${tarea != null} and ${tarea.estado=='enProceso'})">
                             <form th:action="@{/cerrarCondicionada/}+ ${activo.id}" method="post" th:object="${activo}">
                                 <div class='row' style="text-align: center">
                                     <div>
@@ -615,6 +615,11 @@
                 <br />
                 <a th:if="${activo.estado!='detenida'&&activo.estado!='liberada'&&activo.estado!='operativa condicionada'}"
                     th:href="@{/crearTarea/}+ ${activo.id}" th:text="'Notificar detención'" class="btn btn-primary"></a>
+                <div th:if="${activo.estado=='operativa condicionada'}">
+                    <form th:action="@{/notificarDetencionCondicionada/}+ ${activo.id}" method="post" th:object="${activo}">
+                        <input type='submit' value="Notificar detención" class="btn btn-primary" />
+                    </form>
+                </div>
                 <br />
                 <a th:href="@{/registroActivo/}+ ${activo.id}" th:text="'Historial de detenciones'"
                     class="btn btn-primary"></a>

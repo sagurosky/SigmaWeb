@@ -194,10 +194,11 @@ public class ControladorAjax {
         
         
         Long minutosInactiva=0L;
-            for (Tarea tarea : tareasEnRango) {
-                minutosInactiva+=Duration.between(tarea.getMomentoDetencion(), (tarea.getMomentoLiberacion().isAfter(prod.getFin()))?prod.getFin():tarea.getMomentoLiberacion()).toMinutes();
-           
+        for (Tarea tarea : tareasEnRango) {
+            if (tarea.getMomentoDetencion() != null && tarea.getMomentoLiberacion() != null) {
+                minutosInactiva += Duration.between(tarea.getMomentoDetencion(), (tarea.getMomentoLiberacion().isAfter(prod.getFin())) ? prod.getFin() : tarea.getMomentoLiberacion()).toMinutes();
             }
+        }
         
         
         datos.put("minutosInactiva",minutosInactiva);
