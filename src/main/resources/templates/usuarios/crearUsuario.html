@@ -1,0 +1,86 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="plantillas/plantilla::head">
+        <title>Gestor de mantenimiento - Crear Usuario</title>
+    </head>
+    <body>
+        <header th:replace="plantillas/plantilla::header">lista de tareas</header>
+        <div th:replace="plantillas/plantilla::notificaciones"></div>
+        <div class="container my-4">
+            <div class="text-center">
+                <h1>Crear usuario</h1>
+            </div>
+            <br>
+            <div class="card mx-auto" style="max-width: 40rem;">
+                <form method="POST" th:action="@{/gestionar}" th:object="${usuario}" class="form-group" id="formCrearUsuario">
+                    <div class="card-header font-weight-bold">
+                        Nuevo usuario
+                    </div>
+                    <div class="card-body">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="usernameInput" name="username" placeholder="Usuario" required="true">
+                            <label for="usernameInput">Usuario</label>
+                            <span th:if="${#fields.hasErrors('username')}" th:errors="*{username}" class="text-danger">Error en usuario</span>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input type="password" class="form-control" id="passwordInput" name="password" placeholder="Contraseña" required="true">
+                            <label for="passwordInput">Contraseña</label>
+                            <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="text-danger">Error en contraseña</span>
+                        </div>
+
+                        <h4>Rol del nuevo usuario:</h4>
+                        <div class="ps-3 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" id="rol1" name="rol" value="ADMINISTRADOR" th:field="${rol.nombre}" required="true"/>
+                                <label class="form-check-label" for="rol1">Administrador</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" id="rol2" name="rol" value="MANTENIMIENTO" th:field="${rol.nombre}"/>
+                                <label class="form-check-label" for="rol2">Mantenimiento</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" id="rol3" name="rol" value="PRODUCCION" th:field="${rol.nombre}"/>
+                                <label class="form-check-label" for="rol3">Producción</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" id="rol4" name="rol" value="TECNICO" th:field="${rol.nombre}"/>
+                                <label class="form-check-label" for="rol4">Técnico</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" id="rol5" name="rol" value="MONITOR" th:field="${rol.nombre}"/>
+                                <label class="form-check-label" for="rol5">Monitor</label>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <input type="submit" value="Guardar" class="btn btn-primary me-2"/>
+                            <a th:href="@{/gestionUsuarios}" class="btn btn-secondary">Regresar</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                const form = document.getElementById("formCrearUsuario");
+                if (form) {
+                    form.addEventListener("submit", function(event) {
+                        const radios = form.querySelectorAll("input[type='radio']");
+                        let isChecked = false;
+                        radios.forEach(radio => {
+                            if (radio.checked) isChecked = true;
+                        });
+
+                        if (!isChecked) {
+                            event.preventDefault();
+                            alert("Por favor, selecciona un rol antes de continuar.");
+                        }
+                    });
+                }
+            });
+        </script>
+    </body>
+</html>
+
+

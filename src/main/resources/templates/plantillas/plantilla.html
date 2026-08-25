@@ -385,6 +385,10 @@ setInterval(function () {
                 <!-- Aquí va el contenido original del menú -->
                 <div sec:authorize="not hasRole('ROLE_MONITOR') or hasRole('ROLE_ADMIN')">
 
+                    <a th:href="@{/dashboard}" class="btn btn-primary btn-block" sec:authorize="isAuthenticated()">
+                        <i class="fas fa-chart-bar"></i> Dashboard
+                    </a>
+
                     <div sec:authorize="hasRole('ROLE_PROD')">
                         <input type="hidden" name="url" id="url" value="/layout">
                         <br/>

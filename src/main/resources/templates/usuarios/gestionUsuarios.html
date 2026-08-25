@@ -1,0 +1,59 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="plantillas/plantilla::head">
+        <title>Gestor de mantenimiento - Usuarios</title>
+    </head>
+    <body>
+        <header th:replace="plantillas/plantilla::header">lista de tareas</header>
+        <div th:replace="plantillas/plantilla::notificaciones"></div>
+        <div th:replace="plantillas/plantilla::menu"></div>
+        <div th:replace="plantillas/plantilla::logo"></div>
+
+        <div class="container my-4">
+            <h1>Usuarios registrados</h1>
+            <h2 th:if="${mensaje != null}"><label th:text="${mensaje}" style="color:red"></label></h2>
+
+            <table class="table table-bordered table-hover table-sm">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Rol</th>
+                        <th>Editar</th>
+                        <th>Eliminar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="usuario: ${usuarios}">
+                        <td th:text="${usuario.username}"></td>
+                        <td>
+                            <span th:each="rol, iterStat:${usuario.roles}" class="badge bg-secondary me-1 text-white p-1" style="font-size: 0.9em;">
+                                <span th:switch="${rol.nombre}">
+                                    <span th:case="'ROLE_ADMIN'">Administrador</span>
+                                    <span th:case="'ROLE_MANT'">Mantenimiento</span>
+                                    <span th:case="'ROLE_PROD'">Producción</span>
+                                    <span th:case="'ROLE_TECNICO'">Técnico</span>
+                                    <span th:case="'ROLE_MONITOR'">Monitor</span>
+                                    <span th:case="*" th:text="${rol.nombre}"></span>
+                                </span>
+                            </span>
+                        </td>
+                        <td>
+                            <a th:href="@{/editarUsuario/{id}(id=${usuario.idUsuario})}" class="btn btn-sm btn-outline-primary">Editar</a>
+                        </td>
+                        <td>
+                            <form th:if="${usuarios.size > 1 and usuario.username != usuarioActual}" th:action="@{/eliminarUsuario/{id}(id=${usuario.idUsuario})}" method="POST" style="display:inline;" onsubmit="return confirm('¿Está seguro de eliminar este usuario?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                            </form>
+                            <span th:if="${usuario.username == usuarioActual}" class="badge bg-info text-dark p-1" style="font-size: 0.85em;">Usuario actual</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <a th:href="@{/crearUsuario}" class="btn btn-primary">Crear usuario</a>
+            <a th:href="@{/layout}" class="btn btn-secondary ms-2">Volver</a>
+        </div>
+    </body>
+</html>
+
+
