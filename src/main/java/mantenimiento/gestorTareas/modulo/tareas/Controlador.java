@@ -322,14 +322,14 @@ public class Controlador {
     }
 
     @PostMapping("/guardar")
-    public String guardar(Model model, @Valid Tarea tarea, Errors errores, @RequestParam("file") MultipartFile imagen,
+    public String guardar(Model model, @Valid Tarea tarea, Errors errores, @RequestParam(value = "file", required = false) MultipartFile imagen,
             @RequestParam(value = "activo", required = false) String activoReq) {
 
         if (errores.hasErrors()) {
             model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
             return "tareas/crearTarea";
         }
-        if (!imagen.isEmpty()) {
+        if (imagen != null && !imagen.isEmpty()) {
             // Path directorioImagenes =
             // Paths.get("src//main//resources//static//imagenes");
             // String ruta = directorioImagenes.toFile().getAbsolutePath();
@@ -449,7 +449,7 @@ public class Controlador {
 
     @GetMapping("/asignarSolicitud/{id}")
     public String asignar(
-            @RequestParam("motivoDemoraAsignacion") String motivoDemoraAsignacion,
+            @RequestParam(value = "motivoDemoraAsignacion", required = false) String motivoDemoraAsignacion,
             @RequestParam(value = "activoReq", required = false) String activoReq,
             @RequestParam(value = "tecnicosIds", required = false) List<Long> tecnicosIds,
             Model model, Tarea tarea) {

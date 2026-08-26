@@ -54,6 +54,7 @@ public class Tarea implements Serializable, TenantSupport {
     private String motivoDemoraAsignacion;
     private String motivoDemoraCierre;
     
+    @Column(columnDefinition = "TEXT")
     private String descripcion;
     private String departamentoResponsable;
     
