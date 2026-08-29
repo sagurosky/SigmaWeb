@@ -1,386 +1,526 @@
-/*
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
-*/
-/* 
-    Created on : 3 sept. 2024, 21:00:49
-    Author     : daniel
-*/
-
-
-
-
-
-
-
-
-
-        body {
-        /*    display: flex;*/
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-       /*       background: url('/recursos/fondo.jpg') no-repeat center center fixed;*/
-            background-size: cover;
-            font-family: Arial, sans-serif;
-            position: relative;
-        }
-        .container {
-            text-align: center;
-          /*  z-index: 1; /* Asegura que el contenido esté sobre la imagen de fondo */
-
-
-        /*   display: flex;
-         /*   justify-content: space-between; /* Cambia esto para alinear los elementos a los extremos */
-       /*   align-items: center;
-            width: 100%;
-           padding: 0 50px;
-            position: relative;*/
-            z-index: 1;
-
-
-
-
-        }
-        .letters {
-            
-            display: flex;
-            justify-content: center;
-      /*  margin-bottom: 1rem;*/
-         padding-top:12rem;
-        }
-        .letter {
-            font-size: 4rem;
-            font-weight: bold;
-            color: #0d109b;
-            margin: 0 10px;
-            opacity: 0;
-            transform: translateY(50px);
-            animation: fadeInUp 1s forwards;
-        }
-        .letter:nth-child(1) { animation-delay: 0s; }
-        .letter:nth-child(2) { animation-delay: 0.25s; }
-        .letter:nth-child(3) { animation-delay: 0.5s; }
-        .letter:nth-child(4) { animation-delay: 0.75s; }
-        .letter:nth-child(5) { animation-delay: 1s; }
-        .letter:nth-child(6) { animation-delay: 1.25s; }
-        .letter:nth-child(7) { animation-delay: 1.5s; }
-        .words {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-        }
-        .word {
-            font-size: 1.5rem;
-            color: #666;
-            opacity: 0;
-            transform: translateY(30px);
-            position: absolute;
-            white-space: nowrap;
-            animation: fadeInUp 1s forwards;
-        }
-        .word:nth-child(1) { top: 0; animation-delay: 2s; }
-        .word:nth-child(2) { top: 1.5rem; animation-delay: 2s; }
-        .word:nth-child(3) { top: 3rem; animation-delay: 2s; }
-        .word:nth-child(4) { top: 4.5rem; animation-delay: 2s; }
-        .word:nth-child(5) { top: 6rem; animation-delay: 2s; }
-        .word:nth-child(6) { top: 7.5rem; animation-delay: 2s; }
-        .word:nth-child(7) { top: 9rem; animation-delay: 2s; }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(50px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .credit {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            font-size: 0.8rem;
-            color: #aaa;
-            background-color: rgba(255, 255, 255, 0.6);
-            padding: 2px 5px;
-            border-radius: 3px;
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    /* BASIC */
-
-   
-
-    
-    a {
-      color: #92badd;
-      display:inline-block;
-      text-decoration: none;
-      font-weight: 400;
-    }
-
-    h2 {
-      text-align: center;
-      font-size: 16px;
-      font-weight: 600;
-      text-transform: uppercase;
-      display:inline-block;
-      margin: 40px 8px 10px 8px; 
-      color: #cccccc;
-    }
-
-
-
-    /* STRUCTURE */
-
-    .wrapper {
-      display: flex;
-      align-items: flex-end;
-      flex-direction: column; 
-      justify-content: center;
-      width: 100%;
-      min-height: 100%;
-      padding: 20px;
-    }
-
-    #formContent {
-      -webkit-border-radius: 10px 10px 10px 10px;
-      border-radius: 10px 10px 10px 10px;
-      background: #fff;
-      padding: 30px;
-      width: 100%;
-      max-width: 450px;
-      position: relative;
-      padding: 0px;
-      -webkit-box-shadow: 0 30px 60px 0 rgba(0,0,0,0.3);
-      box-shadow: 0 30px 60px 0 rgba(0,0,0,0.3);
-      text-align: center;
-    }
-
-    #formFooter {
-      background-color: #f6f6f6;
-      border-top: 1px solid #dce8f1;
-      padding: 25px;
-      text-align: center;
-      -webkit-border-radius: 0 0 10px 10px;
-      border-radius: 0 0 10px 10px;
-    }
-
-
-
-    /* TABS */
-
-    h2.inactive {
-      color: #cccccc;
-    }
-
-    h2.active {
-      color: #0d0d0d;
-      border-bottom: 2px solid #5fbae9;
-    }
-
-
-
-    /* FORM TYPOGRAPHY*/
-
-    input[type=button], input[type=submit], input[type=reset]  {
-      background-color: #56baed;
-      border: none;
-      color: white;
-      padding: 15px 80px;
-      text-align: center;
-      text-decoration: none;
-      display: inline-block;
-      text-transform: uppercase;
-      font-size: 13px;
-      -webkit-box-shadow: 0 10px 30px 0 rgba(95,186,233,0.4);
-      box-shadow: 0 10px 30px 0 rgba(95,186,233,0.4);
-      -webkit-border-radius: 5px 5px 5px 5px;
-      border-radius: 5px 5px 5px 5px;
-      margin: 5px 20px 40px 20px;
-      -webkit-transition: all 0.3s ease-in-out;
-      -moz-transition: all 0.3s ease-in-out;
-      -ms-transition: all 0.3s ease-in-out;
-      -o-transition: all 0.3s ease-in-out;
-      transition: all 0.3s ease-in-out;
-    }
-
-    input[type=button]:hover, input[type=submit]:hover, input[type=reset]:hover  {
-      background-color: #39ace7;
-    }
-
-    input[type=button]:active, input[type=submit]:active, input[type=reset]:active  {
-      -moz-transform: scale(0.95);
-      -webkit-transform: scale(0.95);
-      -o-transform: scale(0.95);
-      -ms-transform: scale(0.95);
-      transform: scale(0.95);
-    }
-
-    input[type=text], input[type=password]{
-      background-color: #f6f6f6;
-      border: none;
-      color: #0d0d0d;
-      padding: 15px 32px;
-      text-align: center;
-      text-decoration: none;
-      display: inline-block;
-      font-size: 16px;
-      margin: 5px;
-      width: 85%;
-      border: 2px solid #f6f6f6;
-      -webkit-transition: all 0.5s ease-in-out;
-      -moz-transition: all 0.5s ease-in-out;
-      -ms-transition: all 0.5s ease-in-out;
-      -o-transition: all 0.5s ease-in-out;
-      transition: all 0.5s ease-in-out;
-      -webkit-border-radius: 5px 5px 5px 5px;
-      border-radius: 5px 5px 5px 5px;
-    }
-
-    input[type=text]:focus {
-      background-color: #fff;
-      border-bottom: 2px solid #5fbae9;
-    }
-
-    input[type=text]:placeholder {
-      color: #cccccc;
-    }
-
-
-
-    /* ANIMATIONS */
-
-    /* Simple CSS3 Fade-in-down Animation */
-    .fadeInDown {
-      -webkit-animation-name: fadeInDown;
-      animation-name: fadeInDown;
-      -webkit-animation-duration: 1s;
-      animation-duration: 1s;
-      -webkit-animation-fill-mode: both;
-      animation-fill-mode: both;
-      animation-delay: 3s;
-    }
-
-    @-webkit-keyframes fadeInDown {
-      0% {
-        opacity: 0;
-        -webkit-transform: translate3d(0, -100%, 0);
-        transform: translate3d(0, -100%, 0);
-      }
-      100% {
-        opacity: 1;
-        -webkit-transform: none;
-        transform: none;
-      }
-
-    }
-
-    @keyframes fadeInDown {
-      0% {
-        opacity: 0;
-        -webkit-transform: translate3d(0, -100%, 0);
-        transform: translate3d(0, -100%, 0);
-      }
-      100% {
-        opacity: 1;
-        -webkit-transform: none;
-        transform: none;
-      }
-
-    }
-
-    /* Simple CSS3 Fade-in Animation */
-    @-webkit-keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-    @-moz-keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-    @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-
-    .fadeIn {
-      opacity:0;
-      -webkit-animation:fadeIn ease-in 1;
-      -moz-animation:fadeIn ease-in 1;
-      animation:fadeIn ease-in 1;
-
-      -webkit-animation-fill-mode:forwards;
-      -moz-animation-fill-mode:forwards;
-      animation-fill-mode:forwards;
-
-      -webkit-animation-duration:1s;
-      -moz-animation-duration:1s;
-      animation-duration:1s;
-    }
-
-    .fadeIn.first {
-      -webkit-animation-delay: 0.4s;
-      -moz-animation-delay: 0.4s;
-      animation-delay: 3.4s;
-    }
-
-    .fadeIn.second {
-      -webkit-animation-delay: 0.6s;
-      -moz-animation-delay: 0.6s;
-      animation-delay: 3.6s;
-    }
-
-    .fadeIn.third {
-      -webkit-animation-delay: 0.8s;
-      -moz-animation-delay: 0.8s;
-      animation-delay: 3.8s;
-    }
-
-    .fadeIn.fourth {
-      -webkit-animation-delay: 1s;
-      -moz-animation-delay: 1s;
-      animation-delay: 4s;
-    }
-
-    /* Simple CSS3 Fade-in Animation */
-    .underlineHover:after {
-      display: block;
-      left: 0;
-      bottom: -10px;
-      width: 0;
-      height: 2px;
-      background-color: #56baed;
-      content: "";
-      transition: width 0.2s;
-    }
-
-    .underlineHover:hover {
-      color: #0d0d0d;
-    }
-
-    .underlineHover:hover:after{
-      width: 100%;
-    }
-
-
-
-    /* OTHERS */
-
-    *:focus {
-        outline: none;
-    } 
-
-    #icon {
-      width:60%;
-    }
-
-
-
-
-
-
-
-
+/* ==========================================================================
+   SigmaWeb Modern Login Styles
+   Sober, Professional, Glassmorphism Aesthetic with High Contrast
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Page Layout & Dark Slate Background
+   -------------------------------------------------------------------------- */
+body.login-body {
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #0f172a;
+  background-image: 
+    radial-gradient(circle at 15% 20%, rgba(37, 99, 235, 0.18) 0%, transparent 45%),
+    radial-gradient(circle at 85% 80%, rgba(59, 130, 246, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.8) 0%, rgba(11, 15, 25, 0.95) 100%);
+  background-attachment: fixed;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #f8fafc;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Subtle background grid pattern overlay */
+body.login-body::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.login-wrapper {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1100px;
+  padding: 2rem 1.5rem;
+}
+
+/* --------------------------------------------------------------------------
+   2. Main Layout Grid (Brand Side + Form Side)
+   -------------------------------------------------------------------------- */
+.login-card-container {
+  display: grid;
+  grid-template-columns: 1fr 1.05fr;
+  gap: 2.5rem;
+  align-items: center;
+  background: rgba(21, 28, 44, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 24px;
+  padding: 3rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 30px rgba(37, 99, 235, 0.1);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* --------------------------------------------------------------------------
+   3. Brand & Letters Hero Section (Left Panel)
+   -------------------------------------------------------------------------- */
+.login-brand-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding-right: 1.5rem;
+}
+
+.login-logo-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 1.75rem;
+}
+
+.login-logo-img {
+  max-width: 160px;
+  max-height: 130px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 16px rgba(37, 99, 235, 0.45));
+  transition: transform 0.3s ease;
+}
+.login-logo-img:hover {
+  transform: scale(1.08) rotate(2deg);
+}
+
+.brand-badge-pill {
+  background: rgba(37, 99, 235, 0.2);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  color: #60a5fa;
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Letters Animation Section */
+.letters {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+  user-select: none;
+}
+
+.letter {
+  font-size: 3.25rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  text-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.4s ease-out forwards;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.letter-accent {
+  color: #3b82f6;
+  text-shadow: 0 0 20px rgba(59, 130, 246, 0.6);
+}
+
+.letter-badge {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  color: #ffffff;
+  font-size: 1.25rem;
+  font-weight: 800;
+  padding: 0.25rem 0.65rem;
+  border-radius: 8px;
+  margin-left: 0.25rem;
+  vertical-align: middle;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+}
+
+/* Staggered entrance for letters */
+.letter:nth-child(1) { animation-delay: 0.05s; }
+.letter:nth-child(2) { animation-delay: 0.1s; }
+.letter:nth-child(3) { animation-delay: 0.15s; }
+.letter:nth-child(4) { animation-delay: 0.2s; }
+.letter:nth-child(5) { animation-delay: 0.25s; }
+.letter:nth-child(6) { animation-delay: 0.3s; }
+
+/* Special hover on letter M (#pp) for administrative trigger */
+#pp {
+  cursor: pointer;
+  position: relative;
+}
+#pp:hover {
+  color: #60a5fa;
+  transform: translateY(-3px) scale(1.1);
+  text-shadow: 0 0 15px rgba(96, 165, 250, 0.8);
+}
+
+.words {
+  margin-top: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.word-line {
+  font-size: 1.15rem;
+  color: #cbd5e1;
+  font-weight: 500;
+  line-height: 1.4;
+  margin: 0;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: fadeInUp 0.5s ease-out 0.35s forwards;
+}
+
+/* Feature pills grid */
+.brand-features {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 0.65rem 1rem;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  color: #94a3b8;
+  transition: all 0.2s ease;
+}
+.feature-item i {
+  font-size: 1rem;
+  color: #3b82f6;
+}
+.feature-item:hover {
+  background: rgba(30, 41, 59, 0.9);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: #f1f5f9;
+  transform: translateX(4px);
+}
+
+/* --------------------------------------------------------------------------
+   4. Login Form Section (Right Panel)
+   -------------------------------------------------------------------------- */
+.login-form-panel {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 2.25rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  position: relative;
+  opacity: 0;
+  transform: translateY(15px);
+  animation: fadeInUp 0.4s ease-out 0.2s forwards;
+}
+
+.login-form-header {
+  text-align: center;
+  margin-bottom: 1.75rem;
+}
+
+.login-form-icon {
+  width: 52px;
+  height: 52px;
+  background: rgba(37, 99, 235, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #60a5fa;
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.login-form-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 0.35rem 0;
+  letter-spacing: -0.02em;
+}
+
+.login-form-subtitle {
+  font-size: 0.875rem;
+  color: #94a3b8;
+  margin: 0;
+}
+
+/* Input Fields with Icons */
+.input-group-custom {
+  position: relative;
+  margin-bottom: 1.25rem;
+}
+
+.input-group-custom i.input-icon {
+  position: absolute;
+  left: 1.1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+  font-size: 1rem;
+  transition: color 0.2s ease;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.input-group-custom .form-control-custom {
+  width: 100%;
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 0.85rem 1rem 0.85rem 2.8rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: #f8fafc;
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.input-group-custom .form-control-custom::placeholder {
+  color: #64748b;
+}
+
+.input-group-custom .form-control-custom:focus {
+  border-color: #3b82f6;
+  background: rgba(30, 41, 59, 0.95);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+}
+
+.input-group-custom .form-control-custom:focus ~ i.input-icon {
+  color: #60a5fa;
+}
+
+.input-group-custom.has-error .form-control-custom {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25);
+}
+
+/* Toggle Password Eye Icon */
+.password-toggle-btn {
+  position: absolute;
+  right: 1.1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+  cursor: pointer;
+  z-index: 3;
+  padding: 0.25rem;
+  transition: color 0.2s ease;
+}
+.password-toggle-btn:hover {
+  color: #94a3b8;
+}
+
+/* Login Error Alert Box (#mensajeError) */
+.login-error-alert {
+  background: rgba(220, 38, 38, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  animation: shakeAlert 0.4s ease-in-out;
+}
+
+@keyframes shakeAlert {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+/* Submit Button */
+.btn-sigma-submit {
+  width: 100%;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #ffffff;
+  border: 1px solid rgba(59, 130, 246, 0.5);
+  border-radius: 12px;
+  padding: 0.9rem 1.5rem;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+  transition: all 0.2s ease;
+  margin-top: 0.5rem;
+}
+
+.btn-sigma-submit:hover {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
+  transform: translateY(-2px);
+}
+
+.btn-sigma-submit:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+}
+
+/* --------------------------------------------------------------------------
+   5. Skip Animation on Login Error (UX Optimization)
+   -------------------------------------------------------------------------- */
+/* When user has login error, show form immediately without entrance delays */
+body.login-body.has-error-state .letter,
+body.login-body.has-error-state .word-line,
+body.login-body.has-error-state .login-form-panel {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   6. Hidden Administrative Container (.primerAdmin)
+   -------------------------------------------------------------------------- */
+.primerAdmin {
+  margin-top: 2rem;
+  animation: fadeInUp 0.4s ease-out;
+}
+
+.primerAdmin .card {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 16px;
+  color: #f8fafc;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+}
+
+.primerAdmin .card-header {
+  background: rgba(30, 41, 59, 0.8);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1rem 1.25rem;
+}
+.primerAdmin .card-header h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #60a5fa;
+}
+
+.primerAdmin .card-body {
+  padding: 1.5rem;
+}
+
+.primerAdmin .form-group {
+  margin-bottom: 1rem;
+}
+.primerAdmin label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #cbd5e1;
+  margin-bottom: 0.35rem;
+}
+.primerAdmin input[type="text"],
+.primerAdmin input[type="password"] {
+  width: 100%;
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 0.6rem 0.85rem;
+  color: #ffffff;
+  box-sizing: border-box;
+}
+
+/* --------------------------------------------------------------------------
+   7. Footer Credit Note
+   -------------------------------------------------------------------------- */
+.credit {
+  text-align: center;
+  margin-top: 2rem;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.credit a {
+  color: #94a3b8;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+.credit a:hover {
+  color: #60a5fa;
+}
+
+/* Keyframes */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   8. Responsive Breakdown
+   -------------------------------------------------------------------------- */
+@media (max-width: 992px) {
+  .login-card-container {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding: 2rem 1.5rem;
+  }
+  
+  .login-brand-panel {
+    padding-right: 0;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .brand-features {
+    display: none;
+  }
+}
+
+@media (max-width: 576px) {
+  .login-wrapper {
+    padding: 1rem 0.75rem;
+  }
+  
+  .login-card-container {
+    padding: 1.5rem 1rem;
+    border-radius: 16px;
+  }
+  
+  .letter {
+    font-size: 2.5rem;
+  }
+  
+  .login-form-panel {
+    padding: 1.5rem 1rem;
+  }
+}

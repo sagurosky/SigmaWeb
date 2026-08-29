@@ -27,13 +27,13 @@
   --bg-card-hover: #fafbfc;
   --bg-input: #ffffff;
 
-  --border-color: #e2e8f0;
-  --border-color-hover: #cbd5e1;
-  --border-focus: #3b82f6;
+  --border-color: #cbd5e1;
+  --border-color-hover: #94a3b8;
+  --border-focus: #2563eb;
 
   --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
+  --text-secondary: #334155;
+  --text-muted: #475569;
   --text-inverse: #ffffff;
 
   --accent-primary: #2563eb;
@@ -92,13 +92,13 @@
   --bg-card-hover: #1c2539;
   --bg-input: #1e293b;
 
-  --border-color: #273549;
-  --border-color-hover: #3b4d68;
+  --border-color: #3b4d68;
+  --border-color-hover: #475569;
   --border-focus: #60a5fa;
 
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
+  --text-primary: #ffffff;
+  --text-secondary: #e2e8f0;
+  --text-muted: #cbd5e1;
   --text-inverse: #0f172a;
 
   --accent-primary: #3b82f6;
@@ -147,7 +147,12 @@
 
 body {
   font-family: var(--font-family-base);
-  background-color: var(--bg-body);
+  background-color: #0f172a;
+  background-image: 
+    radial-gradient(circle at 15% 20%, rgba(37, 99, 235, 0.16) 0%, transparent 40%),
+    radial-gradient(circle at 85% 80%, rgba(15, 23, 42, 0.7) 0%, transparent 50%),
+    linear-gradient(180deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.6) 100%);
+  background-attachment: fixed;
   color: var(--text-primary);
   line-height: 1.5;
   margin: 0;
@@ -362,7 +367,6 @@ a:hover {
   transition: background-color var(--transition-normal), border-color var(--transition-normal), box-shadow var(--transition-normal);
   margin-bottom: 1.5rem;
   position: relative;
-  overflow: hidden;
 }
 
 .sigma-card-header {
@@ -588,7 +592,7 @@ a:hover {
 .form-control, .form-select {
   background-color: var(--bg-input) !important;
   color: var(--text-primary) !important;
-  border: 1px solid var(--border-color) !important;
+  border: 1.5px solid #94a3b8 !important; /* Clearly marked border in Light Mode */
   border-radius: var(--radius-md) !important;
   padding: 0.55rem 0.85rem !important;
   font-family: var(--font-family-base) !important;
@@ -596,9 +600,14 @@ a:hover {
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast) !important;
 }
 
+[data-theme="dark"] .form-control,
+[data-theme="dark"] .form-select {
+  border-color: #3b4d68 !important;
+}
+
 .form-control:focus, .form-select:focus {
   border-color: var(--border-focus) !important;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25) !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25) !important;
   outline: none !important;
 }
 
@@ -607,10 +616,29 @@ a:hover {
   font-weight: 600;
   font-size: 0.875rem;
 }
+[data-theme="dark"] .detencion-label {
+  color: #e2e8f0 !important;
+}
+
 .detencion-value {
   color: var(--text-primary) !important;
   font-weight: 700;
   font-size: 0.925rem;
+}
+
+.form-control-static {
+  background-color: var(--bg-input) !important;
+  color: var(--text-primary) !important;
+  border: 1.5px solid #94a3b8 !important;
+  border-radius: var(--radius-md) !important;
+  padding: 0.4rem 0.75rem !important;
+  font-family: var(--font-family-base) !important;
+  font-size: 0.875rem !important;
+  display: inline-block;
+}
+
+[data-theme="dark"] .form-control-static {
+  border-color: #3b4d68 !important;
 }
 
 /* Floating Labels Styling */
@@ -706,6 +734,10 @@ a:hover {
 .modal {
   z-index: 1055 !important;
 }
+.modal-body {
+  max-height: 75vh;
+  overflow-y: auto;
+}
 .modal-content {
   background-color: var(--bg-card) !important;
   border: 1px solid var(--border-color) !important;
@@ -800,3 +832,273 @@ a:hover {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* --------------------------------------------------------------------------
+   11. Global Background Alternatives (Intermediate Compatible Tones)
+   -------------------------------------------------------------------------- */
+
+/* Opción 1: Malla Radial Azul Slate (Slate Mesh Gradient) */
+body.bg-pattern-slate-mesh,
+[data-bg-pattern="slate-mesh"] {
+  background-color: #0f172a !important;
+  background-image: 
+    radial-gradient(circle at 15% 20%, rgba(37, 99, 235, 0.16) 0%, transparent 40%),
+    radial-gradient(circle at 85% 80%, rgba(15, 23, 42, 0.7) 0%, transparent 50%),
+    linear-gradient(180deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.6) 100%) !important;
+  background-attachment: fixed !important;
+}
+
+/* Opción 2: Rejilla Técnica Industrial (Technical Blueprint Grid) */
+body.bg-pattern-tech-grid,
+[data-bg-pattern="tech-grid"] {
+  background-color: #131b29 !important;
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px) !important;
+  background-size: 32px 32px !important;
+  background-attachment: fixed !important;
+}
+
+/* Opción 3: Gradiente Metalizado "Steel & Titanium" */
+body.bg-pattern-steel-gradient,
+[data-bg-pattern="steel-gradient"] {
+  background: linear-gradient(135deg, #182030 0%, #222d3e 50%, #151d2a 100%) !important;
+  background-attachment: fixed !important;
+}
+
+/* Opción 4: Matriz de Puntos Sutil (Subtle Dot Matrix) */
+body.bg-pattern-subtle-dots,
+[data-bg-pattern="subtle-dots"] {
+  background-color: #121927 !important;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.09) 1.2px, transparent 1.2px) !important;
+  background-size: 24px 24px !important;
+  background-attachment: fixed !important;
+}
+
+/* --------------------------------------------------------------------------
+   12. DataTables Theme System Customization
+   -------------------------------------------------------------------------- */
+.dataTables_wrapper {
+  color: var(--text-primary) !important;
+  font-family: var(--font-family-base) !important;
+  margin-top: 1rem;
+}
+
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter,
+.dataTables_wrapper .dataTables_info,
+.dataTables_wrapper .dataTables_paginate {
+  color: var(--text-secondary) !important;
+  font-weight: 500;
+  font-size: 0.875rem;
+  margin-bottom: 0.75rem;
+}
+
+.dataTables_wrapper .dataTables_length select,
+.dataTables_wrapper .dataTables_filter input {
+  background-color: var(--bg-input) !important;
+  color: var(--text-primary) !important;
+  border: 1.5px solid #94a3b8 !important;
+  border-radius: var(--radius-md) !important;
+  padding: 0.45rem 0.85rem !important;
+  font-size: 0.875rem !important;
+  outline: none !important;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast) !important;
+}
+
+[data-theme="dark"] .dataTables_wrapper .dataTables_length select,
+[data-theme="dark"] .dataTables_wrapper .dataTables_filter input {
+  border-color: #3b4d68 !important;
+}
+
+.dataTables_wrapper .dataTables_filter input:hover,
+.dataTables_wrapper .dataTables_length select:hover {
+  border-color: #64748b !important;
+}
+
+[data-theme="dark"] .dataTables_wrapper .dataTables_filter input:hover,
+[data-theme="dark"] .dataTables_wrapper .dataTables_length select:hover {
+  border-color: #475569 !important;
+}
+
+.dataTables_wrapper .dataTables_filter input:focus,
+.dataTables_wrapper .dataTables_length select:focus {
+  border-color: var(--border-focus) !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25) !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+  color: var(--text-primary) !important;
+  border-radius: var(--radius-md) !important;
+  border: 1px solid var(--border-color) !important;
+  background: var(--bg-surface-elevated) !important;
+  margin: 0 0.15rem !important;
+  padding: 0.35rem 0.75rem !important;
+  transition: all var(--transition-fast) !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current,
+.dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+  background: var(--accent-primary) !important;
+  color: #ffffff !important;
+  border-color: var(--accent-primary) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+  background: var(--accent-light) !important;
+  color: var(--accent-primary) !important;
+  border-color: var(--accent-primary) !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.disabled,
+.dataTables_wrapper .dataTables_paginate .paginate_button.disabled:hover {
+  opacity: 0.5 !important;
+  background: var(--bg-surface) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-muted) !important;
+}
+
+table.dataTable {
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--radius-lg) !important;
+  overflow: hidden !important;
+  background-color: var(--bg-card) !important;
+  width: 100% !important;
+  margin-top: 0.75rem !important;
+  margin-bottom: 1rem !important;
+}
+
+table.dataTable thead th {
+  background-color: var(--bg-surface-elevated) !important;
+  color: var(--text-primary) !important;
+  font-weight: 700 !important;
+  border-bottom: 2px solid var(--border-color) !important;
+  padding: 0.85rem 1rem !important;
+  font-size: 0.85rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.03em !important;
+}
+
+table.dataTable tbody td {
+  border-bottom: 1px solid var(--border-color) !important;
+  padding: 0.75rem 1rem !important;
+  color: var(--text-primary) !important;
+  font-size: 0.9rem !important;
+  vertical-align: middle !important;
+}
+
+table.dataTable tbody tr {
+  background-color: var(--bg-card) !important;
+  transition: background-color var(--transition-fast) !important;
+}
+
+table.dataTable tbody tr:hover {
+  background-color: var(--bg-card-hover) !important;
+}
+
+/* --------------------------------------------------------------------------
+   13. Progress Bar & Popover System (Technician Profiles)
+   -------------------------------------------------------------------------- */
+progress.sigma-progress {
+  width: 100%;
+  height: 10px;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  border: none;
+  background-color: var(--border-color);
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+progress.sigma-progress::-webkit-progress-bar {
+  background-color: var(--border-color);
+  border-radius: var(--radius-full);
+}
+
+progress.sigma-progress::-webkit-progress-value {
+  background: linear-gradient(90deg, var(--accent-primary), #60a5fa);
+  border-radius: var(--radius-full);
+  transition: width 0.4s ease;
+}
+
+progress.sigma-progress::-moz-progress-bar {
+  background: linear-gradient(90deg, var(--accent-primary), #60a5fa);
+  border-radius: var(--radius-full);
+  transition: width 0.4s ease;
+}
+
+/* Custom Popover Styling */
+.popover {
+  background-color: var(--bg-surface-elevated) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-lg) !important;
+  max-width: 450px !important;
+}
+
+.popover-body {
+  color: var(--text-primary) !important;
+  font-size: 0.875rem !important;
+  padding: 0.85rem 1rem !important;
+}
+
+.bs-popover-right > .arrow::after,
+.bs-popover-auto[x-placement^="right"] > .arrow::after {
+  border-right-color: var(--bg-surface-elevated) !important;
+}
+
+/* --------------------------------------------------------------------------
+   14. High-Contrast Dark Mode & Input Field Border Enhancements
+   -------------------------------------------------------------------------- */
+[data-theme="dark"] .text-muted,
+[data-theme="dark"] small.text-muted,
+[data-theme="dark"] span.text-muted {
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .text-secondary,
+[data-theme="dark"] small.text-secondary,
+[data-theme="dark"] span.text-secondary {
+  color: #e2e8f0 !important;
+}
+
+[data-theme="dark"] label,
+[data-theme="dark"] .form-label {
+  color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] .card-body,
+[data-theme="dark"] .card-header,
+[data-theme="dark"] .sigma-card-header {
+  border-color: #3b4d68 !important;
+}
+
+[data-theme="dark"] table.dataTable thead th,
+[data-theme="dark"] table thead th {
+  color: #f8fafc !important;
+  background-color: #1e293b !important;
+  border-bottom-color: #3b4d68 !important;
+}
+
+[data-theme="dark"] table.dataTable tbody td,
+[data-theme="dark"] table tbody td {
+  color: #e2e8f0 !important;
+  border-color: #273549 !important;
+}
+
+/* Light Mode Input Hover & Focus Ring Clarity */
+.form-control:hover,
+.form-select:hover {
+  border-color: #64748b !important;
+}
+
+[data-theme="dark"] .form-control:hover,
+[data-theme="dark"] .form-select:hover {
+  border-color: #475569 !important;
+}
+
+
+

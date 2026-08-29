@@ -1,207 +1,158 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:th="http://www.thymeleaf.org">
-    <head th:replace="plantillas/plantilla::head">
-        <title>TODO supply a title</title>
-        <meta charset="UTF-8"/>
-    </head>
-    <script
-        src="https://code.jquery.com/jquery-3.7.1.js"
-        integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
-        crossorigin="anonymous">
-    </script>
-    <link rel="stylesheet" href="login.css">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="plantillas/plantilla::head">
+    <title>Iniciar Sesión | SigmaWeb</title>
 </head>
-  <body th:style="'background: url(' + @{/recursos/fondo.jpg} + ') no-repeat center center fixed; background-size: cover;'">
 
+<link rel="stylesheet" th:href="@{/login.css}" />
 
-    
-    <div class="container">
+<body class="login-body">
 
+    <div class="login-wrapper">
+        <div class="login-card-container">
 
+            <!-- Left Panel: Brand & Tagline -->
+            <div class="login-brand-panel">
+                <div class="login-logo-wrapper">
+                    <img th:src="@{/recursos/imagenes/logo.png}"
+                        onerror="this.onerror=null; this.src='/inicio/imagenes/logo-hisan.png';" alt="SigmaWeb Logo"
+                        class="login-logo-img" />
+                </div>
 
-<div class="row">
-    <div class="col">
-     </div> 
-    
-<!--     <div class="col">
-        <div class="letters">
-            
-            <div class="letter">S</div>
-            <div class="letter">I</div>
-            <div class="letter">M</div>
-            <div class="letter">P</div>
-            <div class="letter">i</div>
-            <div class="letter">o</div>
-            <div class="letter">Web</div>
-        </div>
-        <div class="words">
-            <div class="word">Sistema</div>
-            <div class="word">Integral de</div>
-            <div class="word">Mantenimiento y</div>
-            <div class="word">Producción</div>
-            <div class="word">Industrial</div>
-            <div class="word">Optimizado</div>
-        </div>
-    </div>-->
-    
-    
-    
-<!--    <div class="col">
-        <div class="letters">
-            
-            <div class="letter">S</div>
-            <div class="letter">I</div>
-            <div class="letter">M</div>
-            <div class="letter">P</div>
-            <div class="letter">L</div>
-            <div class="letter">E</div>
-            <div class="letter">Web</div>
-        </div>
-        <div class="words">
-            <div class="word">Sistema</div>
-            <div class="word">Integral de</div>
-            <div class="word">Mantenimiento y</div>
-            <div class="word">Producción</div>
-            <div class="word">Ligero y</div>
-            <div class="word">Eficaz</div>
-        </div>
-    </div>-->
+                <div class="letters">
+                    <span class="letter">S</span>
+                    <span class="letter">I</span>
+                    <span class="letter">G</span>
+                    <span class="letter letter-accent" id="pp" title="SigmaWeb Maintenance">M</span>
+                    <span class="letter">A</span>
+                    <span class="letter-badge">Web</span>
+                </div>
 
- <div class="col">
-
-     <img th:src="@{/recursos/logo.png}" alt="Logo"
-          style="
-       position: absolute;
-       top: 50px;
-       right: 170px;
-       width: 150px;
-       z-index: 1000;
-     ">
-
-     <div class="letters">
-            
-            <div class="letter">S</div>
-            <div class="letter">I</div>
-            <div class="letter">G</div>
-
-            <div class="letter" id="pp">M</div>
-
-            <div class="letter">A</div>
-            <div class="letter">Web</div>
-        </div>
-        <div class="words">
-            <div class="word">Sistema</div>
-            <div class="word">Integral de</div>
-            <div class="word">Gestión de</div>
-            <div class="word">Mantenimiento</div>
-        </div>
-    </div>
-
-    <div class="col">
-        
-     <div class="wrapper fadeInDown">
-        <br><br><br><br><br><br><br>
-                                 
-                <div id="formContent">
-                    <!-- Tabs Titles -->
-
-                    <!-- Icon -->
-                    <div class="fadeIn first">
-                        <h3>Login</h3>
-                    </div>
-
-                    <!-- Login Form -->
-                    <form method="POST" th:action="@{/login}" >
-                        <input type="text"  class="fadeIn second" name="username" placeholder="Usuario">
-                        <input type="password"  class="fadeIn third" name="password" placeholder="Contraseña">
-                        <input type="submit" class="fadeIn fourth" value="Login">
-                    </form>
- 
-                                        <!-- Remind Passowrd -->
-                    <div id="formFooter">
-                        <a id="mensajeError" class="underlineHover" style="color:red;display:none">Usuario o contraseña incorrectos</a>
-                    </div>
-
+                <div class="words">
+                    <p class="word-line">Sistema Integral de Gestión de Mantenimiento</p>
                 </div>
             </div>
-    </div>
 
-<script>
-   document.addEventListener("DOMContentLoaded", function () { 
-    const params = new URLSearchParams(window.location.search);
-
-        // Si la URL contiene ?error, mostrar el mensaje
-        if (params.has('error')) {
-            document.getElementById('mensajeError').style.display = 'block';
-        }
-    });
-
-
-</script>
-</div>
-
-
-        
-   
-        
-       
-    
-
-
-         
-
-    
-  
-
-
-    
-            
-            <br/><!-- comment -->
-           <br/>
-            <div class="container primerAdmin" >
-                <div class="row">
-                    <div class="col-md-6 mx-auto">
-                        <div class="card">
-                            <div class="card-header">
-                                <h4>Crear admin por primera vez</h4>
-                            </div>
-                                <div class="card-body">
-                                   <form method="POST" th:action="@{/generarAdmin}"th:object="${usuario}" >
-                                      <div class="form-group">
-                                          <label for="username">Username:</label>
-                                          <!--<input type="text" name="username"  th:field="*{username}"/>-->
-                                          <input type="text" name="username"  />
-                                      </div>
-                                      <div class="form-group">
-                                          <label for="password">Password:</label>
-                                          <!--<input type="password" name="password" th:field="*{password}"/>-->
-                                          <input type="password" name="password" />
-                                      </div>
-                                      <input type="submit" value="Login" class="btn btn-primary btn-block"/>
-                                  </form>
-                                </div>
-                               </div>
-                           </div>
-                        </div>
+            <!-- Right Panel: Login Form -->
+            <div class="login-form-panel">
+                <div class="login-form-header">
+                    <div class="login-form-icon">
+                        <i class="fas fa-user-lock"></i>
+                    </div>
+                    <h1 class="login-form-title">Acceso al Sistema</h1>
+                    <p class="login-form-subtitle">Ingrese sus credenciales para continuar</p>
                 </div>
-<!--        <form id="recargarForm" action="/recargar-config" method="POST" style="display: none;"></form>-->
-        <a id="recargarForm" href="/recargar-config" method="GET" style="display: none;"></a>
-           <div class="credit">
-        <a href="http://www.freepik.com" target="_blank">Designed by starline / Freepik</a>
-    </div>
+
+                <!-- Error Alert Message -->
+                <div id="mensajeError" class="login-error-alert" style="display: none;">
+                    <i class="fas fa-circle-exclamation me-1 fs-5"></i>
+                    <span>Usuario o contraseña incorrectos</span>
+                </div>
+
+                <!-- Login Form -->
+                <form method="POST" th:action="@{/login}">
+                    <div class="input-group-custom" id="groupUsername">
+                        <i class="fas fa-user input-icon"></i>
+                        <input type="text" id="usernameInput" name="username" class="form-control-custom"
+                            placeholder="Nombre de usuario" required autocomplete="username" />
+                    </div>
+
+                    <div class="input-group-custom" id="groupPassword">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" id="passwordInput" name="password" class="form-control-custom"
+                            placeholder="Contraseña" required autocomplete="current-password" />
+                        <i class="fas fa-eye password-toggle-btn" id="togglePasswordBtn"
+                            title="Mostrar/Ocultar Contraseña"></i>
+                    </div>
+
+                    <button type="submit" class="btn-sigma-submit">
+                        <i class="fas fa-right-to-bracket me-1"></i> Iniciar Sesión
+                    </button>
+                </form>
+            </div>
+
+        </div>
+
+        <!-- Secret Administrative Panel (Primer Admin) -->
+        <div class="container primerAdmin" style="display: none;">
+            <div class="row">
+                <div class="col-md-6 mx-auto">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4>Crear admin por primera vez</h4>
+                        </div>
+                        <div class="card-body">
+                            <form method="POST" th:action="@{/generarAdmin}" th:object="${usuario}">
+                                <div class="form-group">
+                                    <label for="adminUsername">Username:</label>
+                                    <input type="text" id="adminUsername" name="username" />
+                                </div>
+                                <div class="form-group">
+                                    <label for="adminPassword">Password:</label>
+                                    <input type="password" id="adminPassword" name="password" />
+                                </div>
+                                <input type="submit" value="Generar Admin" class="btn btn-primary btn-block mt-3" />
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <a id="recargarForm" th:href="@{/recargar-config}" style="display: none;"></a>
+
 
     </div>
-        </section>
-      </body>
-    <script>
-        $(".primerAdmin").hide();
-        $("#pp").click(function(){
-<!--           $(".primerAdmin").show(); -->
+
+    <!-- Scripts for Login Page UX -->
+    <script th:inline="javascript">
+        document.addEventListener("DOMContentLoaded", function () {
+            const params = new URLSearchParams(window.location.search);
+            const mensajeError = document.getElementById('mensajeError');
+            const usernameInput = document.getElementById('usernameInput');
+            const passwordInput = document.getElementById('passwordInput');
+            const groupUsername = document.getElementById('groupUsername');
+            const groupPassword = document.getElementById('groupPassword');
+
+            // UX Optimization: If login error occurred (?error in URL), skip entrance animations and highlight inputs
+            if (params.has('error')) {
+                document.body.classList.add('has-error-state');
+                if (mensajeError) {
+                    mensajeError.style.display = 'flex';
+                }
+                if (groupUsername) groupUsername.classList.add('has-error');
+                if (groupPassword) groupPassword.classList.add('has-error');
+
+                // Focus password input directly for quick re-entry
+                if (passwordInput) {
+                    passwordInput.focus();
+                }
+            } else if (usernameInput) {
+                // Focus username by default if no error
+                usernameInput.focus();
+            }
+
+            // Toggle Password Visibility
+            const togglePasswordBtn = document.getElementById('togglePasswordBtn');
+            if (togglePasswordBtn && passwordInput) {
+                togglePasswordBtn.addEventListener('click', function () {
+                    const isPassword = passwordInput.getAttribute('type') === 'password';
+                    passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+                    this.classList.toggle('fa-eye', !isPassword);
+                    this.classList.toggle('fa-eye-slash', isPassword);
+                });
+            }
+
+            // Administrative Secret Trigger (click on letter 'M' / #pp)
+            const ppBtn = document.getElementById("pp");
+            if (ppBtn) {
+                ppBtn.addEventListener("click", function () {
+                    $(".primerAdmin").toggle(300);
+                });
+            }
         });
- document.getElementById("pp").addEventListener("click", function () {
-  //  document.getElementById("recargarForm").submit();
-  });
-
     </script>
+</body>
+
 </html>
