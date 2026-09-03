@@ -4,6 +4,7 @@ import mantenimiento.gestorTareas.infraestructura.multitenant.TenantEntityListen
 import mantenimiento.gestorTareas.infraestructura.multitenant.TenantSupport;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import java.io.Serializable;
@@ -41,7 +42,7 @@ public class Preventivo implements Serializable, TenantSupport {
     private String validacionMantenimiento;
     private String frecuencia;
      private String imagen;
-    @OneToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "activo")
     private Activo activo;
     
@@ -52,7 +53,10 @@ public class Preventivo implements Serializable, TenantSupport {
     private LocalDateTime fechaRealizado;
     
     
-    @OneToMany( cascade=CascadeType.ALL, mappedBy = "preventivo")
+    @JsonIgnore
+    @lombok.EqualsAndHashCode.Exclude
+    @lombok.ToString.Exclude
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "preventivo")
     private List<AsignacionPreventivo> asignaciones;
      
 

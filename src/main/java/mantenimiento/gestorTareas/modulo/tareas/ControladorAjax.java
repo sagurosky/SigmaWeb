@@ -3,6 +3,7 @@ import mantenimiento.gestorTareas.infraestructura.multitenant.TenantContext;
 import mantenimiento.gestorTareas.infraestructura.util.Convertidor;
 import mantenimiento.gestorTareas.infraestructura.util.TiempoUtils;
 import mantenimiento.gestorTareas.modulo.equipos.Activo;
+import mantenimiento.gestorTareas.modulo.equipos.Preventivo;
 import mantenimiento.gestorTareas.modulo.equipos.PreventivoService;
 import mantenimiento.gestorTareas.modulo.produccion.Produccion;
 import mantenimiento.gestorTareas.modulo.produccion.ProduccionService;
@@ -79,9 +80,52 @@ public class ControladorAjax {
     
     @GetMapping("/traerPreventivosAlLayout")
     @ResponseBody//con esta anotacion springboot no va a intentar abrir un htrml con el nombre de lo que pongo en return
-    public Object traerPreventivosAlLayout(@RequestParam String nombre,@RequestParam String estado) {
-        
-        return preventivoService.traerPreventivosValidadosPorNombreActivo(Convertidor.aCamelCase(nombre), TenantContext.getTenantId());
+    public Object traerPreventivosAlLayout(@RequestParam String nombre, @RequestParam String estado) {
+        Map<String, Object> respuesta = new HashMap<>();
+        String nombreCamel = Convertidor.aCamelCase(nombre);
+
+        Activo activoObj = activoService.findByName(nombreCamel);
+        if (activoObj == null) {
+            activoObj = activoService.findByName(nombre);
+        }
+
+        List<Preventivo> list = preventivoService.traerPreventivosValidadosPorNombreActivo(nombreCamel, TenantContext.getTenantId());
+        if ((list == null || list.isEmpty()) && activoObj != null) {
+            list = preventivoService.traerPorActivo(activoObj, TenantContext.getTenantId()).stream()
+                    .filter(p -> "validado".equalsIgnoreCase(p.getEstado()))
+                    .collect(Collectors.toList());
+        }
+
+        List<Map<String, Object>> preventivosDTO = new ArrayList<>();
+        if (list != null) {
+            for (Preventivo p : list) {
+                Map<String, Object> item = new HashMap<>();
+                item.put("id", p.getId());
+                item.put("descripcion", p.getDescripcion());
+                item.put("detalle", p.getDetalle());
+                item.put("categoria", p.getCategoria());
+                item.put("estado", p.getEstado());
+                item.put("solicita", p.getSolicita());
+                item.put("frecuencia", p.getFrecuencia());
+                if (p.getActivo() != null) {
+                    item.put("activoId", p.getActivo().getId());
+                    item.put("activoNombre", p.getActivo().getNombre());
+                } else if (activoObj != null) {
+                    item.put("activoId", activoObj.getId());
+                    item.put("activoNombre", activoObj.getNombre());
+                }
+                preventivosDTO.add(item);
+            }
+        }
+
+        Long finalActivoId = activoObj != null ? activoObj.getId() : (list != null && !list.isEmpty() && list.get(0).getActivo() != null ? list.get(0).getActivo().getId() : null);
+        String finalActivoNombre = activoObj != null ? activoObj.getNombre() : nombre;
+
+        respuesta.put("preventivos", preventivosDTO);
+        respuesta.put("activoId", finalActivoId);
+        respuesta.put("activoNombre", finalActivoNombre);
+
+        return respuesta;
     }
     
     

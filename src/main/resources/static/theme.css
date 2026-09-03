@@ -651,6 +651,10 @@ a:hover {
   padding: 1rem 0.75rem 0.35rem 0.75rem !important;
 }
 
+.form-floating > .form-control::placeholder {
+  color: transparent;
+}
+
 .form-floating > label {
   position: absolute;
   top: 0;

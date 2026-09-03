@@ -468,6 +468,27 @@ public class Controlador {
         return "redirect:/tareas";
     }
 
+    @GetMapping("/desasignarTecnico")
+    public String desasignarTecnico(
+            @RequestParam("tareaId") Long tareaId,
+            @RequestParam("tecnicoId") Long tecnicoId,
+            @RequestParam(value = "activoReq", required = false) String activoReq,
+            Model model) {
+
+        servicio.desasignarTecnico(tareaId, tecnicoId);
+
+        if (activoReq != null && !activoReq.trim().isEmpty()) {
+            Activo a = activoDao.findById(Long.parseLong(activoReq)).orElse(null);
+            if (a != null) {
+                return "redirect:/activo/" + Convertidor.aCamelCase(a.getNombre());
+            }
+        }
+
+        model.addAttribute("tareas", tareaService.traerNoCerradas(TiempoUtils.haceAnios(1), TiempoUtils.ahora(),
+                TenantContext.getTenantId()));
+        return "redirect:/tareas";
+    }
+
     @GetMapping("/CerrarSolicitud/{id}")
     public String CerrarSolicitud(
             @RequestParam(required = false, name = "satisfaccion") String satisfaccion,

@@ -143,11 +143,20 @@
 
                      
                                          <!-- Contenedor del card, inicialmente oculto -->
-                    <div id="cardInfo" class="card card-hidden" style="width: 18rem;  position: absolute;box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);">
-                      <div class="card-body">
-                        <h5 class="card-title">Tareas validadas</h5>
-                        <p class="card-text"id="listaPreventivos"></p>
-                      </div>
+                    <div id="cardInfo" class="card card-hidden shadow-lg border-0"
+                        style="width: 22rem; position: absolute; z-index: 9999; border-radius: var(--radius-lg, 12px); overflow: hidden; background-color: var(--bg-surface);">
+                        <div class="card-header border-bottom d-flex align-items-center justify-content-between py-2 px-3 bg-surface-elevated">
+                            <div class="d-flex align-items-center gap-2 overflow-hidden me-2">
+                                <i class="fas fa-clipboard-check text-primary"></i>
+                                <span id="popupActivoNombre" class="fw-bold text-truncate text-body" style="font-size: 0.9rem;">Preventivos</span>
+                                <span id="popupBadgeCount" class="badge bg-primary-subtle text-primary rounded-pill small ms-1">0</span>
+                            </div>
+                            <a id="popupVerLink" href="#" class="btn btn-xs btn-outline-primary text-nowrap d-none" style="font-size: 0.75rem; padding: 0.2rem 0.55rem; border-radius: var(--radius-sm, 6px);" title="Ver listado completo de preventivos">
+                                <i class="fas fa-external-link-alt me-1"></i>Listado
+                            </a>
+                        </div>
+                        <div class="card-body p-3" id="listaPreventivos" style="max-height: 320px; overflow-y: auto;">
+                        </div>
                     </div>
                      
                      
@@ -725,38 +734,79 @@ var funcionTimeout;
 
 
 
-function ajax(nombre,estado){
-     $.ajax({
-            url: '/inicio/traerPreventivosAlLayout/',   // La URL del método en tu controlador
-            type: 'GET',// Método HTTP  
-            data:{nombre:nombre,
-                  estado:estado  },// Enviar el nombre del activo como parámetro
-            success: function(response) {
-                // Limpiar el contenedor de salida
-                $("#listaPreventivos").html("");
+function ajax(nombre, estado) {
+    $.ajax({
+        url: '/inicio/traerPreventivosAlLayout/',
+        type: 'GET',
+        data: {
+            nombre: nombre,
+            estado: estado
+        },
+        success: function (response) {
+            let listaContainer = $("#listaPreventivos");
+            listaContainer.empty();
 
-                // Recorrer la lista de objetos y mostrar sus campos
-                response.forEach(function(objeto) {
-                    $("#listaPreventivos").append("<p>- " + objeto.descripcion + "</p>");
-                });
-//                            success: function(response) {
-//                           // response ahora es un objeto JSON, puedes acceder a sus campos
-//                                  $("#output").html("Campo1: " + response.campo1 );
-//                             });
-            },
-            error: function(error) {
-                console.error("Error en la petición", error);
+            let preventivos = response.preventivos || (Array.isArray(response) ? response : []);
+            let activoId = response.activoId || (preventivos.length > 0 && preventivos[0].activo ? preventivos[0].activo.id : null);
+            let activoNombre = response.activoNombre || nombre;
+
+            $("#popupActivoNombre").text(activoNombre);
+            $("#popupBadgeCount").text(preventivos.length);
+
+            let linkBtn = $("#popupVerLink");
+            if (activoId) {
+                linkBtn.attr("href", "/preventivos/" + activoId).removeClass("d-none");
+            } else {
+                linkBtn.addClass("d-none");
             }
-          });
 
+            if (preventivos.length === 0) {
+                let emptyHtml = `
+                    <div class="p-3 text-center rounded-3 border bg-surface-elevated">
+                        <i class="fas fa-check-circle text-success fs-3 mb-2 d-block"></i>
+                        <h6 class="fw-bold mb-1 text-body" style="font-size: 0.85rem;">Sin preventivos validados</h6>
+                        <p class="small text-muted mb-0" style="font-size: 0.75rem;">Este activo no posee preventivos ni mejoras validadas pendientes.</p>
+                        ${activoId ? `<a href="/preventivos/${activoId}" class="btn btn-sm btn-link text-decoration-none mt-2 p-0 d-inline-block" style="font-size: 0.75rem;"><i class="fas fa-list me-1"></i>Ver historial de preventivos</a>` : ''}
+                    </div>
+                `;
+                listaContainer.html(emptyHtml);
+            } else {
+                preventivos.forEach(function (objeto) {
+                    let isMejora = objeto.categoria && objeto.categoria.toLowerCase() === 'mejora';
+                    let catBadgeClass = isMejora ? 'bg-info text-dark' : 'bg-primary';
+                    let catIcon = isMejora ? 'fas fa-lightbulb' : 'fas fa-tools';
+                    let catLabel = objeto.categoria ? objeto.categoria.toUpperCase() : 'PREVENTIVO';
+                    let frecuenciaHtml = objeto.frecuencia ? `<span class="badge bg-secondary-subtle text-muted ms-auto" style="font-size: 0.7rem;"><i class="far fa-clock me-1"></i>${objeto.frecuencia}</span>` : '';
 
-
-
-//        cardInfo.style.display = "block";
-        mostrarCard();
-//        cardInfo.style.left = `5%`;  
-//        cardInfo.style.top = `60%`;
+                    let itemHtml = `
+                        <div class="preventivo-item-card p-2 mb-2 rounded border bg-surface-elevated shadow-sm text-start">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <span class="badge ${catBadgeClass} px-2 py-1" style="font-size: 0.65rem;">
+                                    <i class="${catIcon} me-1"></i>${catLabel}
+                                </span>
+                                ${frecuenciaHtml}
+                            </div>
+                            <div class="fw-semibold text-wrap text-start text-body" style="font-size: 0.82rem; line-height: 1.3;">
+                                ${objeto.descripcion}
+                            </div>
+                            ${objeto.solicita ? `<div class="text-muted mt-1 text-start" style="font-size: 0.72rem;"><i class="fas fa-user me-1"></i>${objeto.solicita}</div>` : ''}
+                        </div>
+                    `;
+                    listaContainer.append(itemHtml);
+                });
+            }
+        },
+        error: function (error) {
+            console.error("Error en la petición", error);
+            $("#listaPreventivos").html(`
+                <div class="p-2 text-center text-danger small">
+                    <i class="fas fa-exclamation-triangle me-1"></i>Error al cargar datos
+                </div>
+            `);
         }
+    });
+    mostrarCard();
+}
 
 
 

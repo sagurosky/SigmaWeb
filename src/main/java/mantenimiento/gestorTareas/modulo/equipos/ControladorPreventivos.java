@@ -98,32 +98,22 @@ public class ControladorPreventivos {
     }
     
 
-    
-    @PostMapping("/guardarSugerencia/{id}")
-//    public String guardarSugerencia(@Param("descripcion")String descripcion, Model model,  Activo activoRequest,Preventivo preventivo) {
-    public String guardarSugerencia( Model model, @RequestParam("file") MultipartFile imagen,  Activo activoRequest,Preventivo preventivo) {
-      
-//        Preventivo preventivo=new Preventivo();
-//        preventivo.setDescripcion(descripcion);
-        
-        Activo activoSeleccionado = activo.findById(activoRequest.getId()).orElse(null);
-         preventivo.setActivo(activoSeleccionado);
-         preventivo.setEstado("pendiente");
-         preventivo.setFechaDeCreacion(TiempoUtils.ahora());
+    @PostMapping("/guardarSugerencia/{activoId}")
+    public String guardarSugerencia(@PathVariable("activoId") Long activoId, Model model, @RequestParam("file") MultipartFile imagen, Preventivo preventivo) {
 
-          Authentication aut = SecurityContextHolder.getContext().getAuthentication();
+        Activo activoSeleccionado = activo.findById(activoId).orElse(null);
+        preventivo.setId(null); // garantizar INSERT y no UPDATE por binding accidental del path {id}
+        preventivo.setActivo(activoSeleccionado);
+        preventivo.setEstado("pendiente");
+        preventivo.setFechaDeCreacion(TiempoUtils.ahora());
+
+        Authentication aut = SecurityContextHolder.getContext().getAuthentication();
         preventivo.setSolicita(aut.getName());
-         
-        
-        //el metodo save devuelve la instancia actualizada (con el id). una maravilla! siempre se sigue aprendiendo
-         preventivo= preventivoService.save(preventivo);
-        
-        if (!imagen.isEmpty()) {
-            // Path directorioImagenes = Paths.get("src//main//resources//static//imagenes");
-            // String ruta = directorioImagenes.toFile().getAbsolutePath();
-            //voy a usar un directorio no relativo para evitar la necesidad de actualizar
-            //cada vez que se agrega una imagen nueva
 
+        // el metodo save devuelve la instancia actualizada (con el id). una maravilla! siempre se sigue aprendiendo
+        preventivo = preventivoService.save(preventivo);
+
+        if (!imagen.isEmpty()) {
             String ruta = ArchivoExterno.getImagenesPath();
             Path carpetaImagenes = Paths.get(ruta);
             if (!Files.exists(carpetaImagenes)) {
@@ -133,31 +123,18 @@ public class ControladorPreventivos {
                     // Manejar error si ocurre al crear la carpeta
                 }
             }
-            
 
             try {
                 byte[] bytes = imagen.getBytes();
-                //tengo que trimearlo
-                Path rutaCompleta = Paths.get(ruta + "//" +preventivo.getId()+ imagen.getOriginalFilename().replace(" ",""));
+                Path rutaCompleta = Paths.get(ruta + "//" + preventivo.getId() + imagen.getOriginalFilename().replace(" ", ""));
                 Files.write(rutaCompleta, bytes);
-                preventivo.setImagen(""+preventivo.getId()+imagen.getOriginalFilename().replace(" ",""));
+                preventivo.setImagen("" + preventivo.getId() + imagen.getOriginalFilename().replace(" ", ""));
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-        
-        
-        
-        
-//        activo.save(activoSeleccionado);
+
         preventivoService.save(preventivo);
-        String url = Convertidor.aCamelCase(activoSeleccionado.getNombre());
-        
-        //me aseguro que el primer caracter sea minuscula sino falla
-        char primerCaracterMinuscula = Character.toLowerCase(url.charAt(0));
-        url=url.substring(1);
-        url=primerCaracterMinuscula+url;
-        
         return "redirect:/preventivos/" + activoSeleccionado.getId();
     }
 

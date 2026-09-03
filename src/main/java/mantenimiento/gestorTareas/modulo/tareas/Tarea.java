@@ -46,7 +46,7 @@ public class Tarea implements Serializable, TenantSupport {
     @JsonIgnore
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
-    @OneToMany( cascade=CascadeType.ALL, mappedBy = "tarea")
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "tarea")
     private List<Asignacion> asignaciones;
     
     

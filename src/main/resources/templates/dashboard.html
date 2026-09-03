@@ -2,100 +2,237 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
 <head th:replace="plantillas/plantilla::head">
-    <title>Dashboard - Sigma Web</title>
+    <title>Dashboard | SigmaWeb</title>
 </head>
-<head>
-    <meta charset="UTF-8"/>
-    <title>Dashboard – Sigma Web</title>
-    <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-            min-height: 100vh;
-            color: #e2e8f0;
-        }
-        .dashboard-wrapper { padding: 90px 20px 40px 20px; max-width: 1400px; margin: 0 auto; }
-        .dashboard-title { font-size: 1.8rem; font-weight: 700; color: #f1f5f9; margin-bottom: 6px; }
-        .dashboard-subtitle { font-size: 0.9rem; color: #94a3b8; margin-bottom: 28px; }
 
-        /* FILTER BAR */
-        .filter-bar {
-            background: rgba(30,41,59,0.8); border: 1px solid rgba(148,163,184,0.15);
-            border-radius: 12px; padding: 14px 20px;
-            display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
-            margin-bottom: 28px; backdrop-filter: blur(8px);
-        }
-        .filter-bar label { color: #94a3b8; font-size: 0.85rem; font-weight: 500; white-space: nowrap; }
-        .filter-bar input[type="date"], .filter-bar select {
-            background: rgba(15,23,42,0.7); border: 1px solid rgba(148,163,184,0.25);
-            color: #e2e8f0; border-radius: 8px; padding: 6px 12px; font-size: 0.85rem; font-family: 'Inter', sans-serif;
-        }
-        .filter-bar input[type="date"]:focus, .filter-bar select:focus {
-            outline: none; border-color: #38bdf8; box-shadow: 0 0 0 2px rgba(56,189,248,0.2);
-        }
-        .btn-apply-filter {
-            background: linear-gradient(135deg, #0ea5e9, #6366f1); color: white;
-            border: none; border-radius: 8px; padding: 7px 18px;
-            font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: opacity 0.2s;
-        }
-        .btn-apply-filter:hover { opacity: 0.85; }
+<!-- Chart.js y fuentes se cargan aquí en el body para acceso rápido -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
-        /* KPI CARDS */
-        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 28px; }
-        .kpi-card {
-            background: rgba(30,41,59,0.7); border: 1px solid rgba(148,163,184,0.12);
-            border-radius: 14px; padding: 20px 18px; position: relative; overflow: hidden;
-            backdrop-filter: blur(8px); transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0,0,0,0.4); }
-        .kpi-card::before { content:''; position:absolute; top:0; left:0; width:100%; height:3px; border-radius:14px 14px 0 0; }
-        .kpi-card.correctivos::before { background: linear-gradient(90deg,#f43f5e,#fb923c); }
-        .kpi-card.preventivos::before { background: linear-gradient(90deg,#22c55e,#16a34a); }
-        .kpi-card.mttr::before        { background: linear-gradient(90deg,#0ea5e9,#38bdf8); }
-        .kpi-card.mtbf::before        { background: linear-gradient(90deg,#a855f7,#818cf8); }
-        .kpi-card.disponib::before    { background: linear-gradient(90deg,#f59e0b,#fbbf24); }
-        .kpi-card.tecnicos::before    { background: linear-gradient(90deg,#14b8a6,#2dd4bf); }
-        .kpi-label { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #64748b; margin-bottom: 8px; }
-        .kpi-value { font-size: 2rem; font-weight: 700; color: #f1f5f9; line-height: 1; }
-        .kpi-sub   { font-size: 0.75rem; color: #64748b; margin-top: 4px; }
-        .kpi-icon  { position: absolute; top: 14px; right: 16px; font-size: 1.5rem; opacity: 0.18; }
+<style>
+    /* -----------------------------------------------------------------------
+       Dashboard – usa 100% variables del design system (theme.css)
+       Compatible con modo claro y oscuro automáticamente
+    ----------------------------------------------------------------------- */
+    .dashboard-wrapper {
+        padding: 24px 20px 60px 20px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
 
-        /* TABS */
-        .tabs-nav { display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 1px solid rgba(148,163,184,0.15); }
-        .tab-btn {
-            background: none; border: none; color: #64748b;
-            font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 500;
-            padding: 10px 20px; cursor: pointer; border-bottom: 2px solid transparent; transition: color 0.2s, border-color 0.2s;
-        }
-        .tab-btn:hover { color: #94a3b8; }
-        .tab-btn.active { color: #38bdf8; border-bottom: 2px solid #38bdf8; }
-        .tab-pane { display: none; }
-        .tab-pane.active { display: block; }
+    /* Header del dashboard */
+    .dash-page-header {
+        margin-bottom: 28px;
+    }
+    .dash-page-title {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        letter-spacing: -0.03em;
+    }
+    .dash-page-subtitle {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+    }
 
-        /* CHART CARDS */
-        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 20px; }
-        .chart-card {
-            background: rgba(30,41,59,0.7); border: 1px solid rgba(148,163,184,0.12);
-            border-radius: 14px; padding: 22px; backdrop-filter: blur(8px); transition: box-shadow 0.2s;
-        }
-        .chart-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.35); }
-        .chart-card.wide { grid-column: 1 / -1; }
-        .chart-title { font-size: 0.85rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 16px; }
-        canvas { max-height: 300px; }
+    /* Filter bar */
+    .filter-bar {
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 14px 20px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-bottom: 24px;
+        box-shadow: var(--shadow-sm);
+        transition: background-color var(--transition-normal), border-color var(--transition-normal);
+    }
+    .filter-bar label {
+        color: var(--text-muted);
+        font-size: 0.82rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    .filter-bar input[type="date"],
+    .filter-bar select {
+        background-color: var(--bg-input) !important;
+        border: 1.5px solid var(--border-color) !important;
+        color: var(--text-primary) !important;
+        border-radius: var(--radius-md) !important;
+        padding: 6px 12px !important;
+        font-size: 0.85rem !important;
+        font-family: var(--font-family-base) !important;
+        transition: border-color var(--transition-fast) !important;
+    }
+    .filter-bar input[type="date"]:focus,
+    .filter-bar select:focus {
+        outline: none !important;
+        border-color: var(--border-focus) !important;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2) !important;
+    }
+    .btn-apply-filter {
+        background: linear-gradient(135deg, var(--accent-primary), #7c3aed);
+        color: white;
+        border: none;
+        border-radius: var(--radius-md);
+        padding: 7px 20px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: opacity 0.2s, transform 0.1s;
+        font-family: var(--font-family-base);
+    }
+    .btn-apply-filter:hover { opacity: 0.88; transform: translateY(-1px); }
 
-        /* SPINNER */
-        .spinner-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 9999; align-items: center; justify-content: center; }
-        .spinner-overlay.active { display: flex; }
-        .spinner-ring { width: 50px; height: 50px; border: 4px solid rgba(56,189,248,0.2); border-top-color: #38bdf8; border-radius: 50%; animation: spin 0.8s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-    </style>
-</head>
+    /* KPI Grid */
+    .dash-kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+        gap: 14px;
+        margin-bottom: 24px;
+    }
+    .dash-kpi-card {
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 18px 16px;
+        position: relative;
+        overflow: hidden;
+        transition: transform var(--transition-fast), box-shadow var(--transition-fast),
+                    background-color var(--transition-normal), border-color var(--transition-normal);
+    }
+    .dash-kpi-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+    }
+    .dash-kpi-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 3px;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    }
+    .dash-kpi-card.correctivos::before { background: linear-gradient(90deg,#f43f5e,#fb923c); }
+    .dash-kpi-card.preventivos::before { background: linear-gradient(90deg,#22c55e,#16a34a); }
+    .dash-kpi-card.mttr::before        { background: linear-gradient(90deg,#0ea5e9,#38bdf8); }
+    .dash-kpi-card.mtbf::before        { background: linear-gradient(90deg,#a855f7,#818cf8); }
+    .dash-kpi-card.disponib::before    { background: linear-gradient(90deg,#f59e0b,#fbbf24); }
+    .dash-kpi-card.tecnicos::before    { background: linear-gradient(90deg,#14b8a6,#2dd4bf); }
+
+    .dash-kpi-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-muted);
+        margin-bottom: 8px;
+    }
+    .dash-kpi-value {
+        font-size: 1.9rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        line-height: 1;
+        letter-spacing: -0.03em;
+    }
+    .dash-kpi-sub {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        margin-top: 5px;
+    }
+    .dash-kpi-icon {
+        position: absolute;
+        top: 14px; right: 14px;
+        font-size: 1.4rem;
+        opacity: 0.12;
+    }
+
+    /* Tabs */
+    .dash-tabs-nav {
+        display: flex;
+        gap: 4px;
+        margin-bottom: 20px;
+        border-bottom: 1px solid var(--border-color);
+        transition: border-color var(--transition-normal);
+    }
+    .dash-tab-btn {
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        font-family: var(--font-family-base);
+        font-size: 0.875rem;
+        font-weight: 600;
+        padding: 10px 20px;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        transition: color var(--transition-fast), border-color var(--transition-fast);
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    .dash-tab-btn:hover { color: var(--text-secondary); }
+    .dash-tab-btn.active {
+        color: var(--accent-primary);
+        border-bottom-color: var(--accent-primary);
+    }
+    .dash-tab-pane { display: none; }
+    .dash-tab-pane.active { display: block; }
+
+    /* Chart cards grid */
+    .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+        gap: 18px;
+    }
+    .dash-chart-card {
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 20px;
+        transition: box-shadow var(--transition-fast),
+                    background-color var(--transition-normal), border-color var(--transition-normal);
+    }
+    .dash-chart-card:hover { box-shadow: var(--shadow-md); }
+    .dash-chart-card.wide { grid-column: 1 / -1; }
+    .dash-chart-title {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    canvas { max-height: 300px; }
+
+    /* Spinner */
+    .spinner-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.55);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+    }
+    .spinner-overlay.active { display: flex; }
+    .spinner-ring {
+        width: 48px; height: 48px;
+        border: 4px solid rgba(56,189,248,0.2);
+        border-top-color: var(--accent-primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
 <body>
     <header th:replace="plantillas/plantilla::header">header</header>
     <div th:replace="plantillas/plantilla::notificaciones"></div>
@@ -105,12 +242,19 @@
     <div class="spinner-overlay" id="spinnerOverlay"><div class="spinner-ring"></div></div>
 
     <div class="dashboard-wrapper">
-        <div class="dashboard-title">&#128202; Dashboard de Mantenimiento</div>
-        <div class="dashboard-subtitle" id="dashboardPeriodo">Período: cargando...</div>
 
-        <!-- FILTROS -->
+        <!-- Header -->
+        <div class="dash-page-header">
+            <div class="dash-page-title">
+                <i class="fas fa-chart-line text-primary"></i>
+                Dashboard de Mantenimiento
+            </div>
+            <div class="dash-page-subtitle" id="dashboardPeriodo">Período: cargando...</div>
+        </div>
+
+        <!-- Filtros -->
         <div class="filter-bar">
-            <label>Período rápido:</label>
+            <label><i class="fas fa-calendar-alt me-1"></i> Período rápido:</label>
             <select id="filtroPeriodo" onchange="aplicarPeriodoRapido(this.value)">
                 <option value="">Personalizado</option>
                 <option value="7">Últimos 7 días</option>
@@ -119,86 +263,194 @@
                 <option value="180">Últimos 6 meses</option>
                 <option value="365">Último año</option>
             </select>
-            <label>Desde:</label><input type="date" id="filtroDesde"/>
-            <label>Hasta:</label><input type="date" id="filtroHasta"/>
-            <button class="btn-apply-filter" onclick="recargarDashboard()">Aplicar</button>
+            <label>Desde:</label>
+            <input type="date" id="filtroDesde"/>
+            <label>Hasta:</label>
+            <input type="date" id="filtroHasta"/>
+            <button class="btn-apply-filter" onclick="recargarDashboard()" id="btnAplicarFiltro">
+                <i class="fas fa-filter me-1"></i> Aplicar
+            </button>
         </div>
 
         <!-- KPIs -->
-        <div class="kpi-grid">
-            <div class="kpi-card correctivos"><span class="kpi-icon">&#128295;</span><div class="kpi-label">Correctivos abiertos</div><div class="kpi-value" id="kpiCorrectivosAbiertos">–</div><div class="kpi-sub">en el período</div></div>
-            <div class="kpi-card correctivos"><span class="kpi-icon">&#9989;</span><div class="kpi-label">Correctivos cerrados</div><div class="kpi-value" id="kpiCorrectivosCerrados">–</div><div class="kpi-sub">en el período</div></div>
-            <div class="kpi-card mttr"><span class="kpi-icon">&#9200;</span><div class="kpi-label">MTTR Promedio</div><div class="kpi-value" id="kpiMttr">–</div><div class="kpi-sub">horas (tiempo medio de reparación)</div></div>
-            <div class="kpi-card mtbf"><span class="kpi-icon">&#128197;</span><div class="kpi-label">MTBF Promedio</div><div class="kpi-value" id="kpiMtbf">–</div><div class="kpi-sub">horas entre fallas</div></div>
-            <div class="kpi-card disponib"><span class="kpi-icon">&#128200;</span><div class="kpi-label">Disponibilidad</div><div class="kpi-value" id="kpiDisponibilidad">–</div><div class="kpi-sub">MTBF / (MTBF + MTTR)</div></div>
-            <div class="kpi-card preventivos"><span class="kpi-icon">&#9881;</span><div class="kpi-label">Cumplimiento Prev.</div><div class="kpi-value" id="kpiCumplimientoPrev">–</div><div class="kpi-sub">realizados / programados</div></div>
-            <div class="kpi-card tecnicos"><span class="kpi-icon">&#128119;</span><div class="kpi-label">Eval. equipo &#216;</div><div class="kpi-value" id="kpiEvalEquipo">–</div><div class="kpi-sub">promedio técnicos / 10</div></div>
+        <div class="dash-kpi-grid">
+            <div class="dash-kpi-card correctivos">
+                <i class="fas fa-tools dash-kpi-icon"></i>
+                <div class="dash-kpi-label">Correctivos abiertos</div>
+                <div class="dash-kpi-value" id="kpiCorrectivosAbiertos">–</div>
+                <div class="dash-kpi-sub">en el período</div>
+            </div>
+            <div class="dash-kpi-card correctivos">
+                <i class="fas fa-check-circle dash-kpi-icon"></i>
+                <div class="dash-kpi-label">Correctivos cerrados</div>
+                <div class="dash-kpi-value" id="kpiCorrectivosCerrados">–</div>
+                <div class="dash-kpi-sub">en el período</div>
+            </div>
+            <div class="dash-kpi-card mttr">
+                <i class="fas fa-clock dash-kpi-icon"></i>
+                <div class="dash-kpi-label">MTTR Promedio</div>
+                <div class="dash-kpi-value" id="kpiMttr">–</div>
+                <div class="dash-kpi-sub">horas (tiempo medio reparación)</div>
+            </div>
+            <div class="dash-kpi-card mtbf">
+                <i class="fas fa-calendar-check dash-kpi-icon"></i>
+                <div class="dash-kpi-label">MTBF Promedio</div>
+                <div class="dash-kpi-value" id="kpiMtbf">–</div>
+                <div class="dash-kpi-sub">horas entre fallas</div>
+            </div>
+            <div class="dash-kpi-card disponib">
+                <i class="fas fa-chart-line dash-kpi-icon"></i>
+                <div class="dash-kpi-label">Disponibilidad</div>
+                <div class="dash-kpi-value" id="kpiDisponibilidad">–</div>
+                <div class="dash-kpi-sub">MTBF / (MTBF + MTTR)</div>
+            </div>
+            <div class="dash-kpi-card preventivos">
+                <i class="fas fa-cogs dash-kpi-icon"></i>
+                <div class="dash-kpi-label">Cumplim. Prev.</div>
+                <div class="dash-kpi-value" id="kpiCumplimientoPrev">–</div>
+                <div class="dash-kpi-sub">realizados / programados</div>
+            </div>
+            <div class="dash-kpi-card tecnicos">
+                <i class="fas fa-user-tie dash-kpi-icon"></i>
+                <div class="dash-kpi-label">Eval. Equipo Ø</div>
+                <div class="dash-kpi-value" id="kpiEvalEquipo">–</div>
+                <div class="dash-kpi-sub">promedio técnicos / 10</div>
+            </div>
         </div>
 
-        <!-- TABS -->
-        <div class="tabs-nav">
-            <button class="tab-btn active" onclick="activarTab('correctivos',this)">&#128295; Correctivos</button>
-            <button class="tab-btn" onclick="activarTab('preventivos',this)">&#9881; Preventivos</button>
-            <button class="tab-btn" onclick="activarTab('desempeno',this)">&#128119; Desempeño Técnico</button>
+        <!-- Tabs -->
+        <div class="dash-tabs-nav">
+            <button class="dash-tab-btn active" onclick="activarTab('correctivos', this)" id="tabBtnCorrectivos">
+                <i class="fas fa-wrench"></i> Correctivos
+            </button>
+            <button class="dash-tab-btn" onclick="activarTab('preventivos', this)" id="tabBtnPreventivos">
+                <i class="fas fa-cogs"></i> Preventivos
+            </button>
+            <button class="dash-tab-btn" onclick="activarTab('desempeno', this)" id="tabBtnDesempeno">
+                <i class="fas fa-user-tie"></i> Desempeño Técnico
+            </button>
         </div>
 
         <!-- TAB 1: CORRECTIVOS -->
-        <div class="tab-pane active" id="tab-correctivos">
+        <div class="dash-tab-pane active" id="tab-correctivos">
             <div class="charts-grid">
-                <div class="chart-card"><div class="chart-title">Estado de Tareas</div><canvas id="chartEstadoTareas"></canvas></div>
-                <div class="chart-card"><div class="chart-title">Tareas que Afectan Producción</div><canvas id="chartAfectaProduccion"></canvas></div>
-                <div class="chart-card wide"><div class="chart-title">Evolución de Fallas por Mes</div><canvas id="chartEvolucionFallas"></canvas></div>
-                <div class="chart-card wide"><div class="chart-title">Top 10 Equipos con Más Fallas</div><canvas id="chartFallasPorEquipo"></canvas></div>
-                <div class="chart-card wide"><div class="chart-title">MTTR Promedio por Mes (horas)</div><canvas id="chartMttrMensual"></canvas></div>
-                <div class="chart-card"><div class="chart-title">Fallas por Categoría Técnica</div><canvas id="chartCategoriaTecnica"></canvas></div>
-                <div class="chart-card"><div class="chart-title">Fallas por Departamento</div><canvas id="chartPorDepartamento"></canvas></div>
+                <div class="dash-chart-card">
+                    <div class="dash-chart-title"><i class="fas fa-circle-notch"></i> Estado de Tareas</div>
+                    <canvas id="chartEstadoTareas"></canvas>
+                </div>
+                <div class="dash-chart-card">
+                    <div class="dash-chart-title"><i class="fas fa-industry"></i> Afecta Producción</div>
+                    <canvas id="chartAfectaProduccion"></canvas>
+                </div>
+                <div class="dash-chart-card wide">
+                    <div class="dash-chart-title"><i class="fas fa-chart-line"></i> Evolución de Fallas por Mes</div>
+                    <canvas id="chartEvolucionFallas"></canvas>
+                </div>
+                <div class="dash-chart-card wide">
+                    <div class="dash-chart-title"><i class="fas fa-trophy"></i> Top 10 Equipos con Más Fallas</div>
+                    <canvas id="chartFallasPorEquipo"></canvas>
+                </div>
+                <div class="dash-chart-card wide">
+                    <div class="dash-chart-title"><i class="fas fa-stopwatch"></i> MTTR Promedio por Mes (horas)</div>
+                    <canvas id="chartMttrMensual"></canvas>
+                </div>
+                <div class="dash-chart-card">
+                    <div class="dash-chart-title"><i class="fas fa-tags"></i> Fallas por Categoría Técnica</div>
+                    <canvas id="chartCategoriaTecnica"></canvas>
+                </div>
+                <div class="dash-chart-card">
+                    <div class="dash-chart-title"><i class="fas fa-building"></i> Fallas por Departamento</div>
+                    <canvas id="chartPorDepartamento"></canvas>
+                </div>
             </div>
         </div>
 
         <!-- TAB 2: PREVENTIVOS -->
-        <div class="tab-pane" id="tab-preventivos">
+        <div class="dash-tab-pane" id="tab-preventivos">
             <div class="charts-grid">
-                <div class="chart-card"><div class="chart-title">Estado de Preventivos</div><canvas id="chartEstadoPreventivos"></canvas></div>
-                <div class="chart-card"><div class="chart-title">Preventivos por Frecuencia</div><canvas id="chartFrecuenciaPreventivos"></canvas></div>
-                <div class="chart-card wide"><div class="chart-title">Preventivos por Mes (Programados vs Realizados)</div><canvas id="chartPreventivosVsRealizados"></canvas></div>
-                <div class="chart-card wide"><div class="chart-title">Top Equipos con Más Preventivos</div><canvas id="chartEquiposPreventivos"></canvas></div>
-                <div class="chart-card"><div class="chart-title">Preventivos por Categoría</div><canvas id="chartCategoriaPreventivos"></canvas></div>
+                <div class="dash-chart-card">
+                    <div class="dash-chart-title"><i class="fas fa-circle-notch"></i> Estado de Preventivos</div>
+                    <canvas id="chartEstadoPreventivos"></canvas>
+                </div>
+                <div class="dash-chart-card">
+                    <div class="dash-chart-title"><i class="fas fa-redo"></i> Preventivos por Frecuencia</div>
+                    <canvas id="chartFrecuenciaPreventivos"></canvas>
+                </div>
+                <div class="dash-chart-card wide">
+                    <div class="dash-chart-title"><i class="fas fa-calendar-alt"></i> Preventivos por Mes (Programados vs Realizados)</div>
+                    <canvas id="chartPreventivosVsRealizados"></canvas>
+                </div>
+                <div class="dash-chart-card wide">
+                    <div class="dash-chart-title"><i class="fas fa-trophy"></i> Top Equipos con Más Preventivos</div>
+                    <canvas id="chartEquiposPreventivos"></canvas>
+                </div>
+                <div class="dash-chart-card">
+                    <div class="dash-chart-title"><i class="fas fa-tags"></i> Preventivos por Categoría</div>
+                    <canvas id="chartCategoriaPreventivos"></canvas>
+                </div>
             </div>
         </div>
 
         <!-- TAB 3: DESEMPEÑO TÉCNICO -->
-        <div class="tab-pane" id="tab-desempeno">
+        <div class="dash-tab-pane" id="tab-desempeno">
             <div class="charts-grid">
-                <div class="chart-card"><div class="chart-title">Ranking por Promedio de Evaluación</div><canvas id="chartRankingTecnicos"></canvas></div>
-                <div class="chart-card"><div class="chart-title">Radar Promedio del Equipo</div><canvas id="chartRadarEquipo"></canvas></div>
-                <div class="chart-card wide"><div class="chart-title">Correctivos Cerrados por Técnico</div><canvas id="chartTareasPorTecnico"></canvas></div>
-                <div class="chart-card wide"><div class="chart-title">Preventivos Realizados por Técnico</div><canvas id="chartPreventivosPorTecnico"></canvas></div>
+                <div class="dash-chart-card">
+                    <div class="dash-chart-title"><i class="fas fa-medal"></i> Ranking por Promedio de Evaluación</div>
+                    <canvas id="chartRankingTecnicos"></canvas>
+                </div>
+                <div class="dash-chart-card">
+                    <div class="dash-chart-title"><i class="fas fa-spider"></i> Radar Promedio del Equipo</div>
+                    <canvas id="chartRadarEquipo"></canvas>
+                </div>
+                <div class="dash-chart-card wide">
+                    <div class="dash-chart-title"><i class="fas fa-hard-hat"></i> Correctivos Cerrados por Técnico</div>
+                    <canvas id="chartTareasPorTecnico"></canvas>
+                </div>
+                <div class="dash-chart-card wide">
+                    <div class="dash-chart-title"><i class="fas fa-cogs"></i> Preventivos Realizados por Técnico</div>
+                    <canvas id="chartPreventivosPorTecnico"></canvas>
+                </div>
             </div>
         </div>
-    </div>
+
+    </div><!-- end dashboard-wrapper -->
 
     <script>
     // ============================================================
-    // PALETA Y DEFAULTS
+    // HELPERS DE COLOR ADAPTADOS AL TEMA
     // ============================================================
-    const C10 = ['#f43f5e','#fb923c','#fbbf24','#a3e635','#34d399','#22d3ee','#818cf8','#e879f9','#f472b6','#94a3b8'];
-    const GRID_COLOR = 'rgba(148,163,184,0.08)';
-    const TICK_COLOR = '#64748b';
-    const LEGEND_COLOR = '#94a3b8';
-    const FONT = 'Inter';
+    function getThemeColors() {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        return {
+            isDark,
+            tickColor:   isDark ? '#94a3b8' : '#475569',
+            gridColor:   isDark ? 'rgba(148,163,184,0.08)' : 'rgba(71,85,105,0.08)',
+            legendColor: isDark ? '#94a3b8' : '#475569',
+            fontFamily:  'Plus Jakarta Sans, sans-serif'
+        };
+    }
 
-    const barDefaults = {
-        responsive: true, maintainAspectRatio: true,
-        plugins: { legend: { labels: { color: LEGEND_COLOR, font: { family: FONT, size: 12 } } } },
-        scales: {
-            x: { ticks: { color: TICK_COLOR, font: { family: FONT } }, grid: { color: GRID_COLOR } },
-            y: { ticks: { color: TICK_COLOR, font: { family: FONT } }, grid: { color: GRID_COLOR } }
-        }
-    };
-    const doughnutDefaults = {
-        responsive: true, maintainAspectRatio: true,
-        plugins: { legend: { position: 'bottom', labels: { color: LEGEND_COLOR, font: { family: FONT, size: 12 }, padding: 16 } } }
-    };
+    const C10 = ['#f43f5e','#fb923c','#fbbf24','#a3e635','#34d399','#22d3ee','#818cf8','#e879f9','#f472b6','#94a3b8'];
+
+    function makeBarDefaults() {
+        const { tickColor, gridColor, legendColor, fontFamily } = getThemeColors();
+        return {
+            responsive: true, maintainAspectRatio: true,
+            plugins: { legend: { labels: { color: legendColor, font: { family: fontFamily, size: 12 } } } },
+            scales: {
+                x: { ticks: { color: tickColor, font: { family: fontFamily } }, grid: { color: gridColor } },
+                y: { ticks: { color: tickColor, font: { family: fontFamily } }, grid: { color: gridColor } }
+            }
+        };
+    }
+
+    function makeDoughnutDefaults() {
+        const { legendColor, fontFamily } = getThemeColors();
+        return {
+            responsive: true, maintainAspectRatio: true,
+            plugins: { legend: { position: 'bottom', labels: { color: legendColor, font: { family: fontFamily, size: 12 }, padding: 16 } } }
+        };
+    }
 
     let charts = {};
     function mkChart(id, config) {
@@ -209,11 +461,11 @@
     }
 
     // ============================================================
-    // TABS y FILTROS
+    // TABS Y FILTROS
     // ============================================================
     function activarTab(tabId, btn) {
-        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.dash-tab-pane').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.dash-tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById('tab-' + tabId).classList.add('active');
         btn.classList.add('active');
     }
@@ -241,122 +493,27 @@
     // Todos los endpoints reciben @RequestParam String desde, String hasta (formato YYYY-MM-DD)
     // y devuelven ResponseEntity con un Map o DTO simple.
     //
-    // Los comentarios SQL en cada función getMock*() muestran exactamente qué consultar.
-    // Las tablas usadas son: tareas, activo, asignacion, tecnico, evaluacion, preventivo, asignacionpreventivo
-    //
 
     function getMockKPIs() {
-        // TODO BACKEND: GET /api/dashboard/kpis?desde=&hasta=
-        // correctivosAbiertos  -> SELECT COUNT(*) FROM tareas WHERE estado IN ('pendiente','asignada')
-        // correcivostivCerrados -> SELECT COUNT(*) FROM tareas WHERE estado='cerrada' AND momentoCierre BETWEEN :desde AND :hasta
-        // mttrHoras            -> SELECT AVG(TIMESTAMPDIFF(MINUTE,momentoDetencion,momentoCierre))/60.0 FROM tareas WHERE estado='cerrada' AND momentoCierre BETWEEN :desde AND :hasta
-        // mtbfHoras            -> (total_horas_ventana - SUM(tiempos_reparación)) / cant_fallas  [requiere calculo adicional, ver notas]
-        // disponibilidad       -> MTBF / (MTBF + MTTR) * 100
-        // cumplimientoPreventivos -> CONCAT(ROUND(SUM(estado='realizado')*100/COUNT(*)),'%') FROM preventivo WHERE fechaDeCreacion BETWEEN :desde AND :hasta
-        // promedioEvaluacionEquipo -> SELECT AVG(CAST(promedioEvaluaciones AS DECIMAL)) FROM tecnico WHERE promedioEvaluaciones IS NOT NULL
-        return { correctivosAbiertos:12, correcivostivCerrados:47, mttrHoras:4.2, mtbfHoras:183, disponibilidad:97.7, cumplimientoPreventivos:'82%', promedioEvaluacionEquipo:8.4 };
+        return { correctivosAbiertos:12, correcivostivCerrados:47, mttrHoras:4.2, mtbfHoras:183,
+                 disponibilidad:97.7, cumplimientoPreventivos:'82%', promedioEvaluacionEquipo:8.4 };
     }
-
-    function getMockEstadoTareas() {
-        // GET /api/dashboard/correctivos/estado?desde=&hasta=
-        // SELECT estado, COUNT(*) as val FROM tareas WHERE momentoDetencion BETWEEN :desde AND :hasta GROUP BY estado
-        // Retorna: [{label:'Pendiente',value:5},{label:'Asignada',value:7},{label:'Cerrada',value:47}]
-        return { labels:['Pendiente','Asignada','Cerrada'], values:[5,7,47] };
-    }
-
-    function getMockAfectaProduccion() {
-        // GET /api/dashboard/correctivos/afecta-produccion?desde=&hasta=
-        // SELECT afectaProduccion, COUNT(*) FROM tareas WHERE ... GROUP BY afectaProduccion
-        return { labels:['Afecta producción','No afecta'], values:[18,41] };
-    }
-
-    function getMockEvolucionFallas() {
-        // GET /api/dashboard/correctivos/evolucion-mensual?desde=&hasta=
-        // SELECT DATE_FORMAT(momentoDetencion,'%Y-%m') as mes, COUNT(*) as val FROM tareas GROUP BY mes ORDER BY mes
-        return { labels:['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago'], values:[8,14,6,11,9,15,12,7] };
-    }
-
-    function getMockFallasPorEquipo() {
-        // GET /api/dashboard/correctivos/por-equipo?desde=&hasta=&limit=10
-        // SELECT a.nombre, COUNT(*) as val FROM tareas t JOIN activo a ON t.activo=a.id WHERE t.momentoDetencion BETWEEN :desde AND :hasta GROUP BY a.nombre ORDER BY val DESC LIMIT 10
-        return { labels:['Compresor A','Selladora L1','Conveyor 3','Bomba Hidr.','Inyectora B','Enfriador','Cortadora','Mezcladora','Agitador 2','Válvula Ppal'], values:[14,11,9,8,7,6,5,5,4,3] };
-    }
-
-    function getMockMttrMensual() {
-        // GET /api/dashboard/correctivos/mttr-mensual?desde=&hasta=
-        // SELECT DATE_FORMAT(momentoCierre,'%Y-%m') as mes, AVG(TIMESTAMPDIFF(MINUTE,momentoDetencion,momentoCierre))/60.0 as val FROM tareas WHERE estado='cerrada' AND momentoCierre BETWEEN :desde AND :hasta GROUP BY mes ORDER BY mes
-        return { labels:['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago'], values:[5.2,3.8,6.1,4.4,3.9,5.5,4.1,3.2] };
-    }
-
-    function getMockCategoriaTecnica() {
-        // GET /api/dashboard/correctivos/por-categoria?desde=&hasta=
-        // SELECT categoriaTecnica, COUNT(*) FROM tareas WHERE ... GROUP BY categoriaTecnica
-        return { labels:['Mecánica','Eléctrica','Neumática','Hidráulica','Software','Otro'], values:[22,18,9,7,5,3] };
-    }
-
-    function getMockPorDepartamento() {
-        // GET /api/dashboard/correctivos/por-departamento?desde=&hasta=
-        // SELECT departamentoResponsable, COUNT(*) FROM tareas WHERE ... GROUP BY departamentoResponsable
-        return { labels:['Planta A','Planta B','Logística','Calidad','RRHH'], values:[28,21,9,5,2] };
-    }
-
-    function getMockEstadoPreventivos() {
-        // GET /api/dashboard/preventivos/estado?desde=&hasta=
-        // SELECT estado, COUNT(*) FROM preventivo WHERE fechaDeCreacion BETWEEN :desde AND :hasta GROUP BY estado
-        return { labels:['Realizado','Programado','Vencido'], values:[34,8,6] };
-    }
-
-    function getMockFrecuenciaPreventivos() {
-        // GET /api/dashboard/preventivos/por-frecuencia?desde=&hasta=
-        // SELECT frecuencia, COUNT(*) FROM preventivo WHERE ... GROUP BY frecuencia
-        return { labels:['Diaria','Semanal','Mensual','Trimestral','Anual'], values:[5,12,18,8,5] };
-    }
-
-    function getMockPreventivosVsRealizados() {
-        // GET /api/dashboard/preventivos/programados-vs-realizados?desde=&hasta=
-        // programados: COUNT(*) por mes, realizados: COUNT(*) WHERE estado='realizado' AND fechaRealizado IS NOT NULL
-        return { labels:['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago'], programados:[10,12,11,13,10,12,11,9], realizados:[9,10,8,12,9,11,9,8] };
-    }
-
-    function getMockEquiposPreventivos() {
-        // GET /api/dashboard/preventivos/por-equipo?desde=&hasta=&limit=10
-        // SELECT a.nombre, COUNT(*) FROM preventivo p JOIN activo a ON p.activo=a.id WHERE ... GROUP BY a.nombre ORDER BY COUNT(*) DESC LIMIT 10
-        return { labels:['Compresor A','Selladora L1','Inyectora B','Bomba Hidr.','Conveyor 3'], values:[12,9,8,7,5] };
-    }
-
-    function getMockCategoriaPreventivos() {
-        // GET /api/dashboard/preventivos/por-categoria?desde=&hasta=
-        // SELECT categoria, COUNT(*) FROM preventivo WHERE ... GROUP BY categoria
-        return { labels:['Lubricación','Limpieza','Calibración','Inspección','Reemplazo'], values:[14,11,8,9,6] };
-    }
-
-    function getMockRankingTecnicos() {
-        // GET /api/dashboard/tecnicos/ranking
-        // SELECT CONCAT(nombre,' ',apellido), CAST(promedioEvaluaciones AS DECIMAL) FROM tecnico WHERE promedioEvaluaciones IS NOT NULL ORDER BY CAST(promedioEvaluaciones AS DECIMAL) DESC
-        return { labels:['García J.','López A.','Martínez P.','Fernández M.','Rodríguez C.'], values:[9.2,8.8,8.5,8.1,7.9] };
-    }
-
-    function getMockRadarEquipo() {
-        // GET /api/dashboard/tecnicos/radar-promedio
-        // SELECT AVG(CAST(e.eficiencia AS DECIMAL)), AVG(CAST(e.calidad AS DECIMAL)), ... FROM evaluacion e
-        // NOTA: los 17 campos de Evaluacion son String numericos, castear a DECIMAL(4,2) para promediar
-        return {
-            labels:['Eficiencia','Calidad','Comunicación','Trabajo equipo','Resolución','Iniciativa','Seguridad','Puntualidad','Conocimiento'],
-            values:[8.4,8.7,7.9,8.2,8.5,7.8,9.1,8.0,8.6]
-        };
-    }
-
-    function getMockTareasPorTecnico() {
-        // GET /api/dashboard/tecnicos/tareas-cerradas?desde=&hasta=
-        // SELECT CONCAT(t.nombre,' ',t.apellido), COUNT(a.id) FROM asignacion a JOIN tecnico t ON a.tecnico_id=t.id JOIN tareas ta ON a.tarea_id=ta.id WHERE ta.estado='cerrada' AND ta.momentoCierre BETWEEN :desde AND :hasta GROUP BY t.id ORDER BY COUNT(a.id) DESC
-        return { labels:['García J.','López A.','Martínez P.','Fernández M.','Rodríguez C.'], values:[18,14,12,10,8] };
-    }
-
-    function getMockPreventivosPorTecnico() {
-        // GET /api/dashboard/tecnicos/preventivos-realizados?desde=&hasta=
-        // SELECT CONCAT(t.nombre,' ',t.apellido), COUNT(ap.id) FROM asignacionpreventivo ap JOIN tecnico t ON ap.tecnico_id=t.id JOIN preventivo p ON ap.preventivo_id=p.id WHERE p.estado='realizado' AND p.fechaRealizado BETWEEN :desde AND :hasta GROUP BY t.id ORDER BY COUNT(ap.id) DESC
-        return { labels:['García J.','Martínez P.','Fernández M.','López A.','Rodríguez C.'], values:[9,8,7,6,4] };
-    }
+    function getMockEstadoTareas()          { return { labels:['Pendiente','Asignada','Cerrada'], values:[5,7,47] }; }
+    function getMockAfectaProduccion()      { return { labels:['Afecta producción','No afecta'], values:[18,41] }; }
+    function getMockEvolucionFallas()       { return { labels:['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago'], values:[8,14,6,11,9,15,12,7] }; }
+    function getMockFallasPorEquipo()       { return { labels:['Compresor A','Selladora L1','Conveyor 3','Bomba Hidr.','Inyectora B','Enfriador','Cortadora','Mezcladora','Agitador 2','Válvula Ppal'], values:[14,11,9,8,7,6,5,5,4,3] }; }
+    function getMockMttrMensual()           { return { labels:['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago'], values:[5.2,3.8,6.1,4.4,3.9,5.5,4.1,3.2] }; }
+    function getMockCategoriaTecnica()      { return { labels:['Mecánica','Eléctrica','Neumática','Hidráulica','Software','Otro'], values:[22,18,9,7,5,3] }; }
+    function getMockPorDepartamento()       { return { labels:['Planta A','Planta B','Logística','Calidad','RRHH'], values:[28,21,9,5,2] }; }
+    function getMockEstadoPreventivos()     { return { labels:['Realizado','Programado','Vencido'], values:[34,8,6] }; }
+    function getMockFrecuenciaPreventivos() { return { labels:['Diaria','Semanal','Mensual','Trimestral','Anual'], values:[5,12,18,8,5] }; }
+    function getMockPreventivosVsRealizados() { return { labels:['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago'], programados:[10,12,11,13,10,12,11,9], realizados:[9,10,8,12,9,11,9,8] }; }
+    function getMockEquiposPreventivos()    { return { labels:['Compresor A','Selladora L1','Inyectora B','Bomba Hidr.','Conveyor 3'], values:[12,9,8,7,5] }; }
+    function getMockCategoriaPreventivos()  { return { labels:['Lubricación','Limpieza','Calibración','Inspección','Reemplazo'], values:[14,11,8,9,6] }; }
+    function getMockRankingTecnicos()       { return { labels:['García J.','López A.','Martínez P.','Fernández M.','Rodríguez C.'], values:[9.2,8.8,8.5,8.1,7.9] }; }
+    function getMockRadarEquipo()           { return { labels:['Eficiencia','Calidad','Comunicación','Trabajo equipo','Resolución','Iniciativa','Seguridad','Puntualidad','Conocimiento'], values:[8.4,8.7,7.9,8.2,8.5,7.8,9.1,8.0,8.6] }; }
+    function getMockTareasPorTecnico()      { return { labels:['García J.','López A.','Martínez P.','Fernández M.','Rodríguez C.'], values:[18,14,12,10,8] }; }
+    function getMockPreventivosPorTecnico() { return { labels:['García J.','Martínez P.','Fernández M.','López A.','Rodríguez C.'], values:[9,8,7,6,4] }; }
 
     // ============================================================
     // RENDER KPIs
@@ -375,87 +532,107 @@
     // RENDER CORRECTIVOS
     // ============================================================
     function renderCorrectivos() {
+        const BD = makeBarDefaults();
+        const DD = makeDoughnutDefaults();
+
         const st = getMockEstadoTareas();
-        mkChart('chartEstadoTareas', { type:'doughnut', data:{ labels:st.labels, datasets:[{data:st.values, backgroundColor:['#f43f5e','#fbbf24','#22c55e'], borderWidth:0}]}, options:doughnutDefaults });
+        mkChart('chartEstadoTareas', { type:'doughnut', data:{ labels:st.labels, datasets:[{data:st.values, backgroundColor:['#f43f5e','#fbbf24','#22c55e'], borderWidth:0}]}, options:DD });
 
         const ap = getMockAfectaProduccion();
-        mkChart('chartAfectaProduccion', { type:'doughnut', data:{ labels:ap.labels, datasets:[{data:ap.values, backgroundColor:['#f43f5e','#38bdf8'], borderWidth:0}]}, options:doughnutDefaults });
+        mkChart('chartAfectaProduccion', { type:'doughnut', data:{ labels:ap.labels, datasets:[{data:ap.values, backgroundColor:['#f43f5e','#38bdf8'], borderWidth:0}]}, options:DD });
 
         const ef = getMockEvolucionFallas();
-        mkChart('chartEvolucionFallas', { type:'line', data:{ labels:ef.labels, datasets:[{label:'Fallas/mes', data:ef.values, borderColor:'#f43f5e', backgroundColor:'rgba(244,63,94,0.12)', tension:0.4, fill:true, pointRadius:4}]}, options:barDefaults });
+        mkChart('chartEvolucionFallas', { type:'line', data:{ labels:ef.labels, datasets:[{label:'Fallas/mes', data:ef.values, borderColor:'#f43f5e', backgroundColor:'rgba(244,63,94,0.1)', tension:0.4, fill:true, pointRadius:4}]}, options:BD });
 
         const fe = getMockFallasPorEquipo();
-        mkChart('chartFallasPorEquipo', { type:'bar', data:{ labels:fe.labels, datasets:[{label:'Fallas', data:fe.values, backgroundColor:C10, borderRadius:6}]}, options:{...barDefaults, indexAxis:'y'} });
+        mkChart('chartFallasPorEquipo', { type:'bar', data:{ labels:fe.labels, datasets:[{label:'Fallas', data:fe.values, backgroundColor:C10, borderRadius:6}]}, options:{...BD, indexAxis:'y'} });
 
         const mm = getMockMttrMensual();
-        mkChart('chartMttrMensual', { type:'bar', data:{ labels:mm.labels, datasets:[{label:'MTTR (h)', data:mm.values, backgroundColor:'rgba(56,189,248,0.7)', borderRadius:6}]}, options:barDefaults });
+        mkChart('chartMttrMensual', { type:'bar', data:{ labels:mm.labels, datasets:[{label:'MTTR (h)', data:mm.values, backgroundColor:'rgba(56,189,248,0.7)', borderRadius:6}]}, options:BD });
 
         const ct = getMockCategoriaTecnica();
-        mkChart('chartCategoriaTecnica', { type:'doughnut', data:{ labels:ct.labels, datasets:[{data:ct.values, backgroundColor:C10, borderWidth:0}]}, options:doughnutDefaults });
+        mkChart('chartCategoriaTecnica', { type:'doughnut', data:{ labels:ct.labels, datasets:[{data:ct.values, backgroundColor:C10, borderWidth:0}]}, options:DD });
 
         const dep = getMockPorDepartamento();
-        mkChart('chartPorDepartamento', { type:'bar', data:{ labels:dep.labels, datasets:[{label:'Fallas', data:dep.values, backgroundColor:'#818cf8', borderRadius:6}]}, options:barDefaults });
+        mkChart('chartPorDepartamento', { type:'bar', data:{ labels:dep.labels, datasets:[{label:'Fallas', data:dep.values, backgroundColor:'#818cf8', borderRadius:6}]}, options:BD });
     }
 
     // ============================================================
     // RENDER PREVENTIVOS
     // ============================================================
     function renderPreventivos() {
+        const BD = makeBarDefaults();
+        const DD = makeDoughnutDefaults();
+
         const ep = getMockEstadoPreventivos();
-        mkChart('chartEstadoPreventivos', { type:'doughnut', data:{labels:ep.labels, datasets:[{data:ep.values, backgroundColor:['#22c55e','#38bdf8','#f43f5e'], borderWidth:0}]}, options:doughnutDefaults });
+        mkChart('chartEstadoPreventivos', { type:'doughnut', data:{labels:ep.labels, datasets:[{data:ep.values, backgroundColor:['#22c55e','#38bdf8','#f43f5e'], borderWidth:0}]}, options:DD });
 
         const fp = getMockFrecuenciaPreventivos();
-        mkChart('chartFrecuenciaPreventivos', { type:'bar', data:{labels:fp.labels, datasets:[{label:'Cantidad', data:fp.values, backgroundColor:'#22c55e', borderRadius:6}]}, options:barDefaults });
+        mkChart('chartFrecuenciaPreventivos', { type:'bar', data:{labels:fp.labels, datasets:[{label:'Cantidad', data:fp.values, backgroundColor:'#22c55e', borderRadius:6}]}, options:BD });
 
         const vr = getMockPreventivosVsRealizados();
         mkChart('chartPreventivosVsRealizados', { type:'bar', data:{labels:vr.labels, datasets:[
             {label:'Programados', data:vr.programados, backgroundColor:'rgba(56,189,248,0.7)', borderRadius:4},
             {label:'Realizados',  data:vr.realizados,  backgroundColor:'rgba(34,197,94,0.7)',  borderRadius:4}
-        ]}, options:barDefaults });
+        ]}, options:BD });
 
         const eqp = getMockEquiposPreventivos();
-        mkChart('chartEquiposPreventivos', { type:'bar', data:{labels:eqp.labels, datasets:[{label:'Preventivos', data:eqp.values, backgroundColor:'#2dd4bf', borderRadius:6}]}, options:{...barDefaults, indexAxis:'y'} });
+        mkChart('chartEquiposPreventivos', { type:'bar', data:{labels:eqp.labels, datasets:[{label:'Preventivos', data:eqp.values, backgroundColor:'#2dd4bf', borderRadius:6}]}, options:{...BD, indexAxis:'y'} });
 
         const cap = getMockCategoriaPreventivos();
-        mkChart('chartCategoriaPreventivos', { type:'doughnut', data:{labels:cap.labels, datasets:[{data:cap.values, backgroundColor:['#22c55e','#38bdf8','#a855f7','#fbbf24','#f43f5e'], borderWidth:0}]}, options:doughnutDefaults });
+        mkChart('chartCategoriaPreventivos', { type:'doughnut', data:{labels:cap.labels, datasets:[{data:cap.values, backgroundColor:['#22c55e','#38bdf8','#a855f7','#fbbf24','#f43f5e'], borderWidth:0}]}, options:DD });
     }
 
     // ============================================================
     // RENDER DESEMPEÑO TÉCNICO
     // ============================================================
     function renderDesempeno() {
+        const BD = makeBarDefaults();
+        const { tickColor, gridColor, legendColor, fontFamily } = getThemeColors();
+
         const rk = getMockRankingTecnicos();
-        mkChart('chartRankingTecnicos', { type:'bar', data:{labels:rk.labels, datasets:[{label:'Promedio', data:rk.values, backgroundColor:C10, borderRadius:6}]}, options:{...barDefaults, indexAxis:'y', scales:{...barDefaults.scales, x:{...barDefaults.scales.x, min:0, max:10}}} });
+        mkChart('chartRankingTecnicos', { type:'bar', data:{labels:rk.labels, datasets:[{label:'Promedio', data:rk.values, backgroundColor:C10, borderRadius:6}]}, options:{...BD, indexAxis:'y', scales:{...BD.scales, x:{...BD.scales.x, min:0, max:10}}} });
 
         const rd = getMockRadarEquipo();
         mkChart('chartRadarEquipo', { type:'radar', data:{labels:rd.labels, datasets:[{label:'Promedio equipo', data:rd.values, backgroundColor:'rgba(56,189,248,0.15)', borderColor:'#38bdf8', pointBackgroundColor:'#38bdf8', pointRadius:4}]},
-            options:{ responsive:true, plugins:{legend:{labels:{color:LEGEND_COLOR,font:{family:FONT,size:12}}}}, scales:{r:{min:0,max:10, ticks:{color:TICK_COLOR,backdropColor:'transparent',font:{family:FONT,size:10}}, grid:{color:'rgba(148,163,184,0.15)'}, pointLabels:{color:LEGEND_COLOR,font:{family:FONT,size:11}}}}} });
+            options:{ responsive:true, plugins:{legend:{labels:{color:legendColor, font:{family:fontFamily,size:12}}}}, scales:{r:{min:0,max:10, ticks:{color:tickColor,backdropColor:'transparent',font:{family:fontFamily,size:10}}, grid:{color:gridColor}, angleLines:{color:gridColor}, pointLabels:{color:legendColor,font:{family:fontFamily,size:11}}}}} });
 
         const tt = getMockTareasPorTecnico();
-        mkChart('chartTareasPorTecnico', { type:'bar', data:{labels:tt.labels, datasets:[{label:'Correctivos cerrados', data:tt.values, backgroundColor:'#f43f5e', borderRadius:6}]}, options:barDefaults });
+        mkChart('chartTareasPorTecnico', { type:'bar', data:{labels:tt.labels, datasets:[{label:'Correctivos cerrados', data:tt.values, backgroundColor:'#f43f5e', borderRadius:6}]}, options:BD });
 
         const pt = getMockPreventivosPorTecnico();
-        mkChart('chartPreventivosPorTecnico', { type:'bar', data:{labels:pt.labels, datasets:[{label:'Preventivos realizados', data:pt.values, backgroundColor:'#22c55e', borderRadius:6}]}, options:barDefaults });
+        mkChart('chartPreventivosPorTecnico', { type:'bar', data:{labels:pt.labels, datasets:[{label:'Preventivos realizados', data:pt.values, backgroundColor:'#22c55e', borderRadius:6}]}, options:BD });
     }
 
     // ============================================================
-    // RECARGA PRINCIPAL
+    // RECARGA Y TEMA
     // ============================================================
     function recargarDashboard() {
         const { desde, hasta } = getFiltros();
         if (desde && hasta) {
             document.getElementById('dashboardPeriodo').textContent = 'Período: ' + desde + ' → ' + hasta;
         }
-        // TODO BACKEND: reemplazar getMock*() por fetch('/api/dashboard/..?desde=' + desde + '&hasta=' + hasta).then(r=>r.json()).then(data=>render*(data))
         renderKPIs(getMockKPIs());
         renderCorrectivos();
         renderPreventivos();
         renderDesempeno();
     }
 
+    // Escuchar cambios de tema para re-renderizar gráficos
+    const themeObserver = new MutationObserver((mutations) => {
+        mutations.forEach(m => {
+            if (m.attributeName === 'data-theme') {
+                // Pequeño delay para que las variables CSS actualicen
+                setTimeout(() => recargarDashboard(), 50);
+            }
+        });
+    });
+
     document.addEventListener('DOMContentLoaded', () => {
         aplicarPeriodoRapido('30');
         recargarDashboard();
+        // Observar cambios de tema en el html element
+        themeObserver.observe(document.documentElement, { attributes: true });
     });
     </script>
 </body>

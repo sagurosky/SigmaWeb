@@ -30,7 +30,7 @@ public interface TecnicoService extends JpaRepository<Tecnico,Long> {
     public List<Tecnico> traerHabilitados( @Param("tenantId") Long tenantId );
     
     //trae los tecnicos que estan interviniendo en el activo enviado por parametro
-    @Query("SELECT t FROM Tecnico t JOIN t.asignaciones a " +
+    @Query("SELECT DISTINCT t FROM Tecnico t JOIN t.asignaciones a " +
             "WHERE a.tarea.estado = 'enProceso' " +
             "AND a.tarea.activo = :activo " +
             "AND t.tenant.id = :tenantId " +

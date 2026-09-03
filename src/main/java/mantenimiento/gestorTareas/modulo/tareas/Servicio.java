@@ -14,6 +14,7 @@ public interface Servicio  {
     public void eliminar(Tarea tarea);
     public void cerrarSolicitud(Tarea tarea, Evaluacion evaluacion);
     public void asignarSolicitud(Tarea tarea, List<Long> tecnicosIds, String motivoDemoraAsignacion);
+    public void desasignarTecnico(Long tareaId, Long tecnicoId);
     public void liberarSolicitud(Tarea tarea);
     
 }

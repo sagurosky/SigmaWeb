@@ -1,59 +1,232 @@
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:th="http://www.thymeleaf.org">
-    <head th:replace="plantillas/plantilla::head">
-        <title>Gestor de mantenimiento - Usuarios</title>
-    </head>
-    <body>
-        <header th:replace="plantillas/plantilla::header">lista de tareas</header>
-        <div th:replace="plantillas/plantilla::notificaciones"></div>
-        <div th:replace="plantillas/plantilla::menu"></div>
-        <div th:replace="plantillas/plantilla::logo"></div>
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
-        <div class="container my-4">
-            <h1>Usuarios registrados</h1>
-            <h2 th:if="${mensaje != null}"><label th:text="${mensaje}" style="color:red"></label></h2>
+<head th:replace="plantillas/plantilla::head">
+    <title>Gestión de Usuarios | SigmaWeb</title>
+</head>
 
-            <table class="table table-bordered table-hover table-sm">
-                <thead class="thead-light">
-                    <tr>
-                        <th>Nombre</th>
-                        <th>Rol</th>
-                        <th>Editar</th>
-                        <th>Eliminar</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="usuario: ${usuarios}">
-                        <td th:text="${usuario.username}"></td>
-                        <td>
-                            <span th:each="rol, iterStat:${usuario.roles}" class="badge bg-secondary me-1 text-white p-1" style="font-size: 0.9em;">
-                                <span th:switch="${rol.nombre}">
-                                    <span th:case="'ROLE_ADMIN'">Administrador</span>
-                                    <span th:case="'ROLE_MANT'">Mantenimiento</span>
-                                    <span th:case="'ROLE_PROD'">Producción</span>
-                                    <span th:case="'ROLE_TECNICO'">Técnico</span>
-                                    <span th:case="'ROLE_MONITOR'">Monitor</span>
-                                    <span th:case="*" th:text="${rol.nombre}"></span>
-                                </span>
-                            </span>
-                        </td>
-                        <td>
-                            <a th:href="@{/editarUsuario/{id}(id=${usuario.idUsuario})}" class="btn btn-sm btn-outline-primary">Editar</a>
-                        </td>
-                        <td>
-                            <form th:if="${usuarios.size > 1 and usuario.username != usuarioActual}" th:action="@{/eliminarUsuario/{id}(id=${usuario.idUsuario})}" method="POST" style="display:inline;" onsubmit="return confirm('¿Está seguro de eliminar este usuario?');">
-                                <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
-                            </form>
-                            <span th:if="${usuario.username == usuarioActual}" class="badge bg-info text-dark p-1" style="font-size: 0.85em;">Usuario actual</span>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+<style>
+    .role-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.25rem 0.65rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+    .role-admin    { background: rgba(37, 99, 235, 0.15); color: var(--accent-primary); border: 1px solid rgba(37,99,235,0.3); }
+    .role-mant     { background: rgba(234, 88, 12, 0.12); color: #ea580c; border: 1px solid rgba(234,88,12,0.3); }
+    .role-prod     { background: rgba(22, 163, 74, 0.12); color: #16a34a; border: 1px solid rgba(22,163,74,0.3); }
+    .role-tecnico  { background: rgba(20, 184, 166, 0.12); color: #0d9488; border: 1px solid rgba(20,184,166,0.3); }
+    .role-monitor  { background: rgba(100, 116, 139, 0.12); color: #64748b; border: 1px solid rgba(100,116,139,0.3); }
 
-            <a th:href="@{/crearUsuario}" class="btn btn-primary">Crear usuario</a>
-            <a th:href="@{/layout}" class="btn btn-secondary ms-2">Volver</a>
+    [data-theme="dark"] .role-mant  { color: #fb923c; border-color: rgba(251,146,60,0.4); }
+    [data-theme="dark"] .role-prod  { color: #4ade80; border-color: rgba(74,222,128,0.4); }
+    [data-theme="dark"] .role-tecnico { color: #2dd4bf; border-color: rgba(45,212,191,0.4); }
+
+    .user-table { width: 100%; border-collapse: collapse; }
+    .user-table thead tr {
+        background-color: var(--bg-surface-elevated);
+        border-bottom: 2px solid var(--border-color);
+    }
+    .user-table th {
+        padding: 0.75rem 1rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text-muted);
+        text-align: left;
+    }
+    .user-table tbody tr {
+        border-bottom: 1px solid var(--border-color);
+        transition: background-color var(--transition-fast);
+    }
+    .user-table tbody tr:last-child { border-bottom: none; }
+    .user-table tbody tr:hover { background-color: var(--bg-card-hover); }
+    .user-table td {
+        padding: 0.85rem 1rem;
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        vertical-align: middle;
+    }
+    .user-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius-full);
+        background: linear-gradient(135deg, var(--accent-primary), #7c3aed);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-weight: 700;
+        font-size: 0.85rem;
+        margin-right: 0.65rem;
+        flex-shrink: 0;
+    }
+    .user-name-cell { display: flex; align-items: center; }
+    .badge-yo {
+        background: rgba(56, 189, 248, 0.15);
+        color: #0ea5e9;
+        border: 1px solid rgba(56,189,248,0.3);
+        padding: 0.2rem 0.55rem;
+        border-radius: var(--radius-full);
+        font-size: 0.72rem;
+        font-weight: 700;
+    }
+    .alert-error {
+        background: rgba(220, 38, 38, 0.1);
+        border: 1px solid rgba(220, 38, 38, 0.3);
+        border-radius: var(--radius-md);
+        color: var(--status-detenida-text);
+        padding: 0.85rem 1rem;
+        margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+</style>
+
+<body>
+    <header th:replace="plantillas/plantilla::header">header</header>
+    <div th:replace="plantillas/plantilla::notificaciones"></div>
+    <div th:replace="plantillas/plantilla::menu"></div>
+    <div th:replace="plantillas/plantilla::logo"></div>
+
+    <div class="container my-4 animated-fadeIn">
+
+        <div class="sigma-card">
+            <div class="sigma-card-header">
+                <h1 class="sigma-card-title">
+                    <i class="fas fa-users-cog text-primary"></i>
+                    Gestión de Usuarios
+                </h1>
+                <a th:href="@{/crearUsuario}" class="btn btn-primary" id="btnCrearUsuario">
+                    <i class="fas fa-user-plus"></i> Crear usuario
+                </a>
+            </div>
+
+            <!-- Mensaje de error -->
+            <div th:if="${mensaje != null}" class="alert-error" id="mensajeError">
+                <i class="fas fa-exclamation-circle"></i>
+                <span th:text="${mensaje}"></span>
+            </div>
+
+            <!-- Tabla de usuarios -->
+            <div class="table-responsive">
+                <table class="user-table" id="tablaUsuarios">
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Roles</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="usuario: ${usuarios}" th:id="'fila-' + ${usuario.idUsuario}">
+                            <!-- Nombre con avatar -->
+                            <td>
+                                <div class="user-name-cell">
+                                    <span class="user-avatar"
+                                          th:text="${#strings.substring(usuario.username, 0, 1).toUpperCase()}">U</span>
+                                    <div>
+                                        <span th:text="${usuario.username}" style="font-weight: 600;"></span>
+                                        <span th:if="${usuario.username == usuarioActual}" class="badge-yo ms-2">
+                                            <i class="fas fa-circle" style="font-size:0.5rem;"></i> yo
+                                        </span>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Badges de roles -->
+                            <td>
+                                <div class="d-flex flex-wrap gap-1">
+                                    <span th:each="rol : ${usuario.roles}">
+                                        <span th:switch="${rol.nombre}">
+                                            <span th:case="'ROLE_ADMIN'" class="role-badge role-admin">
+                                                <i class="fas fa-shield-alt"></i> Administrador
+                                            </span>
+                                            <span th:case="'ROLE_MANT'" class="role-badge role-mant">
+                                                <i class="fas fa-wrench"></i> Mantenimiento
+                                            </span>
+                                            <span th:case="'ROLE_PROD'" class="role-badge role-prod">
+                                                <i class="fas fa-industry"></i> Producción
+                                            </span>
+                                            <span th:case="'ROLE_TECNICO'" class="role-badge role-tecnico">
+                                                <i class="fas fa-user-tie"></i> Técnico
+                                            </span>
+                                            <span th:case="'ROLE_MONITOR'" class="role-badge role-monitor">
+                                                <i class="fas fa-desktop"></i> Monitor
+                                            </span>
+                                            <span th:case="*" class="role-badge role-monitor" th:text="${rol.nombre}"></span>
+                                        </span>
+                                    </span>
+                                </div>
+                            </td>
+
+                            <!-- Acciones -->
+                            <td>
+                                <div class="d-flex gap-2 flex-wrap align-items-center">
+                                    <a th:href="@{/editarUsuario/{id}(id=${usuario.idUsuario})}"
+                                       class="btn btn-secondary btn-sm"
+                                       th:id="'btnEditar-' + ${usuario.idUsuario}">
+                                        <i class="fas fa-pencil-alt"></i> Editar
+                                    </a>
+                                    <form th:if="${usuarios.size > 1 and usuario.username != usuarioActual}"
+                                          th:action="@{/eliminarUsuario/{id}(id=${usuario.idUsuario})}"
+                                          method="POST"
+                                          style="display:inline;"
+                                          th:id="'formEliminar-' + ${usuario.idUsuario}"
+                                          onsubmit="return confirmarEliminacion(event, this)">
+                                        <button type="submit" class="btn btn-danger btn-sm"
+                                                th:id="'btnEliminar-' + ${usuario.idUsuario}">
+                                            <i class="fas fa-trash-alt"></i> Eliminar
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pie: botón volver -->
+            <div class="d-flex justify-content-end mt-4 pt-3" style="border-top: 1px solid var(--border-color);">
+                <a th:href="@{/layout}" class="btn btn-secondary" id="btnVolver">
+                    <i class="fas fa-arrow-left"></i> Volver al Layout
+                </a>
+            </div>
         </div>
-    </body>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function confirmarEliminacion(e, form) {
+            e.preventDefault();
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            Swal.fire({
+                title: '¿Eliminar usuario?',
+                text: 'Esta acción no se puede deshacer.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#64748b',
+                background: isDark ? '#151c2c' : '#ffffff',
+                color: isDark ? '#f8fafc' : '#0f172a'
+            }).then((result) => {
+                if (result.isConfirmed) form.submit();
+            });
+        }
+    </script>
+</body>
 </html>
-
-

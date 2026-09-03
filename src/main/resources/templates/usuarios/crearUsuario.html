@@ -1,86 +1,272 @@
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:th="http://www.thymeleaf.org">
-    <head th:replace="plantillas/plantilla::head">
-        <title>Gestor de mantenimiento - Crear Usuario</title>
-    </head>
-    <body>
-        <header th:replace="plantillas/plantilla::header">lista de tareas</header>
-        <div th:replace="plantillas/plantilla::notificaciones"></div>
-        <div class="container my-4">
-            <div class="text-center">
-                <h1>Crear usuario</h1>
-            </div>
-            <br>
-            <div class="card mx-auto" style="max-width: 40rem;">
-                <form method="POST" th:action="@{/gestionar}" th:object="${usuario}" class="form-group" id="formCrearUsuario">
-                    <div class="card-header font-weight-bold">
-                        Nuevo usuario
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="plantillas/plantilla::head">
+    <title>Crear Usuario | SigmaWeb</title>
+</head>
+
+<style>
+    /* Role selector chips */
+    .role-selector-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+        gap: 0.65rem;
+        margin-top: 0.5rem;
+    }
+
+    .role-radio-input {
+        display: none !important;
+    }
+
+    .role-chip-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.45rem;
+        padding: 1rem 0.85rem;
+        background-color: var(--bg-surface-elevated);
+        border: 2px solid var(--border-color);
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        user-select: none;
+        text-align: center;
+    }
+
+    .role-chip-card:hover {
+        border-color: var(--accent-primary);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .role-chip-card .role-icon {
+        font-size: 1.4rem;
+        transition: color var(--transition-fast);
+        color: var(--text-muted);
+    }
+
+    .role-chip-card .role-name {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .role-chip-card .role-desc {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        line-height: 1.3;
+    }
+
+    /* Selected state per role */
+    .role-radio-input:checked+.role-chip-card {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .role-radio-input[value="ADMINISTRADOR"]:checked+.role-chip-card {
+        border-color: #2563eb;
+        background: rgba(37, 99, 235, 0.1);
+    }
+
+    .role-radio-input[value="ADMINISTRADOR"]:checked+.role-chip-card .role-icon {
+        color: #2563eb;
+    }
+
+    .role-radio-input[value="MANTENIMIENTO"]:checked+.role-chip-card {
+        border-color: #ea580c;
+        background: rgba(234, 88, 12, 0.1);
+    }
+
+    .role-radio-input[value="MANTENIMIENTO"]:checked+.role-chip-card .role-icon {
+        color: #ea580c;
+    }
+
+    .role-radio-input[value="PRODUCCION"]:checked+.role-chip-card {
+        border-color: #16a34a;
+        background: rgba(22, 163, 74, 0.1);
+    }
+
+    .role-radio-input[value="PRODUCCION"]:checked+.role-chip-card .role-icon {
+        color: #16a34a;
+    }
+
+    .role-radio-input[value="TECNICO"]:checked+.role-chip-card {
+        border-color: #0d9488;
+        background: rgba(13, 148, 136, 0.1);
+    }
+
+    .role-radio-input[value="TECNICO"]:checked+.role-chip-card .role-icon {
+        color: #0d9488;
+    }
+
+    .role-radio-input[value="MONITOR"]:checked+.role-chip-card {
+        border-color: #7c3aed;
+        background: rgba(124, 58, 237, 0.1);
+    }
+
+    .role-radio-input[value="MONITOR"]:checked+.role-chip-card .role-icon {
+        color: #7c3aed;
+    }
+
+    .role-error-msg {
+        display: none;
+        color: #dc2626;
+        font-size: 0.82rem;
+        font-weight: 600;
+        margin-top: 0.5rem;
+    }
+
+    .role-error-msg.visible {
+        display: block;
+    }
+
+    .form-max-w {
+        max-width: 680px;
+        margin: 0 auto;
+    }
+</style>
+
+<body>
+    <header th:replace="plantillas/plantilla::header">header</header>
+    <div th:replace="plantillas/plantilla::notificaciones"></div>
+    <div th:replace="plantillas/plantilla::menu"></div>
+    <div th:replace="plantillas/plantilla::logo"></div>
+
+    <div class="container my-4 animated-fadeIn">
+        <div class="form-max-w">
+            <div class="sigma-card">
+                <div class="sigma-card-header">
+                    <h1 class="sigma-card-title">
+                        <i class="fas fa-user-plus text-primary"></i>
+                        Crear Nuevo Usuario
+                    </h1>
+                </div>
+
+                <form method="POST" th:action="@{/gestionar}" th:object="${usuario}" id="formCrearUsuario">
+
+                    <!-- Usuario -->
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="usernameInput" name="username"
+                            placeholder=" " required>
+                        <label for="usernameInput"><i class="fas fa-user me-1"></i> Nombre de usuario</label>
+                        <span th:if="${#fields.hasErrors('username')}" th:errors="*{username}"
+                            class="text-danger small mt-1 d-block"></span>
                     </div>
-                    <div class="card-body">
-                        <div class="form-floating mb-3">
-                            <input type="text" class="form-control" id="usernameInput" name="username" placeholder="Usuario" required="true">
-                            <label for="usernameInput">Usuario</label>
-                            <span th:if="${#fields.hasErrors('username')}" th:errors="*{username}" class="text-danger">Error en usuario</span>
-                        </div>
 
-                        <div class="form-floating mb-3">
-                            <input type="password" class="form-control" id="passwordInput" name="password" placeholder="Contraseña" required="true">
-                            <label for="passwordInput">Contraseña</label>
-                            <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="text-danger">Error en contraseña</span>
-                        </div>
+                    <!-- Contraseña -->
+                    <div class="form-floating mb-4">
+                        <input type="password" class="form-control" id="passwordInput" name="password"
+                            placeholder=" " required>
+                        <label for="passwordInput"><i class="fas fa-lock me-1"></i> Contraseña</label>
+                        <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}"
+                            class="text-danger small mt-1 d-block"></span>
+                    </div>
 
-                        <h4>Rol del nuevo usuario:</h4>
-                        <div class="ps-3 mb-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" id="rol1" name="rol" value="ADMINISTRADOR" th:field="${rol.nombre}" required="true"/>
-                                <label class="form-check-label" for="rol1">Administrador</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" id="rol2" name="rol" value="MANTENIMIENTO" th:field="${rol.nombre}"/>
-                                <label class="form-check-label" for="rol2">Mantenimiento</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" id="rol3" name="rol" value="PRODUCCION" th:field="${rol.nombre}"/>
-                                <label class="form-check-label" for="rol3">Producción</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" id="rol4" name="rol" value="TECNICO" th:field="${rol.nombre}"/>
-                                <label class="form-check-label" for="rol4">Técnico</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" id="rol5" name="rol" value="MONITOR" th:field="${rol.nombre}"/>
-                                <label class="form-check-label" for="rol5">Monitor</label>
-                            </div>
-                        </div>
+                    <!-- Selector de Rol -->
+                    <div class="mb-4">
+                        <label class="form-label detencion-label text-uppercase small mb-2">
+                            <i class="fas fa-user-tag me-1"></i> Rol del nuevo usuario
+                        </label>
+                        <div class="role-selector-grid" id="rolSelectorGrid">
 
-                        <div class="text-center mt-4">
-                            <input type="submit" value="Guardar" class="btn btn-primary me-2"/>
-                            <a th:href="@{/gestionUsuarios}" class="btn btn-secondary">Regresar</a>
+                            <div class="role-chip-wrapper">
+                                <input class="role-radio-input" type="radio" id="rol1" name="rol" value="ADMINISTRADOR"
+                                    th:field="${rol.nombre}" required>
+                                <label class="role-chip-card" for="rol1">
+                                    <i class="fas fa-shield-alt role-icon"></i>
+                                    <span class="role-name">Administrador</span>
+                                    <span class="role-desc">Acceso total al sistema</span>
+                                </label>
+                            </div>
+
+                            <div class="role-chip-wrapper">
+                                <input class="role-radio-input" type="radio" id="rol2" name="rol" value="MANTENIMIENTO"
+                                    th:field="${rol.nombre}">
+                                <label class="role-chip-card" for="rol2">
+                                    <i class="fas fa-wrench role-icon"></i>
+                                    <span class="role-name">Mantenimiento</span>
+                                    <span class="role-desc">Gestión de tareas y detenciones</span>
+                                </label>
+                            </div>
+
+                            <div class="role-chip-wrapper">
+                                <input class="role-radio-input" type="radio" id="rol3" name="rol" value="PRODUCCION"
+                                    th:field="${rol.nombre}">
+                                <label class="role-chip-card" for="rol3">
+                                    <i class="fas fa-industry role-icon"></i>
+                                    <span class="role-name">Producción</span>
+                                    <span class="role-desc">Notificación y cierre de intervenciones</span>
+                                </label>
+                            </div>
+
+                            <div class="role-chip-wrapper">
+                                <input class="role-radio-input" type="radio" id="rol4" name="rol" value="TECNICO"
+                                    th:field="${rol.nombre}">
+                                <label class="role-chip-card" for="rol4">
+                                    <i class="fas fa-user-tie role-icon"></i>
+                                    <span class="role-name">Técnico</span>
+                                    <span class="role-desc">Intervención y liberación de activos</span>
+                                </label>
+                            </div>
+
+                            <div class="role-chip-wrapper">
+                                <input class="role-radio-input" type="radio" id="rol5" name="rol" value="MONITOR"
+                                    th:field="${rol.nombre}">
+                                <label class="role-chip-card" for="rol5">
+                                    <i class="fas fa-desktop role-icon"></i>
+                                    <span class="role-name">Monitor</span>
+                                    <span class="role-desc">Visualización del layout en pantalla</span>
+                                </label>
+                            </div>
+
                         </div>
+                        <span class="role-error-msg" id="rolError">
+                            <i class="fas fa-exclamation-circle me-1"></i> Por favor, seleccioná un rol antes de
+                            continuar.
+                        </span>
+                    </div>
+
+                    <!-- Botones -->
+                    <div class="d-flex gap-2 justify-content-end pt-3"
+                        style="border-top: 1px solid var(--border-color);">
+                        <a th:href="@{/gestionUsuarios}" class="btn btn-secondary" id="btnRegresar">
+                            <i class="fas fa-arrow-left"></i> Regresar
+                        </a>
+                        <button type="submit" class="btn btn-primary" id="btnGuardar">
+                            <i class="fas fa-save"></i> Crear Usuario
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
-        <script>
-            document.addEventListener("DOMContentLoaded", function() {
-                const form = document.getElementById("formCrearUsuario");
-                if (form) {
-                    form.addEventListener("submit", function(event) {
-                        const radios = form.querySelectorAll("input[type='radio']");
-                        let isChecked = false;
-                        radios.forEach(radio => {
-                            if (radio.checked) isChecked = true;
-                        });
+    </div>
 
-                        if (!isChecked) {
-                            event.preventDefault();
-                            alert("Por favor, selecciona un rol antes de continuar.");
-                        }
-                    });
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById("formCrearUsuario");
+            const errorMsg = document.getElementById("rolError");
+
+            form.addEventListener("submit", function (event) {
+                const radios = form.querySelectorAll("input[type='radio']");
+                const isChecked = Array.from(radios).some(r => r.checked);
+                if (!isChecked) {
+                    event.preventDefault();
+                    errorMsg.classList.add("visible");
+                    document.getElementById("rolSelectorGrid").scrollIntoView({ behavior: "smooth", block: "center" });
+                } else {
+                    errorMsg.classList.remove("visible");
                 }
             });
-        </script>
-    </body>
+
+            // Quitar error al seleccionar
+            form.querySelectorAll("input[type='radio']").forEach(r => {
+                r.addEventListener("change", () => errorMsg.classList.remove("visible"));
+            });
+        });
+    </script>
+</body>
+
 </html>
-
-

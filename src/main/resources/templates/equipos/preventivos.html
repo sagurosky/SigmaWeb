@@ -200,7 +200,7 @@
                     </button>
                 </div>
 
-                <form id="sugerenciaPreventivo" th:action="@{/guardarSugerencia/}+ ${activo.id}" th:object="${preventivo}" method="post" enctype="multipart/form-data">
+                <form id="sugerenciaPreventivo" th:action="@{/guardarSugerencia/{activoId}(activoId=${activo.id})}" th:object="${preventivo}" method="post" enctype="multipart/form-data">
                     <div class="modal-body text-start">
                         <div class="mb-3">
                             <label class="form-label detencion-label">Categoría:</label>

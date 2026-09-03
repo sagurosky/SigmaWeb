@@ -1,309 +1,441 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:th="http://www.tymeleaf.org"
+      xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       xmlns:temporals="http://www.thymeleaf.org/extras/thymeleaf-temporals">
 
+<head th:replace="plantillas/plantilla::head">
+    <title>Detenciones | SigmaWeb</title>
+    <meta charset="UTF-8"/>
+</head>
 
-    <!--<meta http-equiv="refresh" id="metaRefresh" content="60">-->
+<style>
+    /* Tabla de tareas */
+    .tareas-table { width: 100%; border-collapse: collapse; }
+    .tareas-table thead tr {
+        background-color: var(--bg-surface-elevated);
+        border-bottom: 2px solid var(--border-color);
+    }
+    .tareas-table th {
+        padding: 0.75rem 1rem;
+        font-size: 0.73rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: var(--text-muted);
+        text-align: left;
+        white-space: nowrap;
+    }
+    .tareas-table tbody tr {
+        border-bottom: 1px solid var(--border-color);
+        transition: background-color var(--transition-fast);
+    }
+    .tareas-table tbody tr:last-child { border-bottom: none; }
+    .tareas-table tbody tr:hover { background-color: var(--bg-card-hover); }
+    .tareas-table td {
+        padding: 0.85rem 1rem;
+        color: var(--text-primary);
+        font-size: 0.875rem;
+        vertical-align: middle;
+    }
 
-        <head th:replace="plantillas/plantilla::head">
-            <title>Lista de tareas</title>
-            <meta charset="UTF-8"/>
-        </head>
+    /* Badges de estado de solicitud */
+    .solicitud-badge {
+        display: inline-flex; align-items: center; gap: 0.3rem;
+        padding: 0.25rem 0.65rem; border-radius: var(--radius-full);
+        font-size: 0.75rem; font-weight: 700; text-transform: capitalize;
+    }
+    .solicitud-abierto  { background: rgba(245,158,11,0.15); color: #d97706; border: 1px solid rgba(245,158,11,0.3); }
+    .solicitud-enProceso{ background: rgba(37,99,235,0.15);  color: var(--accent-primary); border: 1px solid rgba(37,99,235,0.3); }
+    .solicitud-liberada { background: rgba(22,163,74,0.15);  color: #16a34a; border: 1px solid rgba(22,163,74,0.3); }
+    .solicitud-cerrada  { background: rgba(100,116,139,0.12);color: #64748b; border: 1px solid rgba(100,116,139,0.2); }
 
-        <body>
-            <header th:replace="plantillas/plantilla::header">lista de tareas</header>
-            <div th:replace="plantillas/plantilla::menu"></div>
-             <div th:replace="plantillas/plantilla::notificaciones"></div>
+    [data-theme="dark"] .solicitud-abierto   { color: #fbbf24; border-color: rgba(251,191,36,0.4); }
+    [data-theme="dark"] .solicitud-liberada  { color: #4ade80; border-color: rgba(74,222,128,0.4); }
 
-            <section  class="py-4 mb-4 bg-light">
-                <!--<div class="container">
-                    <div class="row">
-                        <div class="col-md-3" >
-                            <a th:href="@{crearTarea/0}" class="btn btn-primary btn-block" th:text="'Notificar detención'">
-                                 
-                            </a>
-                        </div>
+    /* Activo name link */
+    .activo-link {
+        font-weight: 700;
+        color: var(--text-primary);
+        display: flex; align-items: center; gap: 0.5rem;
+    }
+    .activo-link:hover { color: var(--accent-primary); }
 
-                    </div>
-                </div>-->
-            </section>
-            
-            <div class="container ">
-                <table class="table table-bordered table-hover table-sm "  >
-                    <thead class="thead-light " >
-                        <tr > 
-                            <th >Activo</th>
-                            <th >Estado activo</th>
-                            <th >Estado solicitud</th>
-                            <th >Descripcion del problema</th>
-                            <th  sec:authorize="hasRole('ROLE_ADMIN')">Solicita</th>
-                            <th sec:authorize="hasRole('ROLE_ADMIN')">Editar</th>
-                            <th  sec:authorize="hasRole('ROLE_ADMIN')">Eliminar</th>
+    /* Estado badge del activo (reutiliza variables del design system) */
 
-                            <th >Hora de detencion</th>
+    /* Descripción truncada */
+    .desc-cell {
+        max-width: 220px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: var(--text-secondary);
+    }
+
+    /* Timestamp */
+    .timestamp-cell {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        white-space: nowrap;
+    }
+    .timestamp-cell.detenida { color: var(--status-detenida-text); font-weight: 700; }
+
+    /* Empty state */
+    .empty-state {
+        text-align: center; padding: 3rem 1rem; color: var(--text-muted);
+    }
+    .empty-state i { font-size: 2.5rem; margin-bottom: 0.75rem; opacity: 0.4; }
+
+    /* Botones de acción de tabla */
+    .btn-xs {
+        padding: 0.25rem 0.6rem !important;
+        font-size: 0.78rem !important;
+    }
+</style>
+
+<body>
+    <header th:replace="plantillas/plantilla::header">header</header>
+    <div th:replace="plantillas/plantilla::menu"></div>
+    <div th:replace="plantillas/plantilla::notificaciones"></div>
+    <div th:replace="plantillas/plantilla::logo"></div>
+
+    <div class="container my-4 animated-fadeIn">
+
+        <div class="sigma-card">
+            <div class="sigma-card-header">
+                <h1 class="sigma-card-title">
+                    <i class="fas fa-exclamation-triangle text-danger"></i>
+                    Detenciones Activas
+                </h1>
+                <div class="d-flex align-items-center gap-2">
+                    <a th:href="@{/layout}" class="btn btn-secondary btn-sm" id="btnVolver">
+                        <i class="fas fa-arrow-left"></i> Volver al Layout
+                    </a>
+                </div>
+            </div>
+
+            <!-- Tabla -->
+            <div class="table-responsive">
+                <table class="tareas-table" id="tablaDetenciones">
+                    <thead>
+                        <tr>
+                            <th>Activo</th>
+                            <th>Estado Activo</th>
+                            <th>Estado Solicitud</th>
+                            <th>Descripción</th>
+                            <th sec:authorize="hasRole('ROLE_ADMIN')">Solicitado por</th>
+                            <th sec:authorize="hasRole('ROLE_ADMIN')">Acciones Admin</th>
+                            <th>Detenido desde</th>
                         </tr>
                     </thead>
-                    <tbody >
-                        <tr th:each="tarea: ${tareas}">
+                    <tbody>
+                        <tr th:each="tarea: ${tareas}" th:id="'tarea-' + ${tarea.id}">
 
-                            <!--<td th:text="${tarea.activo.codigo}" th:title='${tarea.activo.nombre}'>maquina</td>-->
-                            <td th:text="${tarea.activo.nombre}" >activo</td>
-                            <td th:text="${tarea.activo.estado}" th:if='${tarea.activo.estado=="detenida"}'style="background: red">estado</td>
-                            <td th:text="${tarea.activo.estado}" th:if='${tarea.activo.estado=="operativa condicionada"}'style="background: lightcoral">estado</td>
-                            <td th:text="${tarea.activo.estado}" th:if='${tarea.activo.estado!="detenida"&&tarea.activo.estado!="operativa condicionada"}'>estado</td>
-                            <!--<td th:text="${tarea.estado}" >estado solicitud </td>-->
+                            <!-- Nombre del activo -->
                             <td>
-                                <span th:text="${tarea.estado}">Estado solicitud</span>
-                                <span><a th:if="${tarea.estado=='abierto'}" 
-                                         sec:authorize="hasRole('ROLE_MANT')||hasRole('ROLE_TECNICO')" 
-                                         href="#" 
-                                         data-toggle="modal" 
-                                         th:data-target="'#myModal2' + ${tarea.id}" 
-                                         class="btn btn-primary ">Asignar</a></span>
-                                <span><a th:if="${tarea.estado=='enProceso'}" 
-                                         sec:authorize="hasRole('ROLE_MANT')||hasRole('ROLE_TECNICO')" th:href="@{/liberarSolicitud/}+ ${tarea.id}" class="btn btn-primary ">Liberar</a></span>
-                                <!--<span><a th:if="${#authentication.principal.username == tarea.solicita && tarea.estado=='liberada'}" th:href="@{/cerrarSolicitud/}+ ${tarea.id}" class="btn btn-primary">evaluar y cerrar</a></span>-->
-                                <span>
-                                    <a sec:authorize="hasRole('ROLE_PROD')" 
-                                       th:if="${tarea.estado=='liberada'}" 
-                                       href="#" 
-                                       data-toggle="modal" 
-                                       th:data-target="'#myModal' + ${tarea.id}" 
-                                       class="btn btn-primary"
-                                       >
-                                        Evaluar y Cerrar
-                                    </a>
-                                    <label sec:authorize="not hasRole('ROLE_PROD')" th:if="${tarea.estado=='liberada'}" th:text="'Aguardando cierre de producción'" />
+                                <a th:href="@{/activo/} + ${tarea.activo.id}" class="activo-link">
+                                    <i class="fas fa-microchip text-primary" style="font-size:0.85rem;"></i>
+                                    <span th:text="${tarea.activo.nombre}"></span>
+                                </a>
+                            </td>
+
+                            <!-- Estado del activo (usa status-badge del design system) -->
+                            <td>
+                                <span th:if="${tarea.activo.estado == 'detenida'}"
+                                      class="status-badge status-detenida">
+                                    <span class="status-badge-dot"></span> Detenido
                                 </span>
+                                <span th:if="${tarea.activo.estado == 'operativa condicionada'}"
+                                      class="status-badge status-condicionada">
+                                    <span class="status-badge-dot"></span> Condicionado
+                                </span>
+                                <span th:if="${tarea.activo.estado == 'operativa'}"
+                                      class="status-badge status-operativa">
+                                    <span class="status-badge-dot"></span> Operativo
+                                </span>
+                                <span th:if="${tarea.activo.estado == 'liberada'}"
+                                      class="status-badge status-liberada">
+                                    <span class="status-badge-dot"></span> Liberado
+                                </span>
+                                <span th:if="${tarea.activo.estado == 'disponible'}"
+                                      class="status-badge status-disponible">
+                                    <span class="status-badge-dot"></span> Disponible
+                                </span>
+                            </td>
 
+                            <!-- Estado de la solicitud + botones de acción -->
+                            <td>
+                                <div class="d-flex flex-column gap-2">
+                                    <!-- Badge de estado solicitud -->
+                                    <div>
+                                        <span th:switch="${tarea.estado}">
+                                            <span th:case="'abierto'"   class="solicitud-badge solicitud-abierto">
+                                                <i class="fas fa-circle" style="font-size:0.45rem;"></i> Abierto
+                                            </span>
+                                            <span th:case="'enProceso'" class="solicitud-badge solicitud-enProceso">
+                                                <i class="fas fa-spinner fa-spin" style="font-size:0.7rem;"></i> En Proceso
+                                            </span>
+                                            <span th:case="'liberada'"  class="solicitud-badge solicitud-liberada">
+                                                <i class="fas fa-check-circle" style="font-size:0.7rem;"></i> Liberado
+                                            </span>
+                                            <span th:case="'cerrada'"   class="solicitud-badge solicitud-cerrada">
+                                                <i class="fas fa-lock" style="font-size:0.7rem;"></i> Cerrada
+                                            </span>
+                                            <span th:case="*" class="solicitud-badge solicitud-cerrada"
+                                                  th:text="${tarea.estado}"></span>
+                                        </span>
+                                    </div>
 
-                                <!--modal-->
+                                    <!-- Botones de acción según rol y estado -->
+                                    <div>
+                                        <!-- Asignar: MANT o TECNICO, tarea abierta -->
+                                        <a th:if="${tarea.estado == 'abierto'}"
+                                           sec:authorize="hasRole('ROLE_MANT') || hasRole('ROLE_TECNICO')"
+                                           href="#"
+                                           data-toggle="modal"
+                                           th:data-target="'#myModal2' + ${tarea.id}"
+                                           class="btn btn-primary btn-xs">
+                                            <i class="fas fa-user-plus"></i> Asignar
+                                        </a>
 
+                                        <!-- Liberar: MANT o TECNICO, tarea en proceso -->
+                                        <a th:if="${tarea.estado == 'enProceso'}"
+                                           sec:authorize="hasRole('ROLE_MANT') || hasRole('ROLE_TECNICO')"
+                                           th:href="@{/liberarSolicitud/} + ${tarea.id}"
+                                           class="btn btn-success btn-xs">
+                                            <i class="fas fa-check-circle"></i> Liberar
+                                        </a>
 
-                                <div class="modal fade bd-example-modal-lg" th:id="'myModal' + ${tarea.id}" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-                                    <div class="modal-dialog modal-lg" role="document">
+                                        <!-- Evaluar y cerrar: PROD, tarea liberada -->
+                                        <a th:if="${tarea.estado == 'liberada'}"
+                                           sec:authorize="hasRole('ROLE_PROD')"
+                                           href="#"
+                                           data-toggle="modal"
+                                           th:data-target="'#myModal' + ${tarea.id}"
+                                           class="btn btn-primary btn-xs">
+                                            <i class="fas fa-clipboard-check"></i> Evaluar
+                                        </a>
+
+                                        <!-- Espera de producción -->
+                                        <span th:if="${tarea.estado == 'liberada'}"
+                                              sec:authorize="!hasRole('ROLE_PROD')"
+                                              class="small" style="color: var(--text-muted); font-style: italic;">
+                                            Aguarda cierre prod.
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Modal 1: Evaluar y Cerrar -->
+                                <div class="modal fade" th:id="'myModal' + ${tarea.id}"
+                                     tabindex="-1" role="dialog" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
                                         <div class="modal-content">
                                             <div class="modal-header">
-                                                <h5 class="modal-title" id="exampleModalLabel" >Confirme cierre de tarea</h5>
-                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <h5 class="modal-title">
+                                                    <i class="fas fa-clipboard-check text-primary me-2"></i>
+                                                    Evaluación y Cierre de Tarea
+                                                </h5>
+                                                <button type="button" class="close btn" data-dismiss="modal" aria-label="Close">
                                                     <span aria-hidden="true">&times;</span>
                                                 </button>
                                             </div>
-                                            <form th:id="'evaluarForm+${tarea.id}'" th:action="@{/CerrarSolicitud/}+${tarea.id}" > 
+                                            <form th:id="'evaluarForm+${tarea.id}'" th:action="@{/CerrarSolicitud/} + ${tarea.id}">
                                                 <div class="modal-body">
-      			
-                                                   
-                                                    <div class="row">
-                                                        <div class="form-floating mb-3 col">
-                                                            <input type="number" min="0" max="10" class="form-control" th:id="floatingInput"th:name="satisfaccion"oninput="checkInput(this)" placeHolder="Satisfacción general por la tarea realizada">
-                                                            <label for="floatingInput">Satisfacción general por la tarea realizada</label>
+                                                    <p class="detencion-label mb-3">
+                                                        Complete la calificación de 0 a 10 para los siguientes aspectos del trabajo finalizado.
+                                                    </p>
+                                                    <div class="eval-input-grid">
+                                                        <div class="form-floating mb-2">
+                                                            <input type="number" min="0" max="10" class="form-control" name="satisfaccion" oninput="checkInput(this)" placeholder=" ">
+                                                            <label>Satisfacción general</label>
                                                         </div>
-                                                        <div class="form-floating mb-3 col">
-                                                            <input type="number" min="0" max="10" class="form-control" th:id="floatingInput"th:name="predisposicion"oninput="checkInput(this)" placeHolder="Predisposición percibida por el colaborador">
-                                                            <label for="floatingInput">Predisposición percibida por el colaborador</label>
+                                                        <div class="form-floating mb-2">
+                                                            <input type="number" min="0" max="10" class="form-control" name="predisposicion" oninput="checkInput(this)" placeholder=" ">
+                                                            <label>Predisposición percibida</label>
                                                         </div>
-                                                    </div>
-                                                    <div class="row">
-                                                        <div class="form-floating mb-3 col">
-                                                            <input type="number" min="0" max="10" class="form-control" id="floatingInput"th:name="responsabilidad"oninput="checkInput(this)" placeHolder="Nivel de responsabilidad detectada">
-                                                            <label for="floatingInput">Nivel de responsabilidad detectada</label>
+                                                        <div class="form-floating mb-2">
+                                                            <input type="number" min="0" max="10" class="form-control" name="responsabilidad" oninput="checkInput(this)" placeholder=" ">
+                                                            <label>Responsabilidad</label>
                                                         </div>
-                                                        <div class="form-floating mb-3 col">
-                                                            <input type="number" min="0" max="10" class="form-control" id="floatingInput"th:name="seguridad"oninput="checkInput(this)" placeHolder="Cumplimiento de normas de seguridad">
-                                                            <label for="floatingInput">Cumplimiento de normas de seguridad</label>
+                                                        <div class="form-floating mb-2">
+                                                            <input type="number" min="0" max="10" class="form-control" name="seguridad" oninput="checkInput(this)" placeholder=" ">
+                                                            <label>Normas de seguridad</label>
                                                         </div>
-                                                    </div>
-                                                     <div class="row">
-                                                        <div class="form-floating mb-3 col">
-                                                            <input type="number" min="0" max="10" class="form-control" id="floatingInput"th:name="conocimiento"oninput="checkInput(this)" placeHolder="Nivel de conocimiento de la tarea">
-                                                            <label for="floatingInput">Nivel de conocimiento de la tarea</label>
+                                                        <div class="form-floating mb-2">
+                                                            <input type="number" min="0" max="10" class="form-control" name="conocimiento" oninput="checkInput(this)" placeholder=" ">
+                                                            <label>Conocimiento técnico</label>
                                                         </div>
-                                                        <div class="form-floating mb-3 col">
-                                                            <input type="number" min="0" max="10" class="form-control" id="floatingInput"th:name="trato"oninput="checkInput(this)" placeHolder="Trato recibido">
-                                                            <label for="floatingInput">Trato recibido</label>
+                                                        <div class="form-floating mb-2">
+                                                            <input type="number" min="0" max="10" class="form-control" name="trato" oninput="checkInput(this)" placeholder=" ">
+                                                            <label>Trato recibido</label>
                                                         </div>
-                                                    </div>
-                                                    <div class="row">
-                                                        <div class="form-floating mb-3 col">
-                                                            <input type="number" min="0" max="10" class="form-control" id="floatingInput"th:name="prolijidad"oninput="checkInput(this)" placeHolder="Prolijidad (5S)">
-                                                            <label for="floatingInput">Prolijidad (5S)</label>
+                                                        <div class="form-floating mb-2">
+                                                            <input type="number" min="0" max="10" class="form-control" name="prolijidad" oninput="checkInput(this)" placeholder=" ">
+                                                            <label>Prolijidad (5S)</label>
                                                         </div>
-                                                        <div class="form-floating mb-3 col">
-                                                            <input type="number" min="0" max="10" class="form-control" id="floatingInput"th:name="puntualidad"oninput="checkInput(this)" placeHolder="Puntualidad">
-                                                            <label for="floatingInput">Puntualidad</label>
+                                                        <div class="form-floating mb-2">
+                                                            <input type="number" min="0" max="10" class="form-control" name="puntualidad" oninput="checkInput(this)" placeholder=" ">
+                                                            <label>Puntualidad</label>
                                                         </div>
-                                                    </div>
-                                                    <div class="row">
-                                                        <div class="form-floating mb-3 col">
-                                                            <input type="number" min="0" max="10" class="form-control" id="floatingInput"th:name="eficiencia"oninput="checkInput(this)" placeHolder="Eficiencia">
-                                                            <label for="floatingInput">Eficiencia</label>
+                                                        <div class="form-floating mb-2">
+                                                            <input type="number" min="0" max="10" class="form-control" name="eficiencia" oninput="checkInput(this)" placeholder=" ">
+                                                            <label>Eficiencia</label>
                                                         </div>
-                                                        <div class="form-floating mb-3 col">
-                                                            <input type="number" min="0" max="10" class="form-control" id="floatingInput"th:name="calidad"oninput="checkInput(this)" placeHolder="Calidad del trabajo">
-                                                            <label for="floatingInput">Calidad del trabajo</label>
+                                                        <div class="form-floating mb-2">
+                                                            <input type="number" min="0" max="10" class="form-control" name="calidad" oninput="checkInput(this)" placeholder=" ">
+                                                            <label>Calidad del trabajo</label>
                                                         </div>
-                                                    </div>
-                                                    <div class="row">
-                                                        <div class="form-floating mb-3 col">
-                                                            <input type="number" min="0" max="10" class="form-control" id="floatingInput"th:name="comunicacion"oninput="checkInput(this)" placeHolder="Comunicación">
-                                                            <label for="floatingInput">Comunicación</label>
+                                                        <div class="form-floating mb-2">
+                                                            <input type="number" min="0" max="10" class="form-control" name="comunicacion" oninput="checkInput(this)" placeholder=" ">
+                                                            <label>Comunicación</label>
                                                         </div>
-                                                        <div class="form-floating mb-3 col">
-                                                            <input type="number" min="0" max="10" class="form-control" id="floatingInput"th:name="trabajoEnEquipo"oninput="checkInput(this)" placeHolder="Trabajo en equipo">
-                                                            <label for="floatingInput">Trabajo en equipo</label>
+                                                        <div class="form-floating mb-2">
+                                                            <input type="number" min="0" max="10" class="form-control" name="trabajoEnEquipo" oninput="checkInput(this)" placeholder=" ">
+                                                            <label>Trabajo en equipo</label>
                                                         </div>
-                                                    </div>
-                                                    <div class="row">
-                                                        <div class="form-floating mb-3 col">
-                                                            <input type="number" min="0" max="10" class="form-control" id="floatingInput"th:name="resolucion"oninput="checkInput(this)" placeHolder="Capacidad para la resolución de problemas">
-                                                            <label for="floatingInput">Capacidad para la resolución de problemas</label>
+                                                        <div class="form-floating mb-2">
+                                                            <input type="number" min="0" max="10" class="form-control" name="resolucion" oninput="checkInput(this)" placeholder=" ">
+                                                            <label>Resolución de problemas</label>
                                                         </div>
-                                                        <div class="form-floating mb-3 col">
-                                                            <input type="number" min="0" max="10" class="form-control" id="floatingInput"th:name="creatividad"oninput="checkInput(this)" placeHolder="Creatividad e innovación">
-                                                            <label for="floatingInput">Creatividad e innovación</label>
+                                                        <div class="form-floating mb-2">
+                                                            <input type="number" min="0" max="10" class="form-control" name="creatividad" oninput="checkInput(this)" placeholder=" ">
+                                                            <label>Creatividad e innovación</label>
                                                         </div>
-                                                    </div>
-                                                    <div class="row">
-                                                        <div class="form-floating mb-3 col">
-                                                            <input type="number" min="0" max="10" class="form-control" id="floatingInput"th:name="iniciativa"oninput="checkInput(this)" placeHolder="Iniciativa">
-                                                            <label for="floatingInput">Iniciativa</label>
+                                                        <div class="form-floating mb-2">
+                                                            <input type="number" min="0" max="10" class="form-control" name="iniciativa" oninput="checkInput(this)" placeholder=" ">
+                                                            <label>Iniciativa</label>
                                                         </div>
-                                                        <div class="form-floating mb-3 col">
-                                                            <input type="number" min="0" max="10" class="form-control" id="floatingInput"th:name="autogestion"oninput="checkInput(this)" placeHolder="Autogestión">
-                                                            <label for="floatingInput">Autogestión</label>
+                                                        <div class="form-floating mb-2">
+                                                            <input type="number" min="0" max="10" class="form-control" name="autogestion" oninput="checkInput(this)" placeholder=" ">
+                                                            <label>Autogestión</label>
+                                                        </div>
+                                                        <div class="form-floating mb-2">
+                                                            <input type="number" min="0" max="10" class="form-control" name="formacionContinua" oninput="checkInput(this)" placeholder=" ">
+                                                            <label>Formación continua</label>
                                                         </div>
                                                     </div>
-                                                    <div class="row">
-                                                        <div class="form-floating mb-3 col">
-                                                            <input type="number" min="0" max="10" class="form-control" id="floatingInput"th:name="formacionContinua"oninput="checkInput(this)" placeHolder="Formación contínua">
-                                                            <label for="floatingInput">Formación contínua</label>
-                                                        </div>
-                                                        <div class="form-floating mb-3 col">
-                                                           
-                                                        </div>
-                                                    </div>
-                                                   
-<!--                                                   
-                                                    <label th:text="'evaluación del trabajo realizado: '"/>
-                                                    <textArea th:id="evaluacion" th:name="evaluacion" class="form-control"></textArea>
-                                                    <label th:text="'si existió demora en cierre ingrese motivo: '"/>
-                                                    <textArea th:id="motivoDemoraCierre" th:name="motivoDemoraCierre" class="form-control"></textArea>    -->
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                                                    <button type="submit" class="btn btn-primary">
+                                                        <i class="fas fa-check me-1"></i> Guardar y Cerrar
+                                                    </button>
+                                                </div>
+                                            </form>
                                         </div>
-                                        <div class="modal-footer">
-                                                 <button class="btn btn-primary" th:type="submit">Guardar y cerrar</button>
-                                        </div>
-                                             </form> 
-                                       
                                     </div>
                                 </div>
-                            </div>
-                            
-                            <div class="modal fade" th:id="'myModal2' + ${tarea.id}" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-                                <div class="modal-dialog modal-dialog-centered" role="document">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="exampleModalLabel">Asignar colaborador/es</h5>
-                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                <span aria-hidden="true">&times;</span>
-                                            </button>
-                                        </div>
-                                             <form th:id="'asignarForm+${tarea.id}'" th:action="@{/asignarSolicitud/}+${tarea.id}"th:object="${tarea}" > 
-                                        <div class="modal-body">
-                                                 
-                                          <label th:text="'Seleccione colaborador/es '"/>
-                                                
-                                            <div>
-                                                <label for="tecnicos">Técnicos</label>
 
-                                                <select id="tecnicos" name="tecnicosIds" multiple class="form-control" required>
-                                                    <option th:each="tecnico : ${todosLosTecnicos}" 
-                                                            th:value="${tecnico.id}" 
-                                                            th:text="${tecnico.apellido} + ' ' + ${tecnico.nombre}"
-                                                           >
-                                                    </option>
-                                                </select>
-
+                                <!-- Modal 2: Asignar colaboradores -->
+                                <div class="modal fade" th:id="'myModal2' + ${tarea.id}"
+                                     tabindex="-1" role="dialog" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">
+                                                    <i class="fas fa-user-plus text-primary me-2"></i>
+                                                    Asignar Colaborador(es)
+                                                </h5>
+                                                <button type="button" class="close btn" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
                                             </div>
-
-
+                                            <form th:id="'asignarForm+${tarea.id}'"
+                                                  th:action="@{/asignarSolicitud/} + ${tarea.id}"
+                                                  th:object="${tarea}">
+                                                <div class="modal-body">
+                                                    <label class="form-label detencion-label mb-2">
+                                                        Seleccionar Técnico(s):
+                                                    </label>
+                                                    <div class="tech-selector-grid">
+                                                        <div th:each="tecnico : ${todosLosTecnicos}" class="tech-chip-wrapper">
+                                                            <input type="checkbox" name="tecnicosIds"
+                                                                   th:value="${tecnico.id}"
+                                                                   th:id="'tech_' + ${tecnico.id} + '_' + ${tarea.id}"
+                                                                   class="tech-checkbox-input"/>
+                                                            <label th:for="'tech_' + ${tecnico.id} + '_' + ${tarea.id}"
+                                                                   class="tech-chip-card">
+                                                                <i class="fas fa-user-tie text-primary"></i>
+                                                                <span class="tech-name"
+                                                                      th:text="${tecnico.apellido} + ' ' + ${tecnico.nombre}"></span>
+                                                                <i class="fas fa-check-circle check-mark"></i>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                                                    <button type="submit" class="btn btn-primary">
+                                                        <i class="fas fa-save me-1"></i> Asignar
+                                                    </button>
+                                                </div>
+                                            </form>
                                         </div>
-                                                 
-                                        <div class="modal-footer">
-                                            <button class="btn btn-primary" th:type="submit">Asignar</button>
-                                        </div>
-                                             </form> 
-                                       
                                     </div>
                                 </div>
-                            </div>
-                        </td>
-                        
-                        <td th:text="${tarea.descripcion}">Descripcion</td>
-                        <td sec:authorize="hasRole('ROLE_ADMIN')" th:text="${tarea.solicita}">usuario</td>
-                        <td sec:authorize="hasRole('ROLE_ADMIN')"> <a th:href="@{/editar/} + ${tarea.id}">Editar</a></td>
-                        <td sec:authorize="hasRole('ROLE_ADMIN')"><a th:href="@{/eliminar/}+${tarea.id}" >Eliminar</a></td>
+                            </td>
 
+                            <!-- Descripción -->
+                            <td class="desc-cell" th:text="${tarea.descripcion}" th:title="${tarea.descripcion}"></td>
 
-                        <td  th:if='${tarea.activo.estado=="detenida"}'>
-                            <span th:text="${#temporals.format(tarea.activo.momentoDetencion, ' dd/MM/yyyy  HH:mm:ss')}"></span>
-                        </td>
-                        <td  th:if='${tarea.activo.estado!="detenida"}' >
-                        </td>
+                            <!-- Solicita (admin) -->
+                            <td sec:authorize="hasRole('ROLE_ADMIN')" th:text="${tarea.solicita}"
+                                style="color: var(--text-secondary); font-size:0.85rem;"></td>
 
+                            <!-- Acciones admin: Editar / Eliminar -->
+                            <td sec:authorize="hasRole('ROLE_ADMIN')">
+                                <div class="d-flex gap-1 flex-wrap">
+                                    <a th:href="@{/editar/} + ${tarea.id}" class="btn btn-secondary btn-xs">
+                                        <i class="fas fa-pencil-alt"></i> Editar
+                                    </a>
+                                    <a th:href="@{/eliminar/} + ${tarea.id}" class="btn btn-danger btn-xs"
+                                       onclick="return confirm('¿Confirmar eliminación?')">
+                                        <i class="fas fa-trash-alt"></i> Eliminar
+                                    </a>
+                                </div>
+                            </td>
 
+                            <!-- Timestamp de detencion -->
+                            <td>
+                                <span th:if="${tarea.activo.estado == 'detenida'}"
+                                      class="timestamp-cell detenida">
+                                    <i class="fas fa-clock me-1"></i>
+                                    <span th:text="${#temporals.format(tarea.activo.momentoDetencion, 'dd/MM/yyyy HH:mm:ss')}"></span>
+                                </span>
+                                <span th:if="${tarea.activo.estado != 'detenida'}"
+                                      class="timestamp-cell">—</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
 
-
-                    </tr>
-                </tbody>
-            </table>
-                
-                
-                
-                
-        </div>
-        <!-- <section  class="py-4 mb-4 bg-light">
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-2" >
-                        <a th:href="@{/layout}" class="btn btn-primary btn-block">
-                             Volver
-                        </a>
-                    </div>
-
+                <!-- Estado vacío -->
+                <div th:if="${tareas == null or tareas.isEmpty()}" class="empty-state">
+                    <i class="fas fa-check-circle text-success d-block"></i>
+                    <p class="mt-2 mb-0 fw-bold">Sin detenciones activas</p>
+                    <small>Todos los activos se encuentran operativos.</small>
                 </div>
             </div>
-        </section>-->
+        </div>
 
+    </div>
 
-      
+    <!-- Grid de evaluación (reutilizado de activo.html) -->
+    <style>
+        .eval-input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 0.75rem;
+        }
+    </style>
 
-        
-        
-        
-
-
-        
-        
-         <script>
-             
-                function checkInput(element) {
-                    let value = parseInt(element.value, 10);
-                    if (value > 10) {
-                        element.value = 10;
-                    }
-                    if (value < 0) {
-                        element.value = 0;
-                    }
-                    if (isNaN(value) ) {
-                         element.value = ""; // Asignar valor vacío
-                    }
-                }
-             
-             
-             
-           
-           </script>
-    </body>
+    <script>
+        function checkInput(element) {
+            let value = parseInt(element.value, 10);
+            if (value > 10) element.value = 10;
+            if (value < 0) element.value = 0;
+            if (isNaN(value)) element.value = "";
+        }
+    </script>
+</body>
 </html>

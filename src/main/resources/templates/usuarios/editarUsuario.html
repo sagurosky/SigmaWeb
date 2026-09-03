@@ -1,113 +1,272 @@
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:th="http://www.thymeleaf.org">
-    <head th:replace="plantillas/plantilla::head">
-        <title>Gestor de mantenimiento - Editar Usuario</title>
-    </head>
-    <body>
-        <header th:replace="plantillas/plantilla::header">lista de tareas</header>
-        <div th:replace="plantillas/plantilla::notificaciones"></div>
 
-        <div class="container my-4">
-            <div class="text-center">
-                <h1>Editar usuario</h1>
-            </div>
-            <br>
-            <div class="card mx-auto" style="max-width: 40rem;">
-                <form method="POST" th:action="@{/guardarUsuarioEditado}" th:object="${usuario}" class="form-group">
-                    <input type="hidden" name="idUsuario" th:value="*{idUsuario}"/>
-                    
-                    <div class="card-header font-weight-bold" th:text="'Editar usuario: ' + *{username}">
-                        Editar usuario
+<head th:replace="plantillas/plantilla::head">
+    <title>Editar Usuario | SigmaWeb</title>
+</head>
+
+<style>
+    /* Role checkbox chips */
+    .role-selector-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+        gap: 0.65rem;
+        margin-top: 0.5rem;
+    }
+    .role-check-input { display: none !important; }
+    .role-chip-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.45rem;
+        padding: 1rem 0.85rem;
+        background-color: var(--bg-surface-elevated);
+        border: 2px solid var(--border-color);
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        user-select: none;
+        text-align: center;
+        position: relative;
+    }
+    .role-chip-card:hover {
+        border-color: var(--accent-primary);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+    .role-chip-card .role-icon {
+        font-size: 1.4rem;
+        color: var(--text-muted);
+        transition: color var(--transition-fast);
+    }
+    .role-chip-card .role-name {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .role-chip-card .role-desc {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        line-height: 1.3;
+    }
+    .role-chip-card .check-mark {
+        position: absolute;
+        top: 0.4rem;
+        right: 0.5rem;
+        font-size: 0.85rem;
+        opacity: 0;
+        transition: opacity var(--transition-fast);
+        color: var(--accent-primary);
+    }
+    /* Checked states */
+    .role-check-input:checked + .role-chip-card {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+    .role-check-input:checked + .role-chip-card .check-mark { opacity: 1; }
+    #rolAdmin:checked + .role-chip-card  { border-color: #2563eb; background: rgba(37,99,235,0.1); }
+    #rolAdmin:checked + .role-chip-card .role-icon { color: #2563eb; }
+    #rolMant:checked + .role-chip-card   { border-color: #ea580c; background: rgba(234,88,12,0.1); }
+    #rolMant:checked + .role-chip-card .role-icon { color: #ea580c; }
+    #rolProd:checked + .role-chip-card   { border-color: #16a34a; background: rgba(22,163,74,0.1); }
+    #rolProd:checked + .role-chip-card .role-icon { color: #16a34a; }
+    #rolTecnico:checked + .role-chip-card { border-color: #0d9488; background: rgba(13,148,136,0.1); }
+    #rolTecnico:checked + .role-chip-card .role-icon { color: #0d9488; }
+    #rolMonitor:checked + .role-chip-card { border-color: #7c3aed; background: rgba(124,58,237,0.1); }
+    #rolMonitor:checked + .role-chip-card .role-icon { color: #7c3aed; }
+
+    /* Locked chips (tecnico) */
+    .role-chip-card.locked { opacity: 0.65; cursor: not-allowed; }
+    .lock-badge {
+        font-size: 0.68rem;
+        color: var(--text-muted);
+        background: var(--bg-surface-elevated);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-sm);
+        padding: 0.1rem 0.4rem;
+    }
+    .form-max-w { max-width: 680px; margin: 0 auto; }
+    .password-hint {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        margin-top: 0.35rem;
+    }
+</style>
+
+<body>
+    <header th:replace="plantillas/plantilla::header">header</header>
+    <div th:replace="plantillas/plantilla::notificaciones"></div>
+    <div th:replace="plantillas/plantilla::menu"></div>
+    <div th:replace="plantillas/plantilla::logo"></div>
+
+    <div class="container my-4 animated-fadeIn">
+        <div class="form-max-w">
+            <div class="sigma-card">
+                <div class="sigma-card-header">
+                    <div>
+                        <h1 class="sigma-card-title mb-1">
+                            <i class="fas fa-user-edit text-primary"></i>
+                            Editar Usuario
+                        </h1>
+                        <p class="mb-0 small" style="color: var(--text-muted);"
+                           th:text="'Editando: ' + *{username}"></p>
                     </div>
-                    <div class="card-body">
-                        <div class="form-floating mb-3">
-                            <input type="text" class="form-control" id="usernameInput" name="username" th:field="*{username}" placeholder="Usuario" required="true">
-                            <label for="usernameInput">Usuario</label>
-                            <span th:if="${#fields.hasErrors('username')}" th:errors="*{username}" class="text-danger">Error en usuario</span>
-                        </div>
+                </div>
 
-                        <div class="form-floating mb-3">
-                            <input type="password" class="form-control" id="passwordInput" name="password" placeholder="Nueva contraseña (opcional)">
-                            <label for="passwordInput">Nueva contraseña (opcional)</label>
-                            <small class="form-text text-muted">Dejar en blanco para conservar la contraseña actual.</small>
-                        </div>
+                <form method="POST" th:action="@{/guardarUsuarioEditado}" th:object="${usuario}">
+                    <input type="hidden" name="idUsuario" th:value="*{idUsuario}"/>
 
-                        <h4>Roles:</h4>
-                        <div class="ps-3 mb-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="rolAdministrador" name="rol" value="ROLE_ADMIN"
+                    <!-- Usuario -->
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="usernameInput"
+                               name="username" th:field="*{username}" placeholder=" " required>
+                        <label for="usernameInput"><i class="fas fa-user me-1"></i> Nombre de usuario</label>
+                        <span th:if="${#fields.hasErrors('username')}" th:errors="*{username}"
+                              class="text-danger small mt-1 d-block"></span>
+                    </div>
+
+                    <!-- Contraseña (opcional) -->
+                    <div class="form-floating mb-4">
+                        <input type="password" class="form-control" id="passwordInput"
+                               name="password" placeholder=" ">
+                        <label for="passwordInput"><i class="fas fa-lock me-1"></i> Nueva contraseña</label>
+                        <p class="password-hint">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Dejar en blanco para conservar la contraseña actual.
+                        </p>
+                    </div>
+
+                    <!-- Selector de Roles (checkboxes) -->
+                    <div class="mb-4">
+                        <label class="form-label detencion-label text-uppercase small mb-2">
+                            <i class="fas fa-user-tag me-1"></i> Roles asignados
+                        </label>
+                        <div class="role-selector-grid" id="rolSelectorGrid">
+
+                            <div class="role-chip-wrapper">
+                                <input class="role-check-input" type="checkbox" id="rolAdmin" name="rol"
+                                       value="ROLE_ADMIN"
                                        th:checked="${usuario.roles != null and #lists.contains(usuario.roles.![nombre], 'ROLE_ADMIN')}"/>
-                                <label class="form-check-label" for="rolAdministrador">Administrador</label>
+                                <label class="role-chip-card" for="rolAdmin">
+                                    <i class="fas fa-check-circle check-mark"></i>
+                                    <i class="fas fa-shield-alt role-icon"></i>
+                                    <span class="role-name">Administrador</span>
+                                    <span class="role-desc">Acceso total al sistema</span>
+                                </label>
                             </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="rolMantenimiento" name="rol" value="ROLE_MANT"
-                                       th:checked="${usuario.roles != null and #lists.contains(usuario.roles.![nombre], 'ROLE_MANT')}"/>
-                                <label class="form-check-label" for="rolMantenimiento">Mantenimiento</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="rolProduccion" name="rol" value="ROLE_PROD"
-                                       th:checked="${usuario.roles != null and #lists.contains(usuario.roles.![nombre], 'ROLE_PROD')}"/>
-                                <label class="form-check-label" for="rolProduccion">Producción</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="rolTecnico" name="rol" value="ROLE_TECNICO" onclick="chequearTecnico(this)"
-                                       th:checked="${usuario.roles != null and #lists.contains(usuario.roles.![nombre], 'ROLE_TECNICO')}"/>
-                                <label class="form-check-label" for="rolTecnico">Técnico</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="rolMonitor" name="rol" value="ROLE_MONITOR"
-                                       th:checked="${usuario.roles != null and #lists.contains(usuario.roles.![nombre], 'ROLE_MONITOR')}"/>
-                                <label class="form-check-label" for="rolMonitor">Monitor</label>
-                            </div>
-                        </div>
 
-                        <div class="text-center mt-4">
-                            <input type="submit" value="Guardar" class="btn btn-primary me-2"/>
-                            <a th:href="@{/gestionUsuarios}" class="btn btn-secondary">Regresar</a>
+                            <div class="role-chip-wrapper">
+                                <input class="role-check-input" type="checkbox" id="rolMant" name="rol"
+                                       value="ROLE_MANT"
+                                       th:checked="${usuario.roles != null and #lists.contains(usuario.roles.![nombre], 'ROLE_MANT')}"/>
+                                <label class="role-chip-card" for="rolMant">
+                                    <i class="fas fa-check-circle check-mark"></i>
+                                    <i class="fas fa-wrench role-icon"></i>
+                                    <span class="role-name">Mantenimiento</span>
+                                    <span class="role-desc">Gestión de tareas y detenciones</span>
+                                </label>
+                            </div>
+
+                            <div class="role-chip-wrapper">
+                                <input class="role-check-input" type="checkbox" id="rolProd" name="rol"
+                                       value="ROLE_PROD"
+                                       th:checked="${usuario.roles != null and #lists.contains(usuario.roles.![nombre], 'ROLE_PROD')}"/>
+                                <label class="role-chip-card" for="rolProd">
+                                    <i class="fas fa-check-circle check-mark"></i>
+                                    <i class="fas fa-industry role-icon"></i>
+                                    <span class="role-name">Producción</span>
+                                    <span class="role-desc">Notificación y cierre de intervenciones</span>
+                                </label>
+                            </div>
+
+                            <div class="role-chip-wrapper">
+                                <input class="role-check-input" type="checkbox" id="rolTecnico" name="rol"
+                                       value="ROLE_TECNICO"
+                                       th:checked="${usuario.roles != null and #lists.contains(usuario.roles.![nombre], 'ROLE_TECNICO')}"
+                                       onclick="chequearTecnico(this)"/>
+                                <label class="role-chip-card" for="rolTecnico"
+                                       th:classappend="${usuario.roles != null and #lists.contains(usuario.roles.![nombre], 'ROLE_TECNICO')} ? 'locked' : ''">
+                                    <i class="fas fa-check-circle check-mark"></i>
+                                    <i class="fas fa-user-tie role-icon"></i>
+                                    <span class="role-name">Técnico</span>
+                                    <span class="role-desc">Intervención y liberación de activos</span>
+                                    <span class="lock-badge"><i class="fas fa-lock me-1"></i>Restringido</span>
+                                </label>
+                            </div>
+
+                            <div class="role-chip-wrapper">
+                                <input class="role-check-input" type="checkbox" id="rolMonitor" name="rol"
+                                       value="ROLE_MONITOR"
+                                       th:checked="${usuario.roles != null and #lists.contains(usuario.roles.![nombre], 'ROLE_MONITOR')}"/>
+                                <label class="role-chip-card" for="rolMonitor">
+                                    <i class="fas fa-check-circle check-mark"></i>
+                                    <i class="fas fa-desktop role-icon"></i>
+                                    <span class="role-name">Monitor</span>
+                                    <span class="role-desc">Visualización del layout en pantalla</span>
+                                </label>
+                            </div>
+
                         </div>
+                    </div>
+
+                    <!-- Botones -->
+                    <div class="d-flex gap-2 justify-content-end pt-3"
+                         style="border-top: 1px solid var(--border-color);">
+                        <a th:href="@{/gestionUsuarios}" class="btn btn-secondary" id="btnRegresar">
+                            <i class="fas fa-arrow-left"></i> Regresar
+                        </a>
+                        <button type="submit" class="btn btn-primary" id="btnGuardar">
+                            <i class="fas fa-save"></i> Guardar Cambios
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
+    </div>
 
-        <script>
-            function chequearTecnico(elemento) {
-                if (elemento.checked === true) {
-                    elemento.checked = false;
-                    alert("No podés convertir un usuario a técnico. Los técnicos deben generarse como nuevos para cargar sus datos.");
-                } else {
-                    elemento.checked = true;
-                    alert("No podés quitar el rol de un técnico directamente. Si deseas cambiarlo, eliminalo y generá un usuario nuevo.");
-                }
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function chequearTecnico(elemento) {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const swalOpts = {
+                icon: 'warning',
+                confirmButtonColor: '#2563eb',
+                background: isDark ? '#151c2c' : '#ffffff',
+                color: isDark ? '#f8fafc' : '#0f172a'
+            };
+            if (elemento.checked === true) {
+                elemento.checked = false;
+                Swal.fire({ ...swalOpts, title: 'Acción restringida', text: 'No podés convertir un usuario a técnico. Los técnicos deben generarse como nuevos para cargar sus datos.' });
+            } else {
+                elemento.checked = true;
+                Swal.fire({ ...swalOpts, title: 'Acción restringida', text: 'No podés quitar el rol de un técnico directamente. Si deseás cambiarlo, eliminalo y generá un usuario nuevo.' });
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const checkboxes = document.querySelectorAll("input[name='rol']");
+            const adminCheckbox = document.getElementById("rolAdmin");
+
+            // Si admin está chequeado junto a otros, limpiar los otros
+            const checkedBoxes = Array.from(checkboxes).filter(cb => cb.checked);
+            if (checkedBoxes.length > 1 && adminCheckbox.checked) {
+                checkboxes.forEach(cb => { if (cb !== adminCheckbox) cb.checked = false; });
             }
 
-            document.addEventListener("DOMContentLoaded", function() {
-                const checkboxes = document.querySelectorAll("input[name='rol']");
-                const adminCheckbox = document.getElementById("rolAdministrador");
-
-                const checkedBoxes = Array.from(checkboxes).filter(cb => cb.checked);
-                if (checkedBoxes.length > 1 && adminCheckbox.checked) {
-                    checkboxes.forEach(cb => {
-                        if (cb !== adminCheckbox) cb.checked = false;
-                    });
-                }
-
-                checkboxes.forEach(checkbox => {
-                    checkbox.addEventListener("change", function() {
-                        if (this.checked) {
-                            if (this === adminCheckbox) {
-                                checkboxes.forEach(cb => {
-                                    if (cb !== adminCheckbox) cb.checked = false;
-                                });
-                            } else {
-                                checkboxes.forEach(cb => {
-                                    if (cb !== this) cb.checked = false;
-                                });
-                            }
-                        }
-                    });
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener("change", function () {
+                    if (this === adminCheckbox && this.checked) {
+                        checkboxes.forEach(cb => { if (cb !== adminCheckbox) cb.checked = false; });
+                    } else if (this.checked && this !== adminCheckbox) {
+                        adminCheckbox.checked = false;
+                    }
                 });
             });
-        </script>
-    </body>
+        });
+    </script>
+</body>
 </html>

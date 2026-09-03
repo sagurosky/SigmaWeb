@@ -60,6 +60,7 @@ public class ServicioImpl implements Servicio {
     @Transactional(readOnly = true)
     @Override
     public Tarea encontrar(Tarea tarea) {
+        if (tarea == null || tarea.getId() == null) return null;
         Long tenantId = TenantContext.getTenantId();
         Tarea t = tareaDao.findById(tarea.getId()).orElse(null);
         if (t == null) return null;
@@ -69,9 +70,26 @@ public class ServicioImpl implements Servicio {
             return null; // o lanzar AccessDeniedException
         }
 
-        // Cargamos asignaciones del mismo tenant
-        t.setAsignaciones(asignacionDao.findByTareaIdAndTenantId(t.getId(), tenantId));
+        // Inicializamos la colección sin reemplazar la referencia de la colección gestionada por Hibernate
+        if (t.getAsignaciones() != null) {
+            t.getAsignaciones().size();
+        }
         return t;
+    }
+
+    @Transactional
+    @Override
+    public void desasignarTecnico(Long tareaId, Long tecnicoId) {
+        Tarea temp = new Tarea();
+        temp.setId(tareaId);
+        Tarea t = encontrar(temp);
+        if (t != null && t.getAsignaciones() != null) {
+            t.getAsignaciones().removeIf(a -> a.getTecnico() != null && a.getTecnico().getId().equals(tecnicoId));
+            guardar(t);
+            if (t.getActivo() != null) {
+                activoService.save(t.getActivo()); // Desencadenar notificaciones WebSocket
+            }
+        }
     }
 
     @Transactional(readOnly = true)
@@ -125,24 +143,40 @@ public class ServicioImpl implements Servicio {
     @Override
     public void asignarSolicitud(Tarea tarea, java.util.List<Long> tecnicosIds, String motivoDemoraAsignacion) {
         Tarea t = encontrar(tarea);
-        java.util.List<Asignacion> asignaciones = new java.util.ArrayList<>();
+        if (t == null) return;
+
+        if (t.getAsignaciones() == null) {
+            t.setAsignaciones(new java.util.ArrayList<>());
+        } else {
+            t.getAsignaciones().clear();
+        }
 
         if (tecnicosIds != null) {
-            for (Long idTecnico : tecnicosIds) {
+            java.util.List<Long> distinctIds = tecnicosIds.stream()
+                    .filter(java.util.Objects::nonNull)
+                    .distinct()
+                    .collect(java.util.stream.Collectors.toList());
+
+            for (Long idTecnico : distinctIds) {
                 Tecnico tecnico = tecnicoService.getById(idTecnico);
-                Asignacion asignacion = new Asignacion();
-                asignacion.setTecnico(tecnico);
-                asignacion.setTarea(tarea);
-                asignaciones.add(asignacion);
+                if (tecnico != null) {
+                    Asignacion asignacion = new Asignacion();
+                    asignacion.setTecnico(tecnico);
+                    asignacion.setTarea(t);
+                    t.getAsignaciones().add(asignacion);
+                }
             }
         }
 
-        t.setAsignaciones(asignaciones);
         t.setEstado("enProceso");
-        t.setMomentoAsignacion(TiempoUtils.ahora());
+        if (t.getMomentoAsignacion() == null) {
+            t.setMomentoAsignacion(TiempoUtils.ahora());
+        }
         t.setMotivoDemoraAsignacion(motivoDemoraAsignacion);
         guardar(t);
-        activoService.save(t.getActivo()); // Desencadenar notificaciones WebSocket
+        if (t.getActivo() != null) {
+            activoService.save(t.getActivo()); // Desencadenar notificaciones WebSocket
+        }
     }
 
     @Transactional
