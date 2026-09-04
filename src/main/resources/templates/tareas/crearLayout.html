@@ -1,204 +1,290 @@
-
-
-
-
-
-
 <!DOCTYPE html>
-
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:th="http://www.tymeleaf.org"
+      xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-    <!--<meta id="meta-refresh" http-equiv="refresh" content="5">-->
-    <meta name="_csrf" th:content="${_csrf.token}" xmlns:th="http://www.w3.org/1999/xhtml"/>
+
+<head th:replace="plantillas/plantilla::head">
+    <title>Editor de Layout | SigmaWeb</title>
+</head>
+
+<!-- Paper.js CDN para operaciones booleanas -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.15/paper-full.min.js"></script>
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+    /* Ocultar el botón de menú general del proyecto durante la elaboración de layout */
+    #toggleMenuBtn {
+        display: none !important;
+    }
+
+    .mapadiv {
+        width: 100%;
+        margin: 0 auto;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: var(--bg-surface-elevated, #1e293b);
+        border-radius: var(--radius-md, 10px);
+        padding: 1rem;
+        box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    #drawingArea {
+        width: 100%;
+        height: auto;
+        max-height: 75vh;
+        border: 2px dashed var(--border-color, #cbd5e1);
+        border-radius: var(--radius-md, 10px);
+        background-color: #ffffff;
+        box-shadow: var(--shadow-lg);
+        transition: border-color var(--transition-normal);
+        cursor: crosshair;
+    }
+
+    /* Estilos de botones de herramientas activos */
+    .btn-tool {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 0.5rem;
+        font-weight: 600;
+        transition: all var(--transition-fast);
+        border-radius: var(--radius-md);
+    }
+
+    .btn-tool.active {
+        background-color: var(--accent-primary, #2563eb) !important;
+        color: #ffffff !important;
+        border-color: var(--accent-primary, #2563eb) !important;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+    }
+
+    .editor-status-bar {
+        background: var(--bg-surface-elevated, #1e293b);
+        border: 1px solid var(--border-color, #cbd5e1);
+        border-radius: var(--radius-md, 10px);
+        padding: 0.6rem 1rem;
+        font-size: 0.875rem;
+        color: var(--text-secondary, #334155);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .asset-list-container {
+        max-height: 220px;
+        overflow-y: auto;
+    }
+
+    /* Custom scrollbar para la lista de activos */
+    .asset-list-container::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .asset-list-container::-webkit-scrollbar-thumb {
+        background: var(--border-color);
+        border-radius: 4px;
+    }
+</style>
+
+<body>
+    <!-- Header del proyecto (sin el menú lateral del proyecto) -->
+    <header th:replace="plantillas/plantilla::header">lista de tareas</header>
+    <div th:replace="plantillas/plantilla::notificaciones"></div>
+    <div th:replace="plantillas/plantilla::logo"></div>
+
+    <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
-        <head th:replace="plantillas/plantilla::head">
-            <title>Lista de tareas</title>
-            <meta charset="UTF-8"/>
 
-
-        </head>
-
-        <style>
-            .mapadiv {
-                width: 100%;
-                margin: 0 auto;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-            }
-            #drawingArea {
-                width: 100%;
-                height: auto;
-                max-height: 80vh;
-                border: 2px dashed rgba(0, 123, 255, 0.5);
-                border-radius: 8px;
-                background-color: rgba(255, 255, 255, 0.95);
-                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-                transition: all 0.3s ease;
-            }
-        </style>
-
-    <!-- Paper.js CDN para operaciones booleanas -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.15/paper-full.min.js"></script>
-    <!-- SweetAlert2 CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <body th:style="'background: url(' + @{/recursos/fondo.jpg} + ') no-repeat center center fixed; background-size: cover;'">
-        <header th:replace="plantillas/plantilla::header">lista de tareas</header>
-        <div th:replace="plantillas/plantilla::logo"></div>
+    <div class="container-fluid my-3 animated-fadeIn">
+        <div class="row g-3">
             
-
-            <div class="container-fluid ">
-                <div class="row">
-                    <div  class="col-md-2">
-
-
-                        <div class="mb-3" style="margin: 10px;">
-                            <label for="nombre" class="form-label">Nombre del layout</label>
-                            <input type="text" class="form-control" id="nombre" placeholder="Ej: Primer piso" required>
+            <!-- Columna Izquierda: Panel de Control del Editor Studio -->
+            <div class="col-lg-3 col-xl-3">
+                
+                <!-- Tarjeta: Configuración de Proyecto -->
+                <div class="sigma-card mb-3">
+                    <div class="sigma-card-header py-2">
+                        <h3 class="sigma-card-title h6 mb-0">
+                            <i class="fas fa-sliders-h text-primary"></i> Configuración del Layout
+                        </h3>
+                        <button type="button" class="btn btn-xs btn-outline-info" data-toggle="modal" data-target="#exampleModalCenter">
+                            <i class="fas fa-question-circle"></i> Ayuda
+                        </button>
+                    </div>
+                    
+                    <div class="p-3">
+                        <div class="mb-3">
+                            <label for="nombre" class="form-label font-weight-bold small text-uppercase mb-1">Nombre del Layout</label>
+                            <input type="text" class="form-control form-control-sm" id="nombre" placeholder="Ej: Planta Baja - Sector 1" required>
                         </div>
-                        <button type="button" class="btn btn-primary btn-block" data-toggle="modal" data-target="#exampleModalCenter">
-                            Ayuda
+                        
+                        <button id="imgBtn" onclick="triggerImage()" class="btn btn-outline-primary btn-block btn-sm w-100 mb-2 btn-tool">
+                            <i class="fas fa-file-image"></i> Cargar Imagen de Planta
+                        </button>
+                        <input type="file" id="imgInput" accept="image/*" style="display:none"/>
+                    </div>
+                </div>
+
+                <!-- Tarjeta: Herramientas de Dibujo y Edición -->
+                <div class="sigma-card mb-3">
+                    <div class="sigma-card-header py-2">
+                        <h3 class="sigma-card-title h6 mb-0">
+                            <i class="fas fa-drafting-compass text-primary"></i> Herramientas de Dibujo
+                        </h3>
+                    </div>
+                    
+                    <div class="p-3 d-flex flex-column gap-2">
+                        <button id="rectBtn" onclick="setMode('rect')" class="btn btn-secondary btn-sm w-100 btn-tool active">
+                            <i class="fas fa-vector-square text-info"></i> Rectángulo
+                        </button>
+                        
+                        <button id="ellipseBtn" onclick="setMode('ellipse')" class="btn btn-secondary btn-sm w-100 btn-tool">
+                            <i class="fas fa-circle text-info"></i> Elipse
                         </button>
 
-                        <button id="imgBtn" onclick="triggerImage()" class="btn btn-primary btn-block">Adjuntar Imagen</button>
+                        <button id="polygonBtn" onclick="setMode('polygon')" class="btn btn-secondary btn-sm w-100 btn-tool">
+                            <i class="fas fa-draw-polygon text-info"></i> Polígono / Polínea
+                        </button>
 
-                        <!-- Modal -->
-                        <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
-                                <div class="modal-content">
-                                    <div class="modal-header bg-primary text-white">
-                                        <h5 class="modal-title" id="exampleModalCenterTitle">Guía para la Generación de Layouts</h5>
-                                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                    </div>
-                                    <div class="modal-body">
+                        <hr class="my-1" style="border-color: var(--border-color);">
 
-                                        <p><strong>Antes de comenzar:</strong> Asegúrese de contar con:</p>
-                                        <ul>
-                                            <li>Una imagen general del layout de la planta.</li>
-                                            <li>Una imagen individual por cada activo que desea incluir.</li>
-                                        </ul>
+                        <button id="editBtn" onclick="setMode('edit')" class="btn btn-secondary btn-sm w-100 btn-tool">
+                            <i class="fas fa-mouse-pointer text-warning"></i> Editar Vértices / Posición
+                        </button>
 
-                                        <h6>🛠️ <strong>Pasos para crear un layout:</strong></h6>
-                                        <ol>
-                                            <li><strong>Ingresar nombre del layout:</strong> En el campo <em>“Nombre del layout”</em> (es obligatorio y debe ser único).</li>
-                                            <li><strong>Adjuntar imagen:</strong> Cargar la imagen del layout general.</li>
-                                            <li><strong>Conformar activos:</strong>
-                                                <ul>
-                                                    <li>Seleccione <em>Rectángulo</em> o <em>Elipse</em> para representar los activos.</li>
-                                                    <li>Presione <strong>Conformar</strong>, asigne un nombre único a cada activo e incluya su imagen.</li>
-                                                </ul>
-                                            </li>
-                                            <li><strong>Guardar en servidor:</strong>
-                                                <ul>
-                                                    <li>Presione <strong>Guardar en servidor</strong> una vez finalizada la configuración.</li>
-                                                    <li>Al guardarse correctamente, la pantalla se recargará para permitir la creación de un nuevo layout si fuera necesario.</li>
-                                                </ul>
-                                            </li>
-                                        </ol>
+                        <button id="deleteBtn" onclick="toggleDeleteMode()" class="btn btn-outline-danger btn-sm w-100 btn-tool">
+                            <i class="fas fa-trash-alt"></i> Eliminar Figura
+                        </button>
 
-                                        <h6>📋 <strong>Administración de múltiples layouts:</strong></h6>
-                                        <ul>
-                                            <li>Los nuevos layouts aparecerán automáticamente en el <strong>menú superior</strong>.</li>
-                                            <li>Desde allí podrá <strong>abrir</strong> cualquier layout existente para visualizarlo o editar su representación gráfica.</li>
-                                            <li>También podrá <strong>eliminar layouts</strong> utilizando el desplegable <em>“Layouts existentes”</em>.</li>
-                                        </ul>
+                        <hr class="my-1" style="border-color: var(--border-color);">
 
-                                        <h6>⚠️ <strong>Notas adicionales:</strong></h6>
-                                        <ul>
-                                            <li>Para eliminar un <strong>activo</strong>, pulse <strong>Eliminar</strong> y haga clic sobre la figura. No hay opción de recuperación.</li>
-                                            <li>Para editar forma/posición, use el botón <strong>Editar</strong>.</li>
-                                            <li>No es posible modificar activos ya conformados: si hay un error, elimínelo y créelo nuevamente.</li>
-                                        </ul>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <button id="mergeBtn" onclick="confirmMerge()" class="btn btn-success btn-sm w-100 btn-tool justify-content-center">
+                            <i class="fas fa-check-circle"></i> Conformar Activo
+                        </button>
+                    </div>
+                </div>
 
+                <!-- Tarjeta: Guardado y Gestión -->
+                <div class="sigma-card mb-3">
+                    <div class="sigma-card-header py-2">
+                        <h3 class="sigma-card-title h6 mb-0">
+                            <i class="fas fa-save text-primary"></i> Guardado en Servidor
+                        </h3>
+                    </div>
+                    <div class="p-3">
+                        <button id="saveSvgBtn" onclick="sendSvgToServer()" class="btn btn-primary btn-block btn-sm w-100">
+                            <i class="fas fa-cloud-upload-alt me-1"></i> Guardar Layout en Servidor
+                        </button>
 
-
-
-
-
-
-
-
-                        <button id="rectBtn" onclick="setMode('rect')" class="btn btn-primary btn-block">Rectángulo</button>
-                    <br/>
-                        <button id="ellipseBtn" onclick="setMode('ellipse')" class="btn btn-primary btn-block">Elipse</button>
-                    <br/>
-                        <button id="editBtn" onclick="setMode('edit')" class="btn btn-primary btn-block">Editar</button>
-                    <br/>
-                    <button id="mergeBtn" onclick="confirmMerge()" class="btn btn-primary btn-block">Conformar</button>
-                    <br/>
-                    <button id="deleteBtn" onclick="toggleDeleteMode()" class="btn btn-primary btn-block">Eliminar</button>
-                    <br/>
-
-<!--                    <br/>-->
-<!--                        <button id="saveCopySvgBtn" onclick="downloadSVG()" class="btn btn-primary btn-block">Guardar copia local SVG</button>-->
-<!--                    <br/>-->
-                        <button id="saveSvgBtn" onclick="sendSvgToServer()" class="btn btn-primary btn-block">Guardar en servidor</button>
-<!--                        //DMS calculo que no necesitaré mas estos botones, borrar-->
-                    <!--<br/>
-                        <a  th:if="${existeLayout}"id="btnAbrir" th:href="@{/layout}" class="btn btn-primary btn-block" style="display: block;">abrir</a>
-                        <a  th:if="${!existeLayout}"id="btnAbrir" th:href="@{/layout}" class="btn btn-primary btn-block" style="display: none;">abrir</a>
-                    <br/>-->
-
+                        <!-- Menú de Layouts Existentes -->
                         <th:block th:if="${nombresLayouts != null and !nombresLayouts.isEmpty()}">
                             <div class="dropdown mt-3">
-                                <button class="btn btn-primary btn-block dropdown-toggle" type="button" data-toggle="dropdown">
-                                    Layouts existentes
+                                <button class="btn btn-outline-secondary btn-sm w-100 dropdown-toggle" type="button" data-toggle="dropdown">
+                                    <i class="fas fa-folder-open me-1"></i> Layouts Existentes
                                 </button>
-                                <div class="dropdown-menu">
+                                <div class="dropdown-menu w-100 p-2 shadow-lg">
                                     <th:block th:each="nombre : ${nombresLayouts}">
-                                        <div class="dropdown-item d-flex justify-content-between align-items-center">
-                                            <span th:text="${#strings.replace(nombre, '.svg', '')}"></span>
-                                            <form th:action="@{'/eliminarLayout/' + ${#strings.replace(nombre, ' ', '%20')}}" method="post" th:object="${_csrf}">
+                                        <div class="dropdown-item d-flex justify-content-between align-items-center py-2 px-2 border-bottom">
+                                            <span class="small fw-bold text-truncate me-2" th:text="${#strings.replace(nombre, '.svg', '')}"></span>
+                                            <form th:action="@{'/eliminarLayout/' + ${#strings.replace(nombre, ' ', '%20')}}" method="post">
                                                 <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
-                                                <button type="submit" class="btn btn-danger btn-sm ml-2">Eliminar</button>
+                                                <button type="submit" class="btn btn-danger btn-xs" title="Eliminar layout" onclick="return confirm('¿Confirma eliminar este layout?');">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
                                             </form>
                                         </div>
                                     </th:block>
                                 </div>
                             </div>
                         </th:block>
-
-
-                        <input type="file" id="imgInput" accept="image/*" style="display:none" class="btn btn-primary btn-block"/>
-
-
-
-
-
-                </div>
-
-                    <div  class="col-md-10" style="text-align: center; padding-left: 50px; " id="contenedorLayout" >
-                        <div class=" mapadiv">
-                            <svg id="drawingArea" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" width="900" height="600">
-                        </svg>
                     </div>
+                </div>
 
+                <!-- Tarjeta: Activos Conformados en Tiempo Real -->
+                <div class="sigma-card">
+                    <div class="sigma-card-header py-2">
+                        <h3 class="sigma-card-title h6 mb-0">
+                            <i class="fas fa-cubes text-primary"></i> Activos Conformados
+                        </h3>
+                        <span id="conformedCountBadge" class="badge bg-success rounded-pill">0</span>
+                    </div>
+                    <div class="p-2">
+                        <div id="listaActivosConformados" class="asset-list-container">
+                            <div class="text-center text-muted p-3 small">No se han conformado activos aún.</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Columna Derecha: Canvas de Edición Studio -->
+            <div class="col-lg-9 col-xl-9">
+                <div class="sigma-card h-100">
+                    <div class="sigma-card-header py-2">
+                        <h2 class="sigma-card-title h5 mb-0">
+                            <i class="fas fa-layer-group text-primary"></i> Lienzo Interactivo de Diseño
+                        </h2>
+                        <a th:href="@{/layout}" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-arrow-left me-1"></i> Volver a Vista General
+                        </a>
+                    </div>
+                    
+                    <div class="p-3">
+                        <!-- Barra de estado contextual para guiar al usuario -->
+                        <div id="editorStatusText" class="editor-status-bar mb-3">
+                            <i class="fas fa-info-circle text-primary me-1"></i> <strong>Modo actual:</strong> Herramienta Rectángulo activa.
+                        </div>
+
+                        <!-- Canvas SVG -->
+                        <div class="mapadiv">
+                            <svg id="drawingArea" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" width="900" height="600">
+                            </svg>
+                        </div>
+                    </div>
                 </div>
             </div>
 
+        </div>
+    </div>
+
+    <!-- Modal de Guía / Ayuda -->
+    <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title text-white" id="exampleModalCenterTitle">
+                        <i class="fas fa-book-open me-2"></i> Guía para la Generación de Layouts
+                    </h5>
+                    <button type="button" class="close text-white btn" data-dismiss="modal" aria-label="Cerrar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <h6>🛠️ <strong>Pasos para crear un layout:</strong></h6>
+                    <ol class="mb-3">
+                        <li><strong>Ingresar nombre del layout:</strong> Escriba el nombre en el panel izquierdo (es obligatorio y único).</li>
+                        <li><strong>Cargar Imagen de Planta:</strong> Adjunte el plano o foto general de la planta.</li>
+                        <li><strong>Bocetar sectores:</strong>
+                            <ul>
+                                <li>Use <strong>Rectángulo</strong>, <strong>Elipse</strong> o <strong>Polígono / Polínea</strong>.</li>
+                                <li>Para polígonos: haga clic para agregar puntos; para cerrar el polígono haga clic en el primer punto, doble clic o presione <em>Enter</em>.</li>
+                                <li>Los bocetos se muestran en color <strong class="text-primary">Azul Traslúcido</strong>.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Conformar activos:</strong> Presione <strong>Conformar Activo</strong>, asigne un nombre único y opcionalmente su foto individual. El activo se consolidará en color <strong class="text-success">Verde Traslúcido</strong>.</li>
+                        <li><strong>Editar vértices/forma:</strong> Use el botón <strong>Editar Vértices / Posición</strong> para arrastrar puntos o mover figuras.</li>
+                        <li><strong>Guardar en Servidor:</strong> Presione <strong>Guardar Layout en Servidor</strong> para finalizar e integrar los enlaces dinámicos al proyecto.</li>
+                    </ol>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                </div>
             </div>
+        </div>
+    </div>
 
-
-        <script>
-
-        </script>
-
-            <script src="/inicio/editorLayout.js" type="application/javascript" ></script>
-        </body>
+    <script src="/inicio/editorLayout.js" type="application/javascript"></script>
+</body>
 </html>
-
-
-
-
-
