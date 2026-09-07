@@ -49,7 +49,7 @@
                 </button>
 
                 <div class="collapse navbar-collapse" id="navbarCollapse">
-                    <ul class="navbar-nav me-auto align-items-center my-2 my-lg-0">
+                    <ul class="navbar-nav me-auto align-items-center flex-wrap my-2 my-lg-0">
                         <!-- Botones generados dinámicamente desde la lista nombresLayouts -->
                         <li th:each="nombreLayout : ${nombresLayouts}" class="nav-item">
                             <a th:href="@{'/layout/' + ${nombreLayout}}"
@@ -68,22 +68,25 @@
                         </li>
                     </ul>
 
-                    <div class="d-flex align-items-center gap-2 ms-auto">
-                        <!-- Switch Selector Modo Claro / Oscuro -->
-                        <button class="theme-toggle-btn me-2" onclick="toggleSigmaTheme()" type="button"
-                            aria-label="Cambiar tema">
+                    <!-- Contenedor alineado estrictamente a la derecha para los 4 elementos del usuario -->
+                    <div class="header-right-group d-flex align-items-center gap-2 ms-auto flex-shrink-0">
+                        <!-- 1. Switch Selector Modo Claro / Oscuro -->
+                        <button class="theme-toggle-btn" onclick="toggleSigmaTheme()" type="button"
+                            aria-label="Cambiar tema" title="Cambiar Tema (Claro / Oscuro)">
                             <i id="theme-toggle-icon" class="fas fa-moon"></i>
                         </button>
 
-                        <ul sec:authorize="isAuthenticated()" class="navbar-nav align-items-center flex-row gap-2">
+                        <ul sec:authorize="isAuthenticated()" class="navbar-nav align-items-center flex-row gap-2 mb-0 ps-0">
+                            <!-- 2. Nombre de usuario -->
                             <li class="nav-item">
-                                <span class="user-info-pill">
+                                <span class="user-info-pill" title="Usuario conectado">
                                     <i class="fas fa-user-circle"></i>
                                     <span sec:authentication="name">Usuario</span>
                                 </span>
                             </li>
+                            <!-- 3. Rol de usuario -->
                             <li class="nav-item">
-                                <span class="user-info-pill">
+                                <span class="user-info-pill" title="Rol del usuario">
                                     <i class="fas fa-user-shield"></i>
                                     <span id="selRol" th:each='rol:${#authentication.getAuthorities()}'>
                                         <span hidden="true" th:if='${rol.toString().equals("ROLE_ADMIN")}'
@@ -105,10 +108,12 @@
                                     </script>
                                 </span>
                             </li>
-                            <li class="nav-item ms-2">
-                                <form method="POST" th:action="@{/logout}">
-                                    <button type="submit" class="btn btn-secondary btn-sm" title="Cerrar Sesión">
-                                        <i class="fas fa-sign-out-alt"></i> Salir
+                            <!-- 4. Botón Salir -->
+                            <li class="nav-item ms-1">
+                                <form method="POST" th:action="@{/logout}" class="m-0">
+                                    <button type="submit" class="btn btn-secondary btn-sm d-flex align-items-center gap-1" title="Cerrar Sesión">
+                                        <i class="fas fa-sign-out-alt"></i>
+                                        <span class="d-none d-md-inline">Salir</span>
                                     </button>
                                 </form>
                             </li>
@@ -141,7 +146,7 @@
             let noTraerEstados = [[${ noTraerEstados }]];
 
             // seteo todos los atributos en "operativa" que es la condicion normal
-            $("path").attr("data-estado", "operativa");
+            $(".mapadiv path, .mapadiv rect, .mapadiv polygon, svg [id]").attr("data-estado", "operativa");
 
             let elementosParpadeantes = {};
             let isYellow;
@@ -203,57 +208,63 @@
                     window._sigmaLogDone = true;
                 }
 
-                // 1. Construir set de layouts con activos detenidos
+                // 1. Construir sets de layouts con activos detenidos o liberados
                 const layoutsConDetenida = new Set();
+                const layoutsConLiberada = new Set();
+
                 Object.entries(elementosParpadeantes).forEach(function ([nombre, datos]) {
                     if (!datos || !datos.layout) return;
-                    const layoutNombre = datos.layout.replace('.svg', '').trim();
+                    const layoutNombre = datos.layout.replace(/\.svg$/i, '').trim().toLowerCase();
                     if (datos.estado === "detenida") {
                         layoutsConDetenida.add(layoutNombre);
-                        console.log('[SigmaWeb] Detenida en layout:', layoutNombre);
+                    } else if (datos.estado === "liberada") {
+                        layoutsConLiberada.add(layoutNombre);
                     }
                 });
 
-                // 2. Aplicar/quitar clase blink en botones del header
+                // 2. Aplicar/quitar clases blink en botones del header (Detenida en ROJO tiene máxima prioridad)
                 document.querySelectorAll(".nav-layout-chip[data-layout]").forEach(function (boton) {
-                    const layoutName = boton.getAttribute('data-layout');
+                    const rawAttr = boton.getAttribute('data-layout') || '';
+                    const layoutName = rawAttr.replace(/\.svg$/i, '').trim().toLowerCase();
+                    
                     if (layoutName && layoutsConDetenida.has(layoutName)) {
+                        // Prioridad 1: Detenida (Parpadeo ROJO)
                         boton.classList.add("detenida-blink");
+                        boton.classList.remove("liberada-blink");
+                    } else if (layoutName && layoutsConLiberada.has(layoutName)) {
+                        // Prioridad 2: Liberada (Parpadeo AMARILLO) solo si no hay detención en ese layout
+                        boton.classList.add("liberada-blink");
+                        boton.classList.remove("detenida-blink");
                     } else {
                         boton.classList.remove("detenida-blink");
+                        boton.classList.remove("liberada-blink");
                     }
                 });
 
-                // Botones sin data-layout (fallback por si no se cargaron con el atributo)
-                document.querySelectorAll(".nav-layout-chip:not([data-layout])").forEach(function (boton) {
-                    console.warn('[SigmaWeb] Botón sin data-layout encontrado:', boton.textContent.trim(), boton.outerHTML.substring(0, 120));
-                });
-
-                // (lógica de parpadeo en SVG)
+                // 3. Lógica de actualización de estados en SVG vía atributos y CSS keyframes
                 Object.entries(elementosParpadeantes).forEach(function ([nombre, datos]) {
-                    let elementoSvg = document.getElementById(nombre);
+                    if (!datos) return;
                     const estado = datos.estado;
 
-                    if (elementoSvg) {
-                        elementoSvg.removeAttribute("fill");
-                        if (estado == "detenida") {
-                            isRed = (elementoSvg.style.fill === 'red');
-                            elementoSvg.style.fill = isRed ? 'transparent' : 'red';
-                            elementoSvg.setAttribute("data-estado", "detenida");
-                        } else if (estado == "liberada") {
-                            isYellow = (elementoSvg.style.fill === 'yellow');
-                            elementoSvg.style.fill = isYellow ? 'transparent' : 'yellow';
-                            elementoSvg.setAttribute("data-estado", "liberada");
-                        } else if (estado == "disponible") {
-                            elementoSvg.style.fill = 'rgba(255, 165, 0, 0.5)';
-                            elementoSvg.setAttribute("data-estado", "disponible");
-                        } else if (estado === "operativa condicionada") {
-                            elementoSvg.style.fill = 'rgba(255, 0, 0, 0.3)';
-                            elementoSvg.setAttribute("data-estado", "operativa condicionada");
-                        } else if (estado === "operativa") {
-                            elementoSvg.style.fill = '';
-                            elementoSvg.setAttribute("data-estado", "operativa");
+                    // Buscar el elemento SVG por id exacto o normalizado (sin acentos/espacios)
+                    let elementoSvg = document.getElementById(nombre);
+                    if (!elementoSvg) {
+                        const idBuscado = nombre.trim().toLowerCase().replace(/[^a-z0-9]/gi, '');
+                        const elementos = document.querySelectorAll(".mapadiv [id], svg [id]");
+                        for (let el of elementos) {
+                            const elId = el.getAttribute("id");
+                            if (elId && elId.trim().toLowerCase().replace(/[^a-z0-9]/gi, '') === idBuscado) {
+                                elementoSvg = el;
+                                break;
+                            }
                         }
+                    }
+
+                    if (elementoSvg && estado) {
+                        elementoSvg.removeAttribute("fill");
+                        elementoSvg.removeAttribute("stroke");
+                        elementoSvg.removeAttribute("style");
+                        elementoSvg.setAttribute("data-estado", estado);
                     }
                 });
             }, 500);

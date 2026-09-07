@@ -62,9 +62,10 @@
   --status-disponible-text: #d97706;
   --status-disponible-border: #fde68a;
 
-  --status-condicionada-bg: #fff1f2;
-  --status-condicionada-text: #e11d48;
-  --status-condicionada-border: #fecdd3;
+  --status-condicionada-bg: #fff7ed;
+  --status-condicionada-text: #ea580c;
+  --status-condicionada-border: #ffedd5;
+  --status-condicionada-glow: rgba(234, 88, 12, 0.35);
 
   /* Shadows & Elevation */
   --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
@@ -127,9 +128,10 @@
   --status-disponible-text: #fcd34d;
   --status-disponible-border: rgba(245, 158, 11, 0.5);
 
-  --status-condicionada-bg: rgba(244, 63, 94, 0.25);
-  --status-condicionada-text: #fda4af;
-  --status-condicionada-border: rgba(244, 63, 94, 0.5);
+  --status-condicionada-bg: rgba(249, 115, 22, 0.22);
+  --status-condicionada-text: #ff8c42;
+  --status-condicionada-border: rgba(249, 115, 22, 0.5);
+  --status-condicionada-glow: rgba(249, 115, 22, 0.5);
 
   /* Shadows */
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
@@ -297,6 +299,30 @@ a:hover {
 }
 .user-info-pill i {
   color: var(--accent-primary);
+}
+
+/* Header Right Controls Group Alignment */
+.header-right-group {
+  margin-left: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  flex-shrink: 0 !important;
+  padding-left: 0.75rem;
+  border-left: 1px solid rgba(203, 213, 225, 0.5);
+}
+
+[data-theme="dark"] .header-right-group {
+  border-left-color: rgba(59, 77, 104, 0.5);
+}
+
+@media (max-width: 991px) {
+  .header-right-group {
+    border-left: none;
+    padding-left: 0;
+    margin-top: 0.5rem;
+    width: 100%;
+    justify-content: flex-end;
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -771,10 +797,10 @@ a:hover {
   color: var(--text-primary) !important;
 }
 
-/* Layout Button Red Blinking Animation */
+/* Layout Button Red Blinking Animation (Detenida) */
 @keyframes layoutBlinkRed {
   0%, 100% {
-    background-color: #dc2626;
+    background-color: rgba(220, 38, 38, 0.95);
     color: #ffffff;
     border-color: #dc2626;
     box-shadow: 0 0 14px rgba(220, 38, 38, 0.85);
@@ -788,7 +814,124 @@ a:hover {
 }
 
 .nav-layout-chip.detenida-blink {
-  animation: layoutBlinkRed 1s ease-in-out infinite;
+  animation: layoutBlinkRed 1.1s ease-in-out infinite !important;
+}
+
+/* Layout Button Yellow Blinking Animation (Liberada / Aguardando Cierre) */
+@keyframes layoutBlinkYellow {
+  0%, 100% {
+    background-color: rgba(245, 158, 11, 0.95);
+    color: #ffffff;
+    border-color: #d97706;
+    box-shadow: 0 0 14px rgba(245, 158, 11, 0.85);
+  }
+  50% {
+    background-color: var(--bg-surface-elevated);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+    box-shadow: none;
+  }
+}
+
+.nav-layout-chip.liberada-blink {
+  animation: layoutBlinkYellow 1.1s ease-in-out infinite !important;
+}
+
+/* SVG Active Elements Layout States & Animations */
+.mapadiv path,
+.mapadiv rect,
+.mapadiv polygon,
+.mapadiv circle,
+.mapadiv ellipse,
+svg [data-estado] {
+  transition: fill 0.3s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.3s cubic-bezier(0.4, 0, 0.2, 1), filter 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+/* Subtle elegant hover effect across light and dark themes */
+.mapadiv path:hover,
+.mapadiv rect:hover,
+.mapadiv polygon:hover,
+.mapadiv circle:hover,
+svg [data-estado]:hover {
+  fill: rgba(56, 189, 248, 0.38) !important;
+  stroke: #0284c7 !important;
+  stroke-width: 2px !important;
+  filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.65)) !important;
+}
+
+[data-theme="dark"] .mapadiv path:hover,
+[data-theme="dark"] .mapadiv rect:hover,
+[data-theme="dark"] .mapadiv polygon:hover,
+[data-theme="dark"] svg [data-estado]:hover {
+  fill: rgba(56, 189, 248, 0.45) !important;
+  stroke: #38bdf8 !important;
+  filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.8)) !important;
+}
+
+/* 1. Detenida State: High-visibility Crimson Red Blinking Pulse */
+.mapadiv [data-estado="detenida"],
+svg [data-estado="detenida"] {
+  fill: #ef4444 !important;
+  stroke: #dc2626 !important;
+  stroke-width: 2.5px !important;
+  transition: none !important;
+  animation: svgBlinkPulse 1.0s ease-in-out infinite !important;
+}
+
+/* 2. Liberada / Aguardando Cierre State: High-visibility Warm Amber Gold Blinking Pulse */
+.mapadiv [data-estado="liberada"],
+svg [data-estado="liberada"] {
+  fill: #f59e0b !important;
+  stroke: #d97706 !important;
+  stroke-width: 2.5px !important;
+  transition: none !important;
+  animation: svgBlinkPulse 1.0s ease-in-out infinite !important;
+}
+
+/* Universal SVG Opacity Blinking Keyframe (Strict W3C CSS Spec Compliant) */
+@keyframes svgBlinkPulse {
+  0%, 100% {
+    opacity: 1;
+    fill-opacity: 1;
+    stroke-opacity: 1;
+  }
+  50% {
+    opacity: 0.1;
+    fill-opacity: 0.1;
+    stroke-opacity: 0.1;
+  }
+}
+
+/* 3. Operativa Condicionada State: Tangerine Coral Translucent with Dashed Outline */
+.mapadiv path[data-estado="operativa condicionada"],
+.mapadiv rect[data-estado="operativa condicionada"],
+.mapadiv polygon[data-estado="operativa condicionada"],
+svg [data-estado="operativa condicionada"] {
+  fill: rgba(249, 115, 22, 0.35) !important;
+  stroke: #f97316 !important;
+  stroke-width: 2px !important;
+  stroke-dasharray: 4 2 !important;
+  filter: drop-shadow(0 0 6px rgba(249, 115, 22, 0.5)) !important;
+}
+
+/* 4. Disponible State: Sky Blue Translucent */
+.mapadiv path[data-estado="disponible"],
+.mapadiv rect[data-estado="disponible"],
+.mapadiv polygon[data-estado="disponible"],
+svg [data-estado="disponible"] {
+  fill: rgba(14, 165, 233, 0.3) !important;
+  stroke: #0ea5e9 !important;
+  stroke-width: 1.5px !important;
+}
+
+/* 5. Operativa State: Completely Clean (No background tint or outline) */
+.mapadiv path[data-estado="operativa"],
+.mapadiv rect[data-estado="operativa"],
+.mapadiv polygon[data-estado="operativa"],
+svg [data-estado="operativa"] {
+  fill: transparent !important;
+  stroke: none !important;
 }
 
 /* --------------------------------------------------------------------------
