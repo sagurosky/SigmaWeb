@@ -19,6 +19,7 @@ public interface TareaService extends JpaRepository<Tarea, Long> {
       "t.estado != 'cerrada' AND " +
       "t.estado != 'disponible' AND " +
       "t.estado != 'finDisponible' AND " +
+      "t.estado != 'cancelado' AND " +
       "t.afectaProduccion = 'si' AND " +
       "t.momentoDetencion BETWEEN :fechaInicio AND :fechaFin AND " +
       "t.tenant.id = :tenantId")
@@ -59,6 +60,7 @@ public interface TareaService extends JpaRepository<Tarea, Long> {
       "t.estado <> 'cerrada' AND " +
       "t.estado <> 'disponible' AND " +
       "t.estado <> 'finDisponible' AND " +
+      "t.estado <> 'cancelado' AND " +
       "t.activo = ?1 AND t.tenant.id = ?2")
   List<Tarea> traerNoCerradaPorActivo(Activo activo, Long tenantId);
 
@@ -68,7 +70,7 @@ public interface TareaService extends JpaRepository<Tarea, Long> {
         SUM(
           CASE
             WHEN departamento_responsable = 'mantenimiento'
-                 AND estado NOT IN ('disponible', 'finDisponible')
+                 AND estado NOT IN ('disponible', 'finDisponible', 'cancelado')
             THEN TIMESTAMPDIFF(SECOND,
                    GREATEST(momento_detencion, :inicio),
                    LEAST(momento_liberacion, :fin)
@@ -78,7 +80,7 @@ public interface TareaService extends JpaRepository<Tarea, Long> {
         ) / NULLIF(SUM(
           CASE
             WHEN departamento_responsable = 'mantenimiento'
-                 AND estado NOT IN ('disponible', 'finDisponible')
+                 AND estado NOT IN ('disponible', 'finDisponible', 'cancelado')
             THEN 1
             ELSE 0
           END
@@ -92,7 +94,7 @@ public interface TareaService extends JpaRepository<Tarea, Long> {
           - SUM(
               CASE
                 WHEN departamento_responsable <> 'mantenimiento'
-                     OR estado IN ('disponible', 'finDisponible')
+                     OR estado IN ('disponible', 'finDisponible', 'cancelado')
                 THEN TIMESTAMPDIFF(SECOND,
                        GREATEST(momento_detencion, :inicio),
                        LEAST(momento_liberacion, :fin)
@@ -105,7 +107,7 @@ public interface TareaService extends JpaRepository<Tarea, Long> {
           - SUM(
               CASE
                 WHEN departamento_responsable = 'mantenimiento'
-                     AND estado NOT IN ('disponible', 'finDisponible')
+                     AND estado NOT IN ('disponible', 'finDisponible', 'cancelado')
                 THEN TIMESTAMPDIFF(SECOND,
                        GREATEST(momento_detencion, :inicio),
                        LEAST(momento_liberacion, :fin)
@@ -117,7 +119,7 @@ public interface TareaService extends JpaRepository<Tarea, Long> {
         ) / NULLIF(SUM(
               CASE
                 WHEN departamento_responsable = 'mantenimiento'
-                     AND estado NOT IN ('disponible', 'finDisponible')
+                     AND estado NOT IN ('disponible', 'finDisponible', 'cancelado')
                 THEN 1
                 ELSE 0
               END

@@ -198,17 +198,31 @@ public class ControladorEquipos {
     public String cerrarCondicionada( Model model,  Activo activoRequest) {
         Activo activoSeleccionado = activo.findById(activoRequest.getId()).orElse(null);
         if (activoSeleccionado != null) {
+            Authentication aut = SecurityContextHolder.getContext().getAuthentication();
+            String usuarioActual = (aut != null) ? aut.getName() : "";
+            boolean esAdmin = (aut != null) && aut.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
             List<Tarea> tareasNoCerradas = tareaService.traerNoCerradaPorActivo(activoSeleccionado, TenantContext.getTenantId());
+            boolean puedeCerrar = esAdmin;
+
             if (tareasNoCerradas != null && !tareasNoCerradas.isEmpty()) {
-                Tarea tarea = tareasNoCerradas.get(0);
-                tarea.setEstado("cerrada");
-                tarea.setMomentoLiberacion(TiempoUtils.ahora());
-                tareaService.save(tarea);
+                for (Tarea tarea : tareasNoCerradas) {
+                    if (esAdmin || (tarea.getSolicita() != null && tarea.getSolicita().equalsIgnoreCase(usuarioActual))) {
+                        puedeCerrar = true;
+                        tarea.setEstado("cerrada");
+                        tarea.setMomentoLiberacion(TiempoUtils.ahora());
+                        tareaService.save(tarea);
+                    }
+                }
+            } else if (esAdmin) {
+                puedeCerrar = true;
             }
 
-            activoSeleccionado.setEstado("operativa");
-            activoSeleccionado.setDisponibilidadHasta(null);
-            activoService.save(activoSeleccionado);
+            if (puedeCerrar) {
+                activoSeleccionado.setEstado("operativa");
+                activoSeleccionado.setDisponibilidadHasta(null);
+                activoService.save(activoSeleccionado);
+            }
         }
 
         String url = Convertidor.aCamelCase(activoSeleccionado != null ? activoSeleccionado.getNombre() : "");
@@ -246,6 +260,47 @@ public class ControladorEquipos {
         String url = Convertidor.aCamelCase(activoSeleccionado != null ? activoSeleccionado.getNombre() : "");
 
         //me aseguro que el primer caracter sea minuscula sino falla
+        if (!url.isEmpty()) {
+            char primerCaracterMinuscula = Character.toLowerCase(url.charAt(0));
+            url = primerCaracterMinuscula + url.substring(1);
+        }
+
+        return "redirect:/activo/" + url;
+    }
+
+    @PostMapping("/cancelarDetencion/{id}")
+    public String cancelarDetencion(Model model, @PathVariable Long id) {
+        Activo activoSeleccionado = activo.findById(id).orElse(null);
+        if (activoSeleccionado != null) {
+            Authentication aut = SecurityContextHolder.getContext().getAuthentication();
+            String usuarioActual = (aut != null) ? aut.getName() : "";
+            boolean esAdmin = (aut != null) && aut.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+            List<Tarea> tareasNoCerradas = tareaService.traerNoCerradaPorActivo(activoSeleccionado, TenantContext.getTenantId());
+            boolean puedeCancelar = esAdmin;
+
+            if (tareasNoCerradas != null && !tareasNoCerradas.isEmpty()) {
+                for (Tarea tarea : tareasNoCerradas) {
+                    if (esAdmin || (tarea.getSolicita() != null && tarea.getSolicita().equalsIgnoreCase(usuarioActual))) {
+                        puedeCancelar = true;
+                        tarea.setEstado("cancelado");
+                        tarea.setMomentoLiberacion(TiempoUtils.ahora());
+                        tareaService.save(tarea);
+                    }
+                }
+            }
+
+            if (puedeCancelar) {
+                activoSeleccionado.setEstado("operativa");
+                activoSeleccionado.setMomentoDetencion(null);
+                activoSeleccionado.setDisponibilidadHasta(null);
+                activoSeleccionado.setDisponibilidadDesde(null);
+                activoService.save(activoSeleccionado);
+            }
+        }
+
+        String url = Convertidor.aCamelCase(activoSeleccionado != null ? activoSeleccionado.getNombre() : "");
+
         if (!url.isEmpty()) {
             char primerCaracterMinuscula = Character.toLowerCase(url.charAt(0));
             url = primerCaracterMinuscula + url.substring(1);
@@ -417,6 +472,13 @@ if(inicioDeActividades!=null)
         var tareasActivo = tareaService.traerNoCerradaPorActivo(activo,TenantContext.getTenantId());
         var tareaActivo=(tareasActivo.size()>0)?tareasActivo.get(0):null;
         model.addAttribute("tarea", tareaActivo);
+
+        Authentication aut = SecurityContextHolder.getContext().getAuthentication();
+        String usuarioActual = (aut != null) ? aut.getName() : "";
+        boolean esAdmin = (aut != null) && aut.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        boolean puedeCancelarDetencion = esAdmin || (tareaActivo != null && tareaActivo.getSolicita() != null && tareaActivo.getSolicita().equalsIgnoreCase(usuarioActual));
+        model.addAttribute("puedeCancelarDetencion", puedeCancelarDetencion);
+
         model.addAttribute("todosLosTecnicos", tecnicoService.findAllByTenant());
         model.addAttribute("cantidadActivosDetenidos",activoService.findByStatus("detenida").size());
         model.addAttribute("promedios", Arrays.asList("1 anio","6 meses","3 meses","1 mes"));

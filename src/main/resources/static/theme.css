@@ -1247,5 +1247,90 @@ progress.sigma-progress::-moz-progress-bar {
   border-color: #475569 !important;
 }
 
+/* --------------------------------------------------------------------------
+   15. Preventivos Popup Theme & Legibility Styles (Light & Dark Modes)
+   -------------------------------------------------------------------------- */
+#cardInfo {
+  background-color: var(--bg-surface) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+#cardInfo .card-header {
+  background-color: var(--bg-surface-elevated) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+#cardInfo #popupActivoNombre {
+  color: var(--text-primary) !important;
+}
+
+.preventivo-item-card {
+  background-color: var(--bg-surface-elevated) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.preventivo-item-card .preventivo-descripcion,
+#listaPreventivos .text-body,
+#listaPreventivos h6 {
+  color: var(--text-primary) !important;
+}
+
+.preventivo-item-card .preventivo-solicita,
+#listaPreventivos .text-muted,
+#listaPreventivos p.text-muted {
+  color: var(--text-muted) !important;
+}
+
+.preventivo-frecuencia-badge {
+  background-color: var(--bg-body) !important;
+  color: var(--text-muted) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+[data-theme="dark"] #cardInfo {
+  background-color: #151c2c !important;
+  border-color: #3b4d68 !important;
+}
+
+[data-theme="dark"] #cardInfo .card-header {
+  background-color: #1e293b !important;
+  border-bottom-color: #3b4d68 !important;
+}
+
+[data-theme="dark"] #cardInfo #popupActivoNombre,
+[data-theme="dark"] .preventivo-item-card .preventivo-descripcion,
+[data-theme="dark"] #listaPreventivos .text-body,
+[data-theme="dark"] #listaPreventivos h6 {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .preventivo-item-card {
+  background-color: #1e293b !important;
+  border-color: #3b4d68 !important;
+}
+
+[data-theme="dark"] .preventivo-item-card .preventivo-solicita,
+[data-theme="dark"] #listaPreventivos .text-muted,
+[data-theme="dark"] #listaPreventivos p.text-muted {
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .preventivo-frecuencia-badge {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: #cbd5e1 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+[data-theme="dark"] #popupBadgeCount {
+  background-color: rgba(59, 130, 246, 0.25) !important;
+  color: #93c5fd !important;
+}
+
+[data-theme="dark"] #popupVerLink {
+  color: #60a5fa !important;
+  border-color: #3b82f6 !important;
+}
+
 
 

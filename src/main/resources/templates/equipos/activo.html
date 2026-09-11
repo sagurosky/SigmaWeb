@@ -1,7 +1,6 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+    xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head th:replace="plantillas/plantilla::head">
     <title>Detalle de Activo | SigmaWeb</title>
@@ -12,6 +11,7 @@
         width: 100%;
         min-height: 380px;
     }
+
     .asset-img-container {
         position: relative;
         overflow: hidden;
@@ -22,6 +22,7 @@
         text-align: center;
         padding: 0.75rem;
     }
+
     .asset-img {
         max-width: 100%;
         height: auto;
@@ -30,9 +31,11 @@
         border-radius: var(--radius-md);
         transition: transform var(--transition-normal);
     }
+
     .asset-img:hover {
         transform: scale(1.02);
     }
+
     .eval-input-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -47,7 +50,7 @@
     <div th:replace="plantillas/plantilla::logo"></div>
 
     <div class="container my-4 animated-fadeIn">
-        
+
         <!-- Header & Main Asset Hero Card -->
         <div class="sigma-card">
             <div class="sigma-card-header">
@@ -78,18 +81,16 @@
             <div class="asset-hero-grid">
                 <!-- Columna Izquierda: Imagen del Activo -->
                 <div class="asset-img-container">
-                    <img th:src="${linkFoto}" 
-                         onerror="this.onerror=null; this.src='/inicio/imagenes/logo.png';" 
-                         usemap="#workmap" 
-                         class="asset-img" 
-                         alt="Foto de Activo" />
+                    <img th:src="${linkFoto}" onerror="this.onerror=null; this.src='/inicio/imagenes/logo.png';"
+                        usemap="#workmap" class="asset-img" alt="Foto de Activo" />
                 </div>
 
                 <!-- Columna Derecha: Panel de Estado y Acciones -->
                 <div class="d-flex flex-column gap-3">
-                    
-                    <!-- Botón para cancelar condicionada -->
-                    <div th:if="${activo.estado=='operativa condicionada'} and not (${tarea != null} and ${tarea.estado=='enProceso'})">
+
+                    <!-- Botón para cancelar condicionada (solo usuario solicitante o Admin) -->
+                    <div
+                        th:if="${activo.estado=='operativa condicionada'} and not (${tarea != null} and ${tarea.estado=='enProceso'}) and ${puedeCancelarDetencion}">
                         <form th:action="@{/cerrarCondicionada/}+ ${activo.id}" method="post" th:object="${activo}">
                             <button type="submit" class="btn btn-warning btn-block">
                                 <i class="fas fa-times-circle"></i> Cancelar / Cerrar Condición
@@ -98,16 +99,21 @@
                     </div>
 
                     <!-- Administrador: Forzar Estado -->
-                    <div sec:authorize="hasRole('ROLE_ADMIN')" class="p-3 border rounded-3" style="background-color: var(--bg-surface-elevated); border-color: var(--border-color) !important;">
-                        <form th:action="@{/cambiarEstado/}+ ${activo.id}" method="post" th:id="formCambiarEstado" th:object="${activo}" enctype="multipart/form-data">
+                    <div sec:authorize="hasRole('ROLE_ADMIN')" class="p-3 border rounded-3"
+                        style="background-color: var(--bg-surface-elevated); border-color: var(--border-color) !important;">
+                        <form th:action="@{/cambiarEstado/}+ ${activo.id}" method="post" th:id="formCambiarEstado"
+                            th:object="${activo}" enctype="multipart/form-data">
                             <label class="form-label font-weight-bold detencion-label small text-uppercase mb-1">
                                 <i class="fas fa-user-shield me-1"></i> Forzar estado del activo
                             </label>
                             <div class="input-group">
-                                <select th:field="*{estado}" class="form-select" aria-label="Forzar estado" onchange="document.getElementById('formCambiarEstado').submit()">
-                                    <option th:each="estado : ${estados}" th:value="${estado}" th:text="${estado}"></option>
+                                <select th:field="*{estado}" class="form-select" aria-label="Forzar estado"
+                                    onchange="document.getElementById('formCambiarEstado').submit()">
+                                    <option th:each="estado : ${estados}" th:value="${estado}" th:text="${estado}">
+                                    </option>
                                 </select>
-                                <span class="input-group-text bg-transparent border-0 text-warning" title="Los cambios aquí efectuados pueden provocar errores en los cálculos de los indicadores">
+                                <span class="input-group-text bg-transparent border-0 text-warning"
+                                    title="Los cambios aquí efectuados pueden provocar errores en los cálculos de los indicadores">
                                     <i class="fa-solid fa-circle-exclamation fs-5"></i>
                                 </span>
                             </div>
@@ -116,13 +122,20 @@
 
                     <!-- Producción: Poner a Disponibilidad -->
                     <div th:if="${tarea==null}">
-                        <div sec:authorize="hasRole('ROLE_PROD') and not hasRole('ROLE_ADMIN')" th:if="${activo.estado!='detenida'}" class="p-3 border rounded-3" style="background-color: var(--bg-surface-elevated); border-color: var(--border-color) !important;">
-                            <form th:action="@{/ponerADisponibilidad/}+ ${activo.id}" method="post" th:id="formCambiarEstadoProd" th:object="${activo}" enctype="multipart/form-data">
-                                <h4 class="h6 font-weight-bold mb-3"><i class="fas fa-clock text-primary me-1"></i> Poner a disponibilidad</h4>
+                        <div sec:authorize="hasRole('ROLE_PROD') and not hasRole('ROLE_ADMIN')"
+                            th:if="${activo.estado!='detenida'}" class="p-3 border rounded-3"
+                            style="background-color: var(--bg-surface-elevated); border-color: var(--border-color) !important;">
+                            <form th:action="@{/ponerADisponibilidad/}+ ${activo.id}" method="post"
+                                th:id="formCambiarEstadoProd" th:object="${activo}" enctype="multipart/form-data">
+                                <h4 class="h6 font-weight-bold mb-3"><i class="fas fa-clock text-primary me-1"></i>
+                                    Poner a disponibilidad</h4>
                                 <div class="mb-3">
-                                    <label class="form-label small detencion-label">Indique hasta cuándo el activo estará disponible:</label>
-                                    <input type="datetime-local" th:field="*{disponibilidadHasta}" class="form-control" id="disponibilidadHasta" name="disponibilidadHasta">
-                                    <span style="color: red;" hidden="true" id="errorDisponibilidad" class="small mt-1 d-block">Debe ingresar un valor mayor al actual</span>
+                                    <label class="form-label small detencion-label">Indique hasta cuándo el activo
+                                        estará disponible:</label>
+                                    <input type="datetime-local" th:field="*{disponibilidadHasta}" class="form-control"
+                                        id="disponibilidadHasta" name="disponibilidadHasta">
+                                    <span style="color: red;" hidden="true" id="errorDisponibilidad"
+                                        class="small mt-1 d-block">Debe ingresar un valor mayor al actual</span>
                                 </div>
                                 <div th:if="${activo.estado=='disponible'}" class="p-2 border rounded-2 mb-3 bg-body">
                                     <div class="row g-2 text-center">
@@ -146,7 +159,9 @@
                                     </button>
                                 </div>
                             </form>
-                            <form th:action="@{/cancelarDisponibilidad/}+ ${activo.id}" method="post" th:id="formCancelarCambiarEstadoProd" th:object="${activo}" enctype="multipart/form-data">
+                            <form th:action="@{/cancelarDisponibilidad/}+ ${activo.id}" method="post"
+                                th:id="formCancelarCambiarEstadoProd" th:object="${activo}"
+                                enctype="multipart/form-data">
                                 <div class="text-center mt-2" th:if="${activo.estado=='disponible'}">
                                     <button type="submit" class="btn btn-secondary btn-block">
                                         <i class="fas fa-ban"></i> Cancelar Disponibilidad
@@ -155,11 +170,14 @@
                             </form>
                         </div>
 
-                        <div sec:authorize="hasRole('ROLE_MANT') or hasRole('ROLE_TECNICO')" th:if="${activo.estado=='disponible'}" class="p-3 border rounded-3 bg-surface-elevated">
-                            <h4 class="h6 font-weight-bold mb-3"><i class="fas fa-info-circle text-primary me-1"></i> Estado Disponibilidad</h4>
+                        <div sec:authorize="hasRole('ROLE_MANT') or hasRole('ROLE_TECNICO')"
+                            th:if="${activo.estado=='disponible'}" class="p-3 border rounded-3 bg-surface-elevated">
+                            <h4 class="h6 font-weight-bold mb-3"><i class="fas fa-info-circle text-primary me-1"></i>
+                                Estado Disponibilidad</h4>
                             <div class="mb-3">
                                 <label class="form-label small detencion-label">Disponible hasta:</label>
-                                <input type="datetime-local" th:field="${activo.disponibilidadHasta}" class="form-control" id="disponibilidadHasta" name="disponibilidadHasta">
+                                <input type="datetime-local" th:field="${activo.disponibilidadHasta}"
+                                    class="form-control" id="disponibilidadHasta" name="disponibilidadHasta">
                             </div>
                             <div class="p-2 border rounded-2 bg-body">
                                 <div class="row g-2 text-center">
@@ -193,22 +211,27 @@
                     </script>
 
                     <!-- Información de Detención / Tarea Activa (Texto con alto contraste en Dark Mode) -->
-                    <div th:if="${activo.estado=='detenida'||activo.estado=='operativa condicionada'||tarea!=null}" class="p-3 border rounded-3" style="background-color: var(--bg-surface-elevated); border-color: var(--border-color) !important;">
+                    <div th:if="${activo.estado=='detenida'||activo.estado=='operativa condicionada'||tarea!=null}"
+                        class="p-3 border rounded-3"
+                        style="background-color: var(--bg-surface-elevated); border-color: var(--border-color) !important;">
                         <h4 class="h6 font-weight-bold text-danger mb-3">
                             <i class="fas fa-exclamation-circle me-1"></i> Información de la Detención
                         </h4>
                         <div class="row mb-2 align-items-center">
                             <div class="col-6 detencion-label">Detenido desde:</div>
-                            <div class="col-6 detencion-value" th:text="${#temporals.format(activo.momentoDetencion, 'dd/MM/yyyy HH:mm:ss')}"></div>
+                            <div class="col-6 detencion-value"
+                                th:text="${#temporals.format(activo.momentoDetencion, 'dd/MM/yyyy HH:mm:ss')}"></div>
                         </div>
                         <div class="row mb-2 align-items-center">
                             <div class="col-6 detencion-label">Tiempo transcurrido:</div>
-                            <div class="col-6 detencion-value text-danger font-weight-bold" id="tiempoTranscurrido"></div>
+                            <div class="col-6 detencion-value text-danger font-weight-bold" id="tiempoTranscurrido">
+                            </div>
                         </div>
                         <div th:if="${tarea!=null}">
                             <div class="row mb-2 align-items-center">
                                 <div class="col-6 detencion-label">Departamento:</div>
-                                <div class="col-6 detencion-value text-capitalize" th:text="${tarea.departamentoResponsable}"></div>
+                                <div class="col-6 detencion-value text-capitalize"
+                                    th:text="${tarea.departamentoResponsable}"></div>
                             </div>
                             <div class="row mb-2 align-items-center">
                                 <div class="col-6 detencion-label">Descripción:</div>
@@ -221,53 +244,78 @@
                         </div>
 
                         <!-- Interventores y Asignación -->
-                        <div th:if="${tarea!=null} and (${#strings.equalsIgnoreCase(tarea.departamentoResponsable, 'mantenimiento')})" class="pt-2 border-top border-secondary">
+                        <div th:if="${tarea!=null} and (${#strings.equalsIgnoreCase(tarea.departamentoResponsable, 'mantenimiento')})"
+                            class="pt-2 border-top border-secondary">
                             <div class="d-flex align-items-center justify-content-between mb-2">
                                 <span class="detencion-label font-weight-bold">Interventores:</span>
-                                <a th:if="${tarea.estado=='abierto' || tarea.estado=='enProceso'}" 
-                                   sec:authorize="hasRole('ROLE_MANT') or hasRole('ROLE_TECNICO') or hasRole('ROLE_ADMIN')" 
-                                   href="#" data-toggle="modal" th:data-target="'#myModal2' + ${tarea.id}" 
-                                   class="btn btn-primary btn-sm">
-                                    <i class="fas fa-user-plus"></i> <span th:text="${tarea.estado=='enProceso' ? 'Asignar / Modificar' : 'Asignar'}">Asignar</span>
+                                <a th:if="${tarea.estado=='abierto' || tarea.estado=='enProceso'}"
+                                    sec:authorize="hasRole('ROLE_MANT') or hasRole('ROLE_TECNICO') or hasRole('ROLE_ADMIN')"
+                                    href="#" data-toggle="modal" th:data-target="'#myModal2' + ${tarea.id}"
+                                    class="btn btn-primary btn-sm">
+                                    <i class="fas fa-user-plus"></i> <span
+                                        th:text="${tarea.estado=='enProceso' ? 'Asignar / Modificar' : 'Asignar'}">Asignar</span>
                                 </a>
                             </div>
 
                             <div class="d-flex flex-wrap gap-2 mb-3">
-                                <div th:each="tecnico: ${tecnicosAsignar}" class="btn-group btn-group-sm mb-1" role="group">
+                                <div th:each="tecnico: ${tecnicosAsignar}"
+                                    class="btn-group btn-group-sm mb-1 tecnico-group" role="group">
                                     <form th:action="@{/perfilTecnico}" method="get" class="d-inline">
                                         <input type="hidden" name="url" id="url" th:value="${activo.nombre}">
                                         <input type="hidden" name="id" id="id" th:value="${tecnico.id}">
                                         <button type="submit" class="btn btn-secondary btn-sm">
-                                            <i class="fas fa-user-tie me-1"></i> <span th:text="${tecnico.nombre}+' '+${tecnico.apellido}"></span>
+                                            <i class="fas fa-user-tie me-1"></i> <span
+                                                th:text="${tecnico.nombre}+' '+${tecnico.apellido}"></span>
                                         </button>
                                     </form>
                                     <a th:if="${tarea.estado=='abierto' || tarea.estado=='enProceso'}"
-                                       sec:authorize="hasRole('ROLE_MANT') or hasRole('ROLE_TECNICO') or hasRole('ROLE_ADMIN')"
-                                       th:href="@{/desasignarTecnico(tareaId=${tarea.id}, tecnicoId=${tecnico.id}, activoReq=${activo.id})}"
-                                       class="btn btn-outline-danger btn-sm" title="Quitar interventor"
-                                       onclick="return confirm('¿Desea quitar a este interventor de la tarea?');">
+                                        sec:authorize="hasRole('ROLE_MANT') or hasRole('ROLE_TECNICO') or hasRole('ROLE_ADMIN')"
+                                        th:href="@{/desasignarTecnico(tareaId=${tarea.id}, tecnicoId=${tecnico.id}, activoReq=${activo.id})}"
+                                        class="btn btn-outline-danger btn-sm desasignar-tecnico-btn"
+                                        title="Quitar interventor"
+                                        th:attr="data-tecnico-nombre=${tecnico.nombre + ' ' + tecnico.apellido}">
                                         <i class="fas fa-times"></i>
                                     </a>
                                 </div>
                             </div>
 
                             <div th:if="${tarea!=null}">
-                                <a th:if="${tarea.estado=='enProceso'}" sec:authorize="hasRole('ROLE_MANT') or hasRole('ROLE_TECNICO') or hasRole('ROLE_ADMIN')" 
-                                   href="#" class="btn btn-success btn-block liberar-btn" th:attr="data-id=${tarea.id}">
+                                <a th:if="${tarea.estado=='enProceso'}"
+                                    sec:authorize="hasRole('ROLE_MANT') or hasRole('ROLE_TECNICO') or hasRole('ROLE_ADMIN')"
+                                    href="#" class="btn btn-success btn-block liberar-btn"
+                                    th:attr="data-id=${tarea.id}">
                                     <i class="fas fa-check-circle me-1"></i> Liberar Activo
                                 </a>
                             </div>
                         </div>
+
+
+                        <!-- Botón Cancelar Notificación por error (solo el usuario que generó la detención o Admin) -->
+                        <div class="pt-2 mt-2 border-top border-secondary text-center"
+                            th:if="(${activo.estado=='detenida'||activo.estado=='operativa condicionada'||tarea!=null}) and ${puedeCancelarDetencion}">
+                            <form th:action="@{/cancelarDetencion/}+ ${activo.id}" method="post"
+                                id="formCancelarDetencion">
+                                <button type="button"
+                                    class="btn btn-outline-warning btn-sm btn-block id-cancelar-detencion-btn">
+                                    <i class="fas fa-undo me-1"></i> Cancelar Notificación de Detención
+                                </button>
+                            </form>
+                        </div>
+
                     </div>
 
                     <!-- Modal Cierre Producción si está liberada -->
                     <div th:if="${activo.estado=='liberada'}" class="p-3 border rounded-3 bg-surface-elevated">
                         <span th:if="${tarea!=null}">
-                            <p class="detencion-label mb-2"><i class="fas fa-info-circle me-1"></i> El activo ha sido intervenido recientemente.</p>
-                            <a sec:authorize="hasRole('ROLE_PROD')" th:if="${tarea.estado=='liberada'}" href="#" data-toggle="modal" th:data-target="'#myModal' + ${tarea.id}" class="btn btn-primary btn-block">
+                            <p class="detencion-label mb-2"><i class="fas fa-info-circle me-1"></i> El activo ha sido
+                                intervenido recientemente.</p>
+                            <a sec:authorize="hasRole('ROLE_PROD')" th:if="${tarea.estado=='liberada'}" href="#"
+                                data-toggle="modal" th:data-target="'#myModal' + ${tarea.id}"
+                                class="btn btn-primary btn-block">
                                 <i class="fas fa-clipboard-check me-1"></i> Evaluar y Cerrar Intervención
                             </a>
-                            <div sec:authorize="not hasRole('ROLE_PROD')" th:if="${tarea.estado=='liberada'}" class="badge bg-warning text-dark p-2 w-100">
+                            <div sec:authorize="not hasRole('ROLE_PROD')" th:if="${tarea.estado=='liberada'}"
+                                class="badge bg-warning text-dark p-2 w-100">
                                 Aguardando cierre de producción
                             </div>
                         </span>
@@ -275,10 +323,13 @@
 
                     <div th:if="${activo.estado=='detenida'}" class="p-3 border rounded-3 bg-surface-elevated">
                         <span th:if="${tarea!=null && tarea.departamentoResponsable!='mantenimiento'}">
-                            <a sec:authorize="hasRole('ROLE_PROD')" th:if="${tarea.estado=='abierto'}" href="#" data-toggle="modal" th:data-target="'#myModal' + ${tarea.id}" class="btn btn-primary btn-block">
+                            <a sec:authorize="hasRole('ROLE_PROD')" th:if="${tarea.estado=='abierto'}" href="#"
+                                data-toggle="modal" th:data-target="'#myModal' + ${tarea.id}"
+                                class="btn btn-primary btn-block">
                                 <i class="fas fa-clipboard-check me-1"></i> Evaluar y Cerrar Intervención
                             </a>
-                            <div sec:authorize="not hasRole('ROLE_PROD')" th:if="${tarea.estado=='liberada'}" class="badge bg-warning text-dark p-2 w-100">
+                            <div sec:authorize="not hasRole('ROLE_PROD')" th:if="${tarea.estado=='liberada'}"
+                                class="badge bg-warning text-dark p-2 w-100">
                                 Aguardando cierre de producción
                             </div>
                         </span>
@@ -296,9 +347,12 @@
                 </h3>
                 <div>
                     <div sec:authorize="hasRole('ROLE_ADMIN')">
-                        <form th:action="@{/cambiarPromedioMovil/}+ ${activo.id}" method="post" th:id="formCambiarPromedioMovil" th:object="${activo}" enctype="multipart/form-data">
-                            <select th:field="*{promedioMovil}" class="form-select form-select-sm" id="promedioMovil" required="true" onchange="document.getElementById('formCambiarPromedioMovil').submit()">
-                                <option th:each="promedio : ${promedios}" th:value="${promedio}" th:text="${promedio}"></option>
+                        <form th:action="@{/cambiarPromedioMovil/}+ ${activo.id}" method="post"
+                            th:id="formCambiarPromedioMovil" th:object="${activo}" enctype="multipart/form-data">
+                            <select th:field="*{promedioMovil}" class="form-select form-select-sm" id="promedioMovil"
+                                required="true" onchange="document.getElementById('formCambiarPromedioMovil').submit()">
+                                <option th:each="promedio : ${promedios}" th:value="${promedio}" th:text="${promedio}">
+                                </option>
                             </select>
                         </form>
                     </div>
@@ -351,20 +405,26 @@
         <!-- Botones de Acción Secundaria -->
         <div class="sigma-card p-3">
             <div class="action-bar">
-                <button th:if="${activo.estado!='detenida'&&activo.estado!='liberada'&&activo.estado!='operativa condicionada'}"
-                        type="button" class="btn btn-danger" data-toggle="modal" data-target="#notificarDetencionModal">
+                <button
+                    th:if="${activo.estado!='detenida'&&activo.estado!='liberada'&&activo.estado!='operativa condicionada'}"
+                    type="button" class="btn btn-danger" data-toggle="modal" data-target="#notificarDetencionModal">
                     <i class="fas fa-exclamation-circle"></i> Notificar Detención
                 </button>
-                
-                <button th:if="${activo.estado=='operativa condicionada'}"
-                        type="button" class="btn btn-danger" data-toggle="modal" data-target="#notificarDetencionModal">
+
+                <button th:if="${activo.estado=='operativa condicionada'}" type="button" class="btn btn-danger"
+                    data-toggle="modal" data-target="#notificarDetencionModal">
+                    <i class="fas fa-exclamation-circle"></i> Notificar Detención
+                </button>
+
+                <button th:if="${activo.estado=='detenida'}" type="button" class="btn btn-secondary disabled" disabled
+                    title="El equipo ya se encuentra detenido">
                     <i class="fas fa-exclamation-circle"></i> Notificar Detención
                 </button>
 
                 <a th:href="@{/registroActivo/}+ ${activo.id}" class="btn btn-secondary">
                     <i class="fas fa-list-alt"></i> Historial de detenciones
                 </a>
-                
+
                 <a th:href="@{/preventivos/}+ ${activo.id}" class="btn btn-secondary">
                     <i class="fas fa-wrench"></i> Preventivos y mejoras
                 </a>
@@ -379,13 +439,15 @@
         <div class="row g-3 my-3">
             <div class="col-lg-6">
                 <div class="sigma-card">
-                    <h4 class="sigma-card-title mb-3"><i class="fas fa-chart-bar text-primary"></i> Detenciones [Minutos] Últimos Meses</h4>
+                    <h4 class="sigma-card-title mb-3"><i class="fas fa-chart-bar text-primary"></i> Detenciones
+                        [Minutos] Últimos Meses</h4>
                     <div id="grafico3" class="grafico"></div>
                 </div>
             </div>
             <div class="col-lg-6">
                 <div class="sigma-card">
-                    <h4 class="sigma-card-title mb-3"><i class="fas fa-chart-pie text-primary"></i> Paradas por Especialidad Técnica</h4>
+                    <h4 class="sigma-card-title mb-3"><i class="fas fa-chart-pie text-primary"></i> Paradas por
+                        Especialidad Técnica</h4>
                     <div id="grafico4" class="grafico"></div>
                 </div>
             </div>
@@ -407,29 +469,33 @@
         <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title text-white"><i class="fas fa-exclamation-triangle me-2"></i> Notificar Detención de Activo</h5>
+                    <h5 class="modal-title text-white"><i class="fas fa-exclamation-triangle me-2"></i> Notificar
+                        Detención de Activo</h5>
                     <button type="button" class="close btn text-white" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <form th:action="@{/guardar}" method="post" enctype="multipart/form-data">
-                    <input type="hidden" name="activo.id" th:value="${activo.id}"/>
-                    <input type="hidden" name="activo" th:value="${activo.id}"/>
-                    <input type="file" name="file" hidden/>
+                <form th:action="@{/guardar}" method="post" enctype="multipart/form-data" id="formNotificarDetencion">
+                    <input type="hidden" name="activo.id" th:value="${activo.id}" />
+                    <input type="hidden" name="activo" th:value="${activo.id}" />
+                    <input type="file" name="file" hidden />
 
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="modalResponsable" class="form-label font-weight-bold detencion-label">Departamento Responsable</label>
-                            <select name="departamentoResponsable" id="modalResponsable" onchange="mostrarCategoriaModal()" class="form-select" required>
+                            <label for="modalResponsable"
+                                class="form-label font-weight-bold detencion-label">Departamento Responsable</label>
+                            <select name="departamentoResponsable" id="modalResponsable"
+                                onchange="mostrarCategoriaModal()" class="form-select" required>
                                 <option value="">Seleccione Departamento</option>
                                 <option value="mantenimiento">Mantenimiento</option>
                                 <option value="logistica">Logística</option>
                                 <option value="calidad">Calidad</option>
                             </select>
                         </div>
-                        
+
                         <div class="mb-3" id="modalCategoriaDiv" style="display: none;">
-                            <label for="modalCategoria" class="form-label font-weight-bold detencion-label">Categoría Técnica</label>
+                            <label for="modalCategoria" class="form-label font-weight-bold detencion-label">Categoría
+                                Técnica</label>
                             <select name="categoriaTecnica" id="modalCategoria" class="form-select">
                                 <option value="0">Seleccione Categoría</option>
                                 <option value="mecánica">Mecánica</option>
@@ -439,14 +505,18 @@
                                 <option value="programación">Programación</option>
                             </select>
                         </div>
-                        
+
                         <div class="mb-3">
-                            <label for="modalDescripcion" class="form-label font-weight-bold detencion-label">Descripción del Problema</label>
-                            <textarea name="descripcion" id="modalDescripcion" class="form-control" rows="4" placeholder="Describa la falla o problema detectado con el mayor detalle posible..." required></textarea>
+                            <label for="modalDescripcion"
+                                class="form-label font-weight-bold detencion-label">Descripción del Problema</label>
+                            <textarea name="descripcion" id="modalDescripcion" class="form-control" rows="4"
+                                placeholder="Describa la falla o problema detectado con el mayor detalle posible..."
+                                required></textarea>
                         </div>
 
                         <div class="mb-3">
-                            <label for="modalAfectaProduccion" class="form-label font-weight-bold detencion-label">Afecta Producción</label>
+                            <label for="modalAfectaProduccion"
+                                class="form-label font-weight-bold detencion-label">Afecta Producción</label>
                             <select name="afectaProduccion" id="modalAfectaProduccion" class="form-select">
                                 <option value="si">Sí</option>
                                 <option value="no">No</option>
@@ -480,22 +550,27 @@
             <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title"><i class="fas fa-user-plus text-primary me-2"></i> Asignar Colaborador(es)</h5>
+                        <h5 class="modal-title"><i class="fas fa-user-plus text-primary me-2"></i> Asignar
+                            Colaborador(es)</h5>
                         <button type="button" class="close btn" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <form th:id="'asignarForm+${tarea.id}'" th:action="@{/asignarSolicitud/}+${tarea.id}" th:object="${tarea}">
+                    <form th:id="'asignarForm+${tarea.id}'" th:action="@{/asignarSolicitud/}+${tarea.id}"
+                        th:object="${tarea}">
                         <input type="hidden" name="activoReq" id="activoReq" th:value="*{activo.id}">
                         <div class="modal-body">
-                            <label class="form-label font-weight-bold detencion-label mb-2">Seleccionar Técnico(s):</label>
+                            <label class="form-label font-weight-bold detencion-label mb-2">Seleccionar
+                                Técnico(s):</label>
                             <div class="tech-selector-grid">
                                 <div th:each="tecnico : ${todosLosTecnicos}" class="tech-chip-wrapper">
-                                    <input type="checkbox" name="tecnicosIds" th:value="${tecnico.id}" th:id="'tech_' + ${tecnico.id}" class="tech-checkbox-input"
-                                           th:checked="${tecnicosAsignar != null and #lists.contains(tecnicosAsignar, tecnico)}" />
+                                    <input type="checkbox" name="tecnicosIds" th:value="${tecnico.id}"
+                                        th:id="'tech_' + ${tecnico.id}" class="tech-checkbox-input"
+                                        th:checked="${tecnicosAsignar != null and #lists.contains(tecnicosAsignar, tecnico)}" />
                                     <label th:for="'tech_' + ${tecnico.id}" class="tech-chip-card">
                                         <i class="fas fa-user-tie text-primary"></i>
-                                        <span class="tech-name" th:text="${tecnico.apellido} + ' ' + ${tecnico.nombre}"></span>
+                                        <span class="tech-name"
+                                            th:text="${tecnico.apellido} + ' ' + ${tecnico.nombre}"></span>
                                         <i class="fas fa-check-circle check-mark"></i>
                                     </label>
                                 </div>
@@ -503,7 +578,8 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                            <button class="btn btn-primary" type="submit"><i class="fas fa-save me-1"></i> Asignar</button>
+                            <button class="btn btn-primary" type="submit"><i class="fas fa-save me-1"></i>
+                                Asignar</button>
                         </div>
                     </form>
                 </div>
@@ -515,84 +591,103 @@
             <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title"><i class="fas fa-clipboard-check text-primary me-2"></i> Evaluación y Cierre de Tarea</h5>
+                        <h5 class="modal-title"><i class="fas fa-clipboard-check text-primary me-2"></i> Evaluación y
+                            Cierre de Tarea</h5>
                         <button type="button" class="close btn" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
                     <form th:id="'evaluarForm+${tarea.id}'" th:action="@{/CerrarSolicitud/}+${tarea.id}">
                         <div class="modal-body">
-                            <p class="detencion-label mb-3">Complete la calificación de 0 a 10 para los siguientes aspectos del trabajo finalizado.</p>
+                            <p class="detencion-label mb-3">Complete la calificación de 0 a 10 para los siguientes
+                                aspectos del trabajo finalizado.</p>
                             <div class="eval-input-grid">
                                 <div class="form-floating mb-2">
-                                    <input type="number" min="0" max="10" class="form-control" th:name="satisfaccion" oninput="checkInput(this)" placeholder=" ">
+                                    <input type="number" min="0" max="10" class="form-control" th:name="satisfaccion"
+                                        oninput="checkInput(this)" placeholder=" ">
                                     <label>Satisfacción general</label>
                                 </div>
                                 <div class="form-floating mb-2">
-                                    <input type="number" min="0" max="10" class="form-control" th:name="predisposicion" oninput="checkInput(this)" placeholder=" ">
+                                    <input type="number" min="0" max="10" class="form-control" th:name="predisposicion"
+                                        oninput="checkInput(this)" placeholder=" ">
                                     <label>Predisposición percibida</label>
                                 </div>
                                 <div class="form-floating mb-2">
-                                    <input type="number" min="0" max="10" class="form-control" th:name="responsabilidad" oninput="checkInput(this)" placeholder=" ">
+                                    <input type="number" min="0" max="10" class="form-control" th:name="responsabilidad"
+                                        oninput="checkInput(this)" placeholder=" ">
                                     <label>Responsabilidad</label>
                                 </div>
                                 <div class="form-floating mb-2">
-                                    <input type="number" min="0" max="10" class="form-control" th:name="seguridad" oninput="checkInput(this)" placeholder=" ">
+                                    <input type="number" min="0" max="10" class="form-control" th:name="seguridad"
+                                        oninput="checkInput(this)" placeholder=" ">
                                     <label>Normas de seguridad</label>
                                 </div>
                                 <div class="form-floating mb-2">
-                                    <input type="number" min="0" max="10" class="form-control" th:name="conocimiento" oninput="checkInput(this)" placeholder=" ">
+                                    <input type="number" min="0" max="10" class="form-control" th:name="conocimiento"
+                                        oninput="checkInput(this)" placeholder=" ">
                                     <label>Conocimiento técnico</label>
                                 </div>
                                 <div class="form-floating mb-2">
-                                    <input type="number" min="0" max="10" class="form-control" th:name="trato" oninput="checkInput(this)" placeholder=" ">
+                                    <input type="number" min="0" max="10" class="form-control" th:name="trato"
+                                        oninput="checkInput(this)" placeholder=" ">
                                     <label>Trato recibido</label>
                                 </div>
                                 <div class="form-floating mb-2">
-                                    <input type="number" min="0" max="10" class="form-control" th:name="prolijidad" oninput="checkInput(this)" placeholder=" ">
+                                    <input type="number" min="0" max="10" class="form-control" th:name="prolijidad"
+                                        oninput="checkInput(this)" placeholder=" ">
                                     <label>Prolijidad (5S)</label>
                                 </div>
                                 <div class="form-floating mb-2">
-                                    <input type="number" min="0" max="10" class="form-control" th:name="puntualidad" oninput="checkInput(this)" placeholder=" ">
+                                    <input type="number" min="0" max="10" class="form-control" th:name="puntualidad"
+                                        oninput="checkInput(this)" placeholder=" ">
                                     <label>Puntualidad</label>
                                 </div>
                                 <div class="form-floating mb-2">
-                                    <input type="number" min="0" max="10" class="form-control" th:name="eficiencia" oninput="checkInput(this)" placeholder=" ">
+                                    <input type="number" min="0" max="10" class="form-control" th:name="eficiencia"
+                                        oninput="checkInput(this)" placeholder=" ">
                                     <label>Eficiencia</label>
                                 </div>
                                 <div class="form-floating mb-2">
-                                    <input type="number" min="0" max="10" class="form-control" th:name="calidad" oninput="checkInput(this)" placeholder=" ">
+                                    <input type="number" min="0" max="10" class="form-control" th:name="calidad"
+                                        oninput="checkInput(this)" placeholder=" ">
                                     <label>Calidad del trabajo</label>
                                 </div>
                                 <div class="form-floating mb-2">
-                                    <input type="number" min="0" max="10" class="form-control" th:name="comunicacion" oninput="checkInput(this)" placeholder=" ">
+                                    <input type="number" min="0" max="10" class="form-control" th:name="comunicacion"
+                                        oninput="checkInput(this)" placeholder=" ">
                                     <label>Comunicación</label>
                                 </div>
                                 <div class="form-floating mb-2">
-                                    <input type="number" min="0" max="10" class="form-control" th:name="trabajoEnEquipo" oninput="checkInput(this)" placeholder=" ">
+                                    <input type="number" min="0" max="10" class="form-control" th:name="trabajoEnEquipo"
+                                        oninput="checkInput(this)" placeholder=" ">
                                     <label>Trabajo en equipo</label>
                                 </div>
                                 <div class="form-floating mb-2">
-                                    <input type="number" min="0" max="10" class="form-control" th:name="resolucion" oninput="checkInput(this)" placeholder=" ">
+                                    <input type="number" min="0" max="10" class="form-control" th:name="resolucion"
+                                        oninput="checkInput(this)" placeholder=" ">
                                     <label>Resolución de problemas</label>
                                 </div>
                                 <div class="form-floating mb-2">
-                                    <input type="number" min="0" max="10" class="form-control" th:name="creatividad" oninput="checkInput(this)" placeholder=" ">
+                                    <input type="number" min="0" max="10" class="form-control" th:name="creatividad"
+                                        oninput="checkInput(this)" placeholder=" ">
                                     <label>Creatividad e innovación</label>
                                 </div>
                                 <div class="form-floating mb-2">
-                                    <input type="number" min="0" max="10" class="form-control" th:name="iniciativa" oninput="checkInput(this)" placeholder=" ">
+                                    <input type="number" min="0" max="10" class="form-control" th:name="iniciativa"
+                                        oninput="checkInput(this)" placeholder=" ">
                                     <label>Iniciativa</label>
                                 </div>
                                 <div class="form-floating mb-2">
-                                    <input type="number" min="0" max="10" class="form-control" th:name="autogestion" oninput="checkInput(this)" placeholder=" ">
+                                    <input type="number" min="0" max="10" class="form-control" th:name="autogestion"
+                                        oninput="checkInput(this)" placeholder=" ">
                                     <label>Autogestión</label>
                                 </div>
                             </div>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                            <button class="btn btn-primary" type="submit"><i class="fas fa-check me-1"></i> Guardar y Cerrar</button>
+                            <button class="btn btn-primary" type="submit"><i class="fas fa-check me-1"></i> Guardar y
+                                Cerrar</button>
                         </div>
                     </form>
                 </div>
@@ -604,13 +699,61 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const urlParams = new URLSearchParams(window.location.search);
+
+            if (urlParams.get('error') === 'sinInterventores') {
+                Swal.fire({
+                    title: "No se puede liberar el activo",
+                    text: "Debe haber al menos un interventor asignado a la tarea para poder liberarla.",
+                    icon: "error",
+                    confirmButtonText: "Entendido",
+                    confirmButtonColor: "#2563eb",
+                    background: isDark ? '#151c2c' : '#ffffff',
+                    color: isDark ? '#f8fafc' : '#0f172a'
+                });
+            } else if (urlParams.get('error') === 'departamento') {
+                Swal.fire({
+                    title: "Campo requerido",
+                    text: "Debe seleccionar el departamento responsable para notificar la detención.",
+                    icon: "error",
+                    confirmButtonText: "Entendido",
+                    confirmButtonColor: "#2563eb",
+                    background: isDark ? '#151c2c' : '#ffffff',
+                    color: isDark ? '#f8fafc' : '#0f172a'
+                });
+            } else if (urlParams.get('error') === 'categoria') {
+                Swal.fire({
+                    title: "Campo requerido",
+                    text: "Debe seleccionar la categoría técnica para notificar la detención de Mantenimiento.",
+                    icon: "error",
+                    confirmButtonText: "Entendido",
+                    confirmButtonColor: "#2563eb",
+                    background: isDark ? '#151c2c' : '#ffffff',
+                    color: isDark ? '#f8fafc' : '#0f172a'
+                });
+            }
+
             const liberarBtns = document.querySelectorAll(".liberar-btn");
             liberarBtns.forEach(btn => {
                 btn.addEventListener("click", function (e) {
                     e.preventDefault();
                     const tareaId = btn.getAttribute("data-id");
                     const redirectUrl = `/inicio/liberarSolicitud/${tareaId}`;
-                    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+                    const interventores = document.querySelectorAll(".tecnico-group");
+                    if (interventores.length === 0) {
+                        Swal.fire({
+                            title: "No se puede liberar el activo",
+                            text: "Debe haber al menos un interventor asignado a la tarea para poder liberarla.",
+                            icon: "warning",
+                            confirmButtonText: "Entendido",
+                            confirmButtonColor: "#2563eb",
+                            background: isDark ? '#151c2c' : '#ffffff',
+                            color: isDark ? '#f8fafc' : '#0f172a'
+                        });
+                        return;
+                    }
 
                     Swal.fire({
                         title: "¿Está seguro que desea dar por liberado el activo?",
@@ -630,6 +773,131 @@
                     });
                 });
             });
+
+            const desasignarBtns = document.querySelectorAll(".desasignar-tecnico-btn");
+            desasignarBtns.forEach(btn => {
+                btn.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    const url = btn.getAttribute("href");
+                    const tecnicoNombre = btn.getAttribute("data-tecnico-nombre") || "este interventor";
+                    const tecnicoGroup = btn.closest(".tecnico-group");
+                    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+                    Swal.fire({
+                        title: "¿Está seguro que desea quitar a este interventor?",
+                        text: `Esta acción removerá a ${tecnicoNombre} de la tarea.`,
+                        icon: "question",
+                        showCancelButton: true,
+                        confirmButtonText: "Sí, quitar",
+                        cancelButtonText: "Cancelar",
+                        confirmButtonColor: "#dc2626",
+                        cancelButtonColor: "#64748b",
+                        background: isDark ? '#151c2c' : '#ffffff',
+                        color: isDark ? '#f8fafc' : '#0f172a'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            fetch(url, {
+                                method: 'GET',
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                }
+                            })
+                                .then(response => {
+                                    if (response.ok) {
+                                        if (tecnicoGroup) {
+                                            tecnicoGroup.remove();
+                                        }
+                                        Swal.fire({
+                                            title: "Quitado",
+                                            text: "El interventor ha sido desasignado de la tarea.",
+                                            icon: "success",
+                                            timer: 1500,
+                                            showConfirmButton: false,
+                                            background: isDark ? '#151c2c' : '#ffffff',
+                                            color: isDark ? '#f8fafc' : '#0f172a'
+                                        });
+                                    } else {
+                                        throw new Error("Error en la respuesta del servidor");
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error("Error al desasignar técnico:", error);
+                                    Swal.fire({
+                                        title: "Error",
+                                        text: "Ocurrió un error al intentar quitar el interventor.",
+                                        icon: "error",
+                                        confirmButtonText: "Aceptar",
+                                        confirmButtonColor: "#2563eb",
+                                        background: isDark ? '#151c2c' : '#ffffff',
+                                        color: isDark ? '#f8fafc' : '#0f172a'
+                                    });
+                                });
+                        }
+                    });
+                });
+            });
+
+            const formDetencion = document.getElementById("formNotificarDetencion");
+            if (formDetencion) {
+                formDetencion.addEventListener("submit", function (e) {
+                    const respSelect = document.getElementById("modalResponsable");
+                    const catSelect = document.getElementById("modalCategoria");
+
+                    if (!respSelect || !respSelect.value || respSelect.value.trim() === "" || respSelect.value === "0") {
+                        e.preventDefault();
+                        Swal.fire({
+                            title: "Campo requerido",
+                            text: "Debe seleccionar el departamento responsable para notificar la detención.",
+                            icon: "warning",
+                            confirmButtonText: "Entendido",
+                            confirmButtonColor: "#2563eb",
+                            background: isDark ? '#151c2c' : '#ffffff',
+                            color: isDark ? '#f8fafc' : '#0f172a'
+                        });
+                        return;
+                    }
+
+                    if (respSelect.value === "mantenimiento") {
+                        if (!catSelect || !catSelect.value || catSelect.value.trim() === "" || catSelect.value === "0") {
+                            e.preventDefault();
+                            Swal.fire({
+                                title: "Campo requerido",
+                                text: "Debe seleccionar la categoría técnica para el departamento de Mantenimiento.",
+                                icon: "warning",
+                                confirmButtonText: "Entendido",
+                                confirmButtonColor: "#2563eb",
+                                background: isDark ? '#151c2c' : '#ffffff',
+                                color: isDark ? '#f8fafc' : '#0f172a'
+                            });
+                            return;
+                        }
+                    }
+                });
+            }
+
+            const cancelarDetencionBtn = document.querySelector(".id-cancelar-detencion-btn");
+            if (cancelarDetencionBtn) {
+                cancelarDetencionBtn.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    const form = document.getElementById("formCancelarDetencion");
+                    Swal.fire({
+                        title: "¿Cancelar notificación de detención?",
+                        text: "Esta acción marcará la tarea como cancelada y volverá el activo a estado Operativo.",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonText: "Sí, cancelar detención",
+                        cancelButtonText: "No, volver",
+                        confirmButtonColor: "#eab308",
+                        cancelButtonColor: "#64748b",
+                        background: isDark ? '#151c2c' : '#ffffff',
+                        color: isDark ? '#f8fafc' : '#0f172a'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                });
+            }
         });
     </script>
 
@@ -641,33 +909,54 @@
             if (isNaN(value)) element.value = "";
         }
 
+        function parseJavaDate(val) {
+            if (!val) return null;
+            if (Array.isArray(val)) {
+                return new Date(val[0], val[1] - 1, val[2], val[3] || 0, val[4] || 0, val[5] || 0);
+            }
+            if (typeof val === 'string') {
+                let parts = val.split(/[-T:\s]/);
+                if (parts.length >= 3) {
+                    let y = parseInt(parts[0], 10);
+                    let m = parseInt(parts[1], 10) - 1;
+                    let d = parseInt(parts[2], 10);
+                    let h = parts[3] ? parseInt(parts[3], 10) : 0;
+                    let min = parts[4] ? parseInt(parts[4], 10) : 0;
+                    let s = parts[5] ? parseInt(parts[5], 10) : 0;
+                    return new Date(y, m, d, h, min, s);
+                }
+            }
+            let d = new Date(val);
+            return isNaN(d.getTime()) ? null : d;
+        }
+
         function actualizarTiempo() {
             var tiempoSpan = document.getElementById("tiempoTranscurrido");
             if (!tiempoSpan) return;
-            var tiempoDetenido = [[${activo.momentoDetencion}]];
+            var tiempoDetenido = [[${ activo.momentoDetencion }]];
             if (!tiempoDetenido) return;
+            var fechaDetencion = parseJavaDate(tiempoDetenido);
+            if (!fechaDetencion) return;
             var tiempoActual = new Date();
-            var diferencia = tiempoActual.getTime() - new Date(tiempoDetenido).getTime();
+            var diferencia = Math.max(0, tiempoActual.getTime() - fechaDetencion.getTime());
 
-            if (diferencia >= 0) {
-                var horas = Math.floor(diferencia / (1000 * 60 * 60));
-                var minutos = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
-                var segundos = Math.floor((diferencia % (1000 * 60)) / 1000);
-                tiempoSpan.textContent = horas + ":" + (minutos < 10 ? "0" + minutos : minutos) + ":" + (segundos < 10 ? "0" + segundos : segundos);
-            }
+            var horas = Math.floor(diferencia / (1000 * 60 * 60));
+            var minutos = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
+            var segundos = Math.floor((diferencia % (1000 * 60)) / 1000);
+            tiempoSpan.textContent = horas + ":" + (minutos < 10 ? "0" + minutos : minutos) + ":" + (segundos < 10 ? "0" + segundos : segundos);
         }
 
         function actualizarTiempoRestante() {
             var tiempoRestante = document.getElementById("tiempoRestanteDisponibilidad");
             var tiempoDesde = document.getElementById("disponibilidadDesde");
             var tiempoTranscurridoDesde = document.getElementById("transcurridoDesdeDisponibilidad");
-            var disponibilidadDesde = [[${activo.disponibilidadDesde}]];
+            var disponibilidadDesde = [[${ activo.disponibilidadDesde }]];
             var tiempoActual = new Date();
-            
+
             var hastaVal = $("#disponibilidadHasta").val();
             if (hastaVal) {
-                var diferencia = new Date(hastaVal).getTime() - tiempoActual.getTime();
-                if (new Date(hastaVal) < new Date() && document.getElementById("formCancelarCambiarEstadoProd")) {
+                var diferencia = parseJavaDate(hastaVal).getTime() - tiempoActual.getTime();
+                if (parseJavaDate(hastaVal) < new Date() && document.getElementById("formCancelarCambiarEstadoProd")) {
                     document.getElementById("formCancelarCambiarEstadoProd").submit();
                 }
                 if (diferencia >= 0 && tiempoRestante) {
@@ -679,19 +968,22 @@
             }
 
             if (disponibilidadDesde && tiempoDesde) {
-                var momentoDesdeDisponibilidad = new Date(disponibilidadDesde);
-                tiempoDesde.textContent = momentoDesdeDisponibilidad.getDate() + "/" + (momentoDesdeDisponibilidad.getMonth() + 1) + " " + momentoDesdeDisponibilidad.getHours() + ":" + momentoDesdeDisponibilidad.getMinutes();
+                var momentoDesdeDisponibilidad = parseJavaDate(disponibilidadDesde);
+                if (momentoDesdeDisponibilidad) {
+                    tiempoDesde.textContent = momentoDesdeDisponibilidad.getDate() + "/" + (momentoDesdeDisponibilidad.getMonth() + 1) + " " + momentoDesdeDisponibilidad.getHours() + ":" + momentoDesdeDisponibilidad.getMinutes();
 
-                diferencia = tiempoActual.getTime() - momentoDesdeDisponibilidad.getTime();
-                if (diferencia >= 0 && tiempoTranscurridoDesde) {
-                    horas = Math.floor(diferencia / (1000 * 60 * 60));
-                    minutos = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
-                    segundos = Math.floor((diferencia % (1000 * 60)) / 1000);
-                    tiempoTranscurridoDesde.textContent = horas + ":" + (minutos < 10 ? "0" + minutos : minutos) + ":" + (segundos < 10 ? "0" + segundos : segundos);
+                    diferencia = Math.max(0, tiempoActual.getTime() - momentoDesdeDisponibilidad.getTime());
+                    if (tiempoTranscurridoDesde) {
+                        horas = Math.floor(diferencia / (1000 * 60 * 60));
+                        minutos = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
+                        segundos = Math.floor((diferencia % (1000 * 60)) / 1000);
+                        tiempoTranscurridoDesde.textContent = horas + ":" + (minutos < 10 ? "0" + minutos : minutos) + ":" + (segundos < 10 ? "0" + segundos : segundos);
+                    }
                 }
             }
         }
 
+        actualizarTiempo();
         if ($("#tiempoTranscurrido").length) setInterval(actualizarTiempo, 1000);
         if ($("#tiempoRestanteDisponibilidad").length) setInterval(actualizarTiempoRestante, 1000);
     </script>
@@ -699,14 +991,14 @@
     <!-- Apache ECharts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.0/echarts.min.js"></script>
     <script th:inline="javascript">
-        var cantidadMecanicas = [[${cantidadMecanicas}]];
-        var cantidadHidraulicas = [[${cantidadHidraulicas}]];
-        var cantidadNeumaticas = [[${cantidadNeumaticas}]];
-        var cantidadElectronicas = [[${cantidadElectronicas}]];
-        var cantidadProgramacion = [[${cantidadProgramacion}]];
+        var cantidadMecanicas = [[${ cantidadMecanicas }]];
+        var cantidadHidraulicas = [[${ cantidadHidraulicas }]];
+        var cantidadNeumaticas = [[${ cantidadNeumaticas }]];
+        var cantidadElectronicas = [[${ cantidadElectronicas }]];
+        var cantidadProgramacion = [[${ cantidadProgramacion }]];
 
-        const meses = /*[[${minutosMes.keySet()}]]*/ [];
-        const valores = /*[[${minutosMes.values()}]]*/ [];
+        const meses = /*[[${minutosMes.keySet()}]]*/[];
+        const valores = /*[[${minutosMes.values()}]]*/[];
 
         const getOptionChart3 = () => {
             const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
@@ -800,7 +1092,7 @@
 
     <script th:inline="javascript">
         $(document).ready(function () {
-            var activo = [[${activo}]];
+            var activo = [[${ activo }]];
             var contextPath = /*[[@{/}]]*/ '/inicio/';
             var wsUrl = contextPath + 'ws-sigmaweb';
             var socket = new SockJS(wsUrl);
@@ -824,4 +1116,5 @@
         });
     </script>
 </body>
+
 </html>

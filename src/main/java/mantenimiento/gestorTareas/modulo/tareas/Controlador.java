@@ -325,7 +325,22 @@ public class Controlador {
     public String guardar(Model model, @Valid Tarea tarea, Errors errores, @RequestParam(value = "file", required = false) MultipartFile imagen,
             @RequestParam(value = "activo", required = false) String activoReq) {
 
+        if (tarea.getDepartamentoResponsable() == null || tarea.getDepartamentoResponsable().trim().isEmpty() || "0".equals(tarea.getDepartamentoResponsable())) {
+            errores.rejectValue("departamentoResponsable", "error.tarea", "Debe seleccionar el departamento responsable.");
+        } else if ("mantenimiento".equals(tarea.getDepartamentoResponsable())) {
+            if (tarea.getCategoriaTecnica() == null || tarea.getCategoriaTecnica().trim().isEmpty() || "0".equals(tarea.getCategoriaTecnica())) {
+                errores.rejectValue("categoriaTecnica", "error.tarea", "Debe seleccionar la categoría técnica.");
+            }
+        }
+
         if (errores.hasErrors()) {
+            if (activoReq != null && !activoReq.trim().isEmpty()) {
+                Activo a = activoDao.findById(Long.parseLong(activoReq)).orElse(null);
+                if (a != null) {
+                    String errorParam = errores.hasFieldErrors("categoriaTecnica") ? "categoria" : "departamento";
+                    return "redirect:/activo/" + Convertidor.aCamelCase(a.getNombre()) + "?error=" + errorParam;
+                }
+            }
             model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
             return "tareas/crearTarea";
         }
@@ -345,6 +360,28 @@ public class Controlador {
                 e.printStackTrace();
             }
         }
+
+        Activo targetActivo = null;
+        if (activoReq != null && !activoReq.trim().isEmpty()) {
+            targetActivo = activoDao.findById(Long.parseLong(activoReq)).orElse(tarea.getActivo());
+        } else if (tarea.getActivo() != null) {
+            targetActivo = tarea.getActivo();
+        }
+
+        if (targetActivo != null) {
+            List<Tarea> tareasDisponibles = tareaService.traerDisponiblePorActivo(targetActivo, TenantContext.getTenantId());
+            if (tareasDisponibles != null && !tareasDisponibles.isEmpty()) {
+                for (Tarea tDisp : tareasDisponibles) {
+                    tDisp.setEstado("finDisponible");
+                    tDisp.setMomentoLiberacion(TiempoUtils.ahora());
+                    tareaService.save(tDisp);
+                }
+            }
+            targetActivo.setDisponibilidadHasta(null);
+            targetActivo.setDisponibilidadDesde(null);
+            tarea.setActivo(targetActivo);
+        }
+
         Authentication aut = SecurityContextHolder.getContext().getAuthentication();
         tarea.setSolicita(aut.getName());
         // al solicitar la tarea pasa a estado abierto automaticamente
@@ -352,13 +389,13 @@ public class Controlador {
         // se guarda el momento de la solicitud para calcular el tiempo de parada
         tarea.getActivo().setMomentoDetencion(TiempoUtils.ahora());
         tarea.setMomentoDetencion(TiempoUtils.ahora());
-        if (tarea.getAfectaProduccion().equals("no"))
+        if ("no".equals(tarea.getAfectaProduccion()))
             tarea.getActivo().setEstado("operativa condicionada");
         else
             tarea.getActivo().setEstado("detenida");
 
         // si no es de mantenimiento no genero informe
-        if (tarea.getDepartamentoResponsable().equals("mantenimiento")) {
+        if ("mantenimiento".equals(tarea.getDepartamentoResponsable())) {
             Informe informe = new Informe();
             informe.setEstadoInforme("noEvaluado");
             tarea.setInforme(informe);
@@ -369,9 +406,11 @@ public class Controlador {
         servicio.guardar(tarea);
         model.addAttribute("tareas", tareaService.traerNoCerradas(TiempoUtils.haceAnios(1), TiempoUtils.ahora(),
                 TenantContext.getTenantId()));
-        String url = activoDao.findById(Long.parseLong(activoReq)).orElse(null).getNombre();
-        if (activoReq != null) {
-            return "redirect:/activo/" + Convertidor.aCamelCase(url);
+        if (activoReq != null && !activoReq.trim().isEmpty()) {
+            Activo aResp = activoDao.findById(Long.parseLong(activoReq)).orElse(null);
+            if (aResp != null) {
+                return "redirect:/activo/" + Convertidor.aCamelCase(aResp.getNombre());
+            }
         }
         return "redirect:/tareas";
     }
@@ -435,9 +474,16 @@ public class Controlador {
     @GetMapping("/liberarSolicitud/{id}")
     public String liberar(@RequestHeader(value = "Referer", required = false) String origen, Model model, Tarea tarea) {
         Tarea t = servicio.encontrar(tarea);
+        if (t.getAsignaciones() == null || t.getAsignaciones().isEmpty()) {
+            if (origen != null && t.getActivo() != null && origen.contains(Convertidor.aCamelCase(t.getActivo().getNombre()))) {
+                String url = activoDao.findById(t.getActivo().getId()).orElse(null).getNombre();
+                return "redirect:/activo/" + Convertidor.aCamelCase(url) + "?error=sinInterventores";
+            }
+            return "redirect:/tareas?error=sinInterventores";
+        }
         servicio.liberarSolicitud(t);
 
-        if (origen != null && origen.contains(Convertidor.aCamelCase(t.getActivo().getNombre()))) {
+        if (origen != null && t.getActivo() != null && origen.contains(Convertidor.aCamelCase(t.getActivo().getNombre()))) {
             String url = activoDao.findById(t.getActivo().getId()).orElse(null).getNombre();
             return "redirect:/activo/" + Convertidor.aCamelCase(url);
         }
@@ -469,13 +515,21 @@ public class Controlador {
     }
 
     @GetMapping("/desasignarTecnico")
-    public String desasignarTecnico(
+    public Object desasignarTecnico(
             @RequestParam("tareaId") Long tareaId,
             @RequestParam("tecnicoId") Long tecnicoId,
             @RequestParam(value = "activoReq", required = false) String activoReq,
+            @RequestHeader(value = "X-Requested-With", required = false) String requestedWith,
             Model model) {
 
         servicio.desasignarTecnico(tareaId, tecnicoId);
+
+        if ("XMLHttpRequest".equals(requestedWith)) {
+            Map<String, Object> respuesta = new HashMap<>();
+            respuesta.put("status", "success");
+            respuesta.put("message", "Interventor desasignado correctamente.");
+            return ResponseEntity.ok(respuesta);
+        }
 
         if (activoReq != null && !activoReq.trim().isEmpty()) {
             Activo a = activoDao.findById(Long.parseLong(activoReq)).orElse(null);

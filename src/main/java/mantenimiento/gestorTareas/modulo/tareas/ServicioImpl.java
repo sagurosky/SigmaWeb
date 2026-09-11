@@ -183,6 +183,9 @@ public class ServicioImpl implements Servicio {
     @Override
     public void liberarSolicitud(Tarea tarea) {
         Tarea t = encontrar(tarea);
+        if (t.getAsignaciones() == null || t.getAsignaciones().isEmpty()) {
+            throw new IllegalStateException("Debe haber al menos un interventor asignado a la tarea para poder liberarla.");
+        }
         t.setEstado("liberada");
         t.getActivo().setEstado("liberada");
         t.setMomentoLiberacion(TiempoUtils.ahora());
