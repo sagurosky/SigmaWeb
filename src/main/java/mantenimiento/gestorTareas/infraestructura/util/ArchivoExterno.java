@@ -63,7 +63,13 @@ public class ArchivoExterno {
 
     public static LocalDateTime getDateTime(String key) {
         String val = properties.getProperty(key);
-        return val != null ? LocalDateTime.parse(val) : null;
+        if (val == null) return null;
+        try {
+            return LocalDateTime.parse(val);
+        } catch (DateTimeParseException e) {
+            log.warn("Formato de fecha inválido para clave '{}': {}", key, val);
+            return null;
+        }
     }
 
     public static void recargar() {

@@ -93,7 +93,8 @@
 
                             <!-- Eliminar -->
                             <td sec:authorize="hasRole('ROLE_ADMIN') or hasRole('ROLE_MANT')" class="text-center">
-                                <a th:href="@{/eliminarPreventivo/}+${preventivo.id}" class="btn btn-danger btn-sm" onclick="return confirm('¿Confirma eliminar este preventivo?');">
+                                <a th:href="@{/eliminarPreventivo/}+${preventivo.id}" class="btn btn-danger btn-sm"
+                                   onclick="confirmarEliminarPreventivo(event, this)">
                                     <i class="fas fa-trash-alt"></i>
                                 </a>
                             </td>
@@ -326,6 +327,24 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     form.submit();
+                }
+            });
+        }
+        function confirmarEliminarPreventivo(event, el) {
+            event.preventDefault();
+            const url = el.getAttribute('href');
+            Swal.fire({
+                title: "¿Eliminar este preventivo?",
+                text: "Esta acción no se puede deshacer.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Sí, eliminar",
+                cancelButtonText: "Cancelar",
+                confirmButtonColor: "#dc2626",
+                cancelButtonColor: "#64748b"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = url;
                 }
             });
         }
