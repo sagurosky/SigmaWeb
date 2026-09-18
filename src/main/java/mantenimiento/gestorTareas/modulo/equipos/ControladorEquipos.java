@@ -140,27 +140,45 @@ public class ControladorEquipos {
     @PostMapping("/ponerADisponibilidad/{id}")
     public String ponerADisponibilidad( Model model,  Activo activoRequest) {
         Activo activoSeleccionado = activo.findById(activoRequest.getId()).orElse(null);
-        activoSeleccionado.setEstado("disponible");
-        activoSeleccionado.setDisponibilidadHasta(activoRequest.getDisponibilidadHasta());
-        activoSeleccionado.setDisponibilidadDesde(TiempoUtils.ahora());
+        if (activoSeleccionado != null) {
+            LocalDateTime ahora = TiempoUtils.ahora();
+            LocalDateTime desde = activoRequest.getDisponibilidadDesde();
+            LocalDateTime hasta = activoRequest.getDisponibilidadHasta();
 
-        //genero una tarea con estado "disponible" para los cálculos de indicadores
-        Tarea tarea=new Tarea();
-        tarea.setActivo(activoSeleccionado);
-        tarea.setEstado("disponible");
-        tarea.setMomentoDetencion(TiempoUtils.ahora());
-        tarea.setMomentoLiberacion(activoRequest.getDisponibilidadHasta());
+            if (desde == null) {
+                desde = ahora;
+            }
 
-        tareaService.save(tarea);
+            activoSeleccionado.setDisponibilidadDesde(desde);
+            activoSeleccionado.setDisponibilidadHasta(hasta);
 
-        activoService.save(activoSeleccionado);
+            // Si la fecha de inicio es igual o anterior al momento actual, se activa inmediatamente
+            if (!desde.isAfter(ahora)) {
+                activoSeleccionado.setEstado("disponible");
+
+                // genero una tarea con estado "disponible" para los cálculos de indicadores
+                Tarea tarea = new Tarea();
+                tarea.setActivo(activoSeleccionado);
+                tarea.setEstado("disponible");
+                tarea.setMomentoDetencion(desde);
+                tarea.setMomentoLiberacion(hasta);
+
+                tareaService.save(tarea);
+            } else {
+                // Si es futura, permanece en estado "operativa" hasta que el DisponibilidadScheduler la active
+                activoSeleccionado.setEstado("operativa");
+            }
+
+            activoService.save(activoSeleccionado);
+        }
         
-        String url = Convertidor.aCamelCase(activoSeleccionado.getNombre());
+        String url = Convertidor.aCamelCase(activoSeleccionado != null ? activoSeleccionado.getNombre() : "");
         
         //me aseguro que el primer caracter sea minuscula sino falla
-        char primerCaracterMinuscula = Character.toLowerCase(url.charAt(0));
-        url=url.substring(1);
-        url=primerCaracterMinuscula+url;
+        if (!url.isEmpty()) {
+            char primerCaracterMinuscula = Character.toLowerCase(url.charAt(0));
+            url = primerCaracterMinuscula + url.substring(1);
+        }
 
         return "redirect:/activo/" + url;
     }
@@ -180,6 +198,7 @@ public class ControladorEquipos {
 
             activoSeleccionado.setEstado("operativa");
             activoSeleccionado.setDisponibilidadHasta(null);
+            activoSeleccionado.setDisponibilidadDesde(null);
             activoService.save(activoSeleccionado);
         }
         
