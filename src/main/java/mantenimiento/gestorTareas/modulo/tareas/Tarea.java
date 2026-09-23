@@ -34,7 +34,7 @@ public class Tarea implements Serializable, TenantSupport {
     @JoinColumn(name = "tenant_id", nullable = true)
     private Tenant tenant;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "activo")
     private Activo activo;
     @OneToOne(cascade = CascadeType.ALL)

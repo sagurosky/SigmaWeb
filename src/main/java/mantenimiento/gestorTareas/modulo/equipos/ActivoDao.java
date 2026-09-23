@@ -29,9 +29,12 @@ public interface ActivoDao extends JpaRepository<Activo, Long> {
     // 🚀 Dejá que Spring Data genere el query automáticamente
     Optional<Activo> findByIdAndTenantId(Long id, Long tenantId);
 
-    @Query("SELECT a FROM Activo a WHERE a.disponibilidadDesde IS NOT NULL AND a.disponibilidadDesde <= ?1 AND (a.disponibilidadHasta IS NULL OR a.disponibilidadHasta > ?1) AND a.estado = 'operativa'")
+    @Query("SELECT a FROM Activo a WHERE a.disponibilidadDesde IS NOT NULL AND a.disponibilidadDesde <= ?1 AND (a.disponibilidadHasta IS NULL OR a.disponibilidadHasta > ?1) AND a.estado != 'disponible'")
     List<Activo> findActivosPendientesDisponibilidad(LocalDateTime ahora);
 
     @Query("SELECT a FROM Activo a WHERE a.disponibilidadHasta IS NOT NULL AND a.disponibilidadHasta <= ?1 AND a.estado = 'disponible'")
     List<Activo> findActivosVencidosDisponibilidad(LocalDateTime ahora);
+
+    @Query("SELECT a FROM Activo a WHERE a.disponibilidadHasta IS NOT NULL AND a.disponibilidadHasta <= ?1 AND a.estado != 'disponible'")
+    List<Activo> findActivosProgramacionExpirada(LocalDateTime ahora);
 }

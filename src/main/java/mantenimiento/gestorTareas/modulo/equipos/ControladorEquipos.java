@@ -162,6 +162,9 @@ public class ControladorEquipos {
                 tarea.setEstado("disponible");
                 tarea.setMomentoDetencion(desde);
                 tarea.setMomentoLiberacion(hasta);
+                if (activoSeleccionado.getTenant() != null) {
+                    tarea.setTenant(activoSeleccionado.getTenant());
+                }
 
                 tareaService.save(tarea);
             } else {

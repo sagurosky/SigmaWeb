@@ -1089,9 +1089,36 @@
             }
         }
 
+        function verificarProgramacionDisponibilidad() {
+            var disponibilidadDesde = [[${ activo.disponibilidadDesde }]];
+            var disponibilidadHasta = [[${ activo.disponibilidadHasta }]];
+            var estado = [[${ activo.estado }]];
+            var now = new Date();
+
+            if (disponibilidadDesde && estado !== 'disponible') {
+                var fechaDesde = parseJavaDate(disponibilidadDesde);
+                if (fechaDesde && fechaDesde <= now) {
+                    location.reload();
+                    return;
+                }
+            }
+
+            if (disponibilidadHasta && estado === 'disponible') {
+                var fechaHasta = parseJavaDate(disponibilidadHasta);
+                if (fechaHasta && fechaHasta <= now) {
+                    if (document.getElementById("formCancelarCambiarEstadoProd")) {
+                        document.getElementById("formCancelarCambiarEstadoProd").submit();
+                    } else {
+                        location.reload();
+                    }
+                }
+            }
+        }
+
         actualizarTiempo();
         if ($("#tiempoTranscurrido").length) setInterval(actualizarTiempo, 1000);
         if ($("#tiempoRestanteDisponibilidad").length) setInterval(actualizarTiempoRestante, 1000);
+        setInterval(verificarProgramacionDisponibilidad, 3000);
     </script>
 
     <!-- Apache ECharts -->
@@ -1208,7 +1235,7 @@
             stompClient.connect({}, function (frame) {
                 stompClient.subscribe('/topic/activos', function (message) {
                     var activoActualizado = JSON.parse(message.body);
-                    if (activoActualizado && activoActualizado.nombre === activo.nombre) {
+                    if (activoActualizado && (activoActualizado.nombre === activo.nombre || activoActualizado.id === activo.id)) {
                         location.reload();
                     }
                 });

@@ -75,5 +75,15 @@ public class DisponibilidadScheduler {
 
             log.info("🏁 Disponibilidad finalizada automáticamente para el activo: {}", a.getNombre());
         }
+
+        // 3. Limpiar disponibilidades cuya fecha fin ya venció pero no llegaron a activarse
+        List<Activo> expirados = activoDao.findActivosProgramacionExpirada(ahora);
+        for (Activo a : expirados) {
+            a.setDisponibilidadDesde(null);
+            a.setDisponibilidadHasta(null);
+            activoService.save(a);
+
+            log.info("🧹 Limpieza de programación expirada no activada para el activo: {}", a.getNombre());
+        }
     }
 }

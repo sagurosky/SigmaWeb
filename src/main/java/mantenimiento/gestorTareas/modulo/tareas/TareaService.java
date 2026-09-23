@@ -51,7 +51,7 @@ public interface TareaService extends JpaRepository<Tarea, Long> {
   @Query("SELECT t FROM Tarea t WHERE " +
       "t.estado = 'disponible' AND " +
       "t.activo = :activo AND " +
-      "t.tenant.id = :tenantId " +
+      "(:tenantId IS NULL OR t.tenant.id = :tenantId) " +
       "ORDER BY t.momentoDetencion DESC")
   List<Tarea> traerDisponiblePorActivo(@Param("activo") Activo activo,
       @Param("tenantId") Long tenantId);
@@ -61,8 +61,8 @@ public interface TareaService extends JpaRepository<Tarea, Long> {
       "t.estado <> 'disponible' AND " +
       "t.estado <> 'finDisponible' AND " +
       "t.estado <> 'cancelado' AND " +
-      "t.activo = ?1 AND t.tenant.id = ?2")
-  List<Tarea> traerNoCerradaPorActivo(Activo activo, Long tenantId);
+      "t.activo = :activo AND (:tenantId IS NULL OR t.tenant.id = :tenantId)")
+  List<Tarea> traerNoCerradaPorActivo(@Param("activo") Activo activo, @Param("tenantId") Long tenantId);
 
   @Query(value = """
       SELECT
