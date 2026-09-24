@@ -369,16 +369,9 @@ public class Controlador {
         }
 
         if (targetActivo != null) {
-            List<Tarea> tareasDisponibles = tareaService.traerDisponiblePorActivo(targetActivo, TenantContext.getTenantId());
-            if (tareasDisponibles != null && !tareasDisponibles.isEmpty()) {
-                for (Tarea tDisp : tareasDisponibles) {
-                    tDisp.setEstado("finDisponible");
-                    tDisp.setMomentoLiberacion(TiempoUtils.ahora());
-                    tareaService.save(tDisp);
-                }
+            if ("disponible".equals(targetActivo.getEstado())) {
+                return "redirect:/activo/" + Convertidor.aCamelCase(targetActivo.getNombre()) + "?error=activoDisponible";
             }
-            targetActivo.setDisponibilidadHasta(null);
-            targetActivo.setDisponibilidadDesde(null);
             tarea.setActivo(targetActivo);
         }
 
@@ -587,7 +580,29 @@ public class Controlador {
         servicio.cerrarSolicitud(tarea, evaluacion);
         Tarea t = servicio.encontrar(tarea);
 
-        if (origen != null && origen.contains(Convertidor.aCamelCase(t.getActivo().getNombre()))) {
+        // Tras cerrar la tarea, si la ventana de disponibilidad programada ya comenzó
+        // y no quedan otras tareas abiertas, activar disponibilidad inmediatamente
+        if (t.getActivo() != null) {
+            Activo activoCerrado = activoDao.findById(t.getActivo().getId()).orElse(null);
+            if (activoCerrado != null) {
+                LocalDateTime ahora = TiempoUtils.ahora();
+                LocalDateTime disponibilidadDesde = activoCerrado.getDisponibilidadDesde();
+                LocalDateTime disponibilidadHasta = activoCerrado.getDisponibilidadHasta();
+                if (disponibilidadDesde != null && !disponibilidadDesde.isAfter(ahora)
+                        && (disponibilidadHasta == null || disponibilidadHasta.isAfter(ahora))) {
+                    List<Tarea> tareasAbiertas = tareaService.traerNoCerradaPorActivo(activoCerrado,
+                            TenantContext.getTenantId());
+                    if (tareasAbiertas == null || tareasAbiertas.isEmpty()) {
+                        activoCerrado.setEstado("disponible");
+                        // No limpiamos las fechas: el Scheduler las necesita para
+                        // saber cuándo finaliza la ventana y volver a "operativa"
+                        activoService.save(activoCerrado);
+                    }
+                }
+            }
+        }
+
+        if (origen != null && t.getActivo() != null && origen.contains(Convertidor.aCamelCase(t.getActivo().getNombre()))) {
             String url = activoDao.findById(t.getActivo().getId()).orElse(null).getNombre();
             return "redirect:/activo/" + Convertidor.aCamelCase(url);
         }

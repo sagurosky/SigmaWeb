@@ -88,16 +88,6 @@
                 <!-- Columna Derecha: Panel de Estado y Acciones -->
                 <div class="d-flex flex-column gap-3">
 
-                    <!-- Botón para cancelar condicionada (solo usuario solicitante o Admin) -->
-                    <div
-                        th:if="${activo.estado=='operativa condicionada'} and not (${tarea != null} and ${tarea.estado=='enProceso'}) and ${puedeCancelarDetencion}">
-                        <form th:action="@{/cerrarCondicionada/}+ ${activo.id}" method="post" th:object="${activo}">
-                            <button type="submit" class="btn btn-warning btn-block">
-                                <i class="fas fa-times-circle"></i> Cancelar / Cerrar Condición
-                            </button>
-                        </form>
-                    </div>
-
                     <!-- Administrador: Forzar Estado -->
                     <div sec:authorize="hasRole('ROLE_ADMIN')" class="p-3 border rounded-3"
                         style="background-color: var(--bg-surface-elevated); border-color: var(--border-color) !important;">
@@ -162,10 +152,12 @@
                                     <i class="fas fa-calendar-alt me-1"></i> Disponibilidad Programada
                                 </div>
                                 <div class="small detencion-label mb-1">
-                                    Inicio: <strong class="text-primary" th:text="${#temporals.format(activo.disponibilidadDesde, 'dd/MM/yyyy HH:mm')}"></strong>
+                                    Inicio: <strong class="text-primary"
+                                        th:text="${#temporals.format(activo.disponibilidadDesde, 'dd/MM/yyyy HH:mm')}"></strong>
                                 </div>
                                 <div class="small detencion-label mb-3">
-                                    Fin: <strong class="text-secondary" th:text="${#temporals.format(activo.disponibilidadHasta, 'dd/MM/yyyy HH:mm')}"></strong>
+                                    Fin: <strong class="text-secondary"
+                                        th:text="${#temporals.format(activo.disponibilidadHasta, 'dd/MM/yyyy HH:mm')}"></strong>
                                 </div>
                                 <form th:action="@{/cancelarDisponibilidad/}+ ${activo.id}" method="post">
                                     <button type="submit" class="btn btn-outline-danger btn-sm w-100">
@@ -176,7 +168,10 @@
 
                             <!-- Botón para abrir el Modal de Programación -->
                             <div class="text-center" th:if="${activo.estado!='disponible'}">
-                                <button type="button" class="btn btn-primary btn-block" data-toggle="modal" data-target="#modalProgramarDisponibilidad" data-bs-toggle="modal" data-bs-target="#modalProgramarDisponibilidad" onclick="setModalDisponibilidadDefaults()">
+                                <button type="button" class="btn btn-primary btn-block" data-toggle="modal"
+                                    data-target="#modalProgramarDisponibilidad" data-bs-toggle="modal"
+                                    data-bs-target="#modalProgramarDisponibilidad"
+                                    onclick="setModalDisponibilidadDefaults()">
                                     <i class="fas fa-calendar-plus me-1"></i> Programar Disponibilidad
                                 </button>
                             </div>
@@ -418,7 +413,7 @@
         <div class="sigma-card p-3">
             <div class="action-bar">
                 <button
-                    th:if="${activo.estado!='detenida'&&activo.estado!='liberada'&&activo.estado!='operativa condicionada'}"
+                    th:if="${activo.estado!='detenida'&&activo.estado!='liberada'&&activo.estado!='operativa condicionada'&&activo.estado!='disponible'}"
                     type="button" class="btn btn-danger" data-toggle="modal" data-target="#notificarDetencionModal">
                     <i class="fas fa-exclamation-circle"></i> Notificar Detención
                 </button>
@@ -430,6 +425,11 @@
 
                 <button th:if="${activo.estado=='detenida'}" type="button" class="btn btn-secondary disabled" disabled
                     title="El equipo ya se encuentra detenido">
+                    <i class="fas fa-exclamation-circle"></i> Notificar Detención
+                </button>
+
+                <button th:if="${activo.estado=='disponible'}" type="button" class="btn btn-secondary disabled" disabled
+                    title="El activo se encuentra en disponibilidad programada. Cancele la disponibilidad primero para notificar una detención.">
                     <i class="fas fa-exclamation-circle"></i> Notificar Detención
                 </button>
 
@@ -551,27 +551,38 @@
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title text-white"><i class="fas fa-calendar-alt me-2"></i> Programar Disponibilidad de Activo</h5>
-                    <button type="button" class="close btn text-white" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close">
+                    <h5 class="modal-title text-white"><i class="fas fa-calendar-alt me-2"></i> Programar Disponibilidad
+                        de Activo</h5>
+                    <button type="button" class="close btn text-white" data-dismiss="modal" data-bs-dismiss="modal"
+                        aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <form th:action="@{/ponerADisponibilidad/}+ ${activo.id}" method="post" th:object="${activo}" id="formProgramarDisponibilidad">
+                <form th:action="@{/ponerADisponibilidad/}+ ${activo.id}" method="post" th:object="${activo}"
+                    id="formProgramarDisponibilidad">
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="modalDisponibilidadDesde" class="form-label font-weight-bold detencion-label">Fecha y Hora de Inicio:</label>
-                            <input type="datetime-local" th:field="*{disponibilidadDesde}" class="form-control" id="modalDisponibilidadDesde" name="disponibilidadDesde" required>
-                            <span class="small text-muted d-block mt-1"><i class="fas fa-info-circle me-1"></i> Por defecto toma la fecha y hora actual si no se modifica.</span>
-                            <div id="errorDisponibilidadDesde" class="text-danger small mt-1" style="display: none;">La fecha de inicio debe ser igual o posterior al momento actual.</div>
+                            <label for="modalDisponibilidadDesde"
+                                class="form-label font-weight-bold detencion-label">Fecha y Hora de Inicio:</label>
+                            <input type="datetime-local" th:field="*{disponibilidadDesde}" class="form-control"
+                                id="modalDisponibilidadDesde" name="disponibilidadDesde" required>
+                            <span class="small text-muted d-block mt-1"><i class="fas fa-info-circle me-1"></i> Por
+                                defecto toma la fecha y hora actual si no se modifica.</span>
+                            <div id="errorDisponibilidadDesde" class="text-danger small mt-1" style="display: none;">La
+                                fecha de inicio debe ser igual o posterior al momento actual.</div>
                         </div>
                         <div class="mb-3">
-                            <label for="modalDisponibilidadHasta" class="form-label font-weight-bold detencion-label">Fecha y Hora de Fin:</label>
-                            <input type="datetime-local" th:field="*{disponibilidadHasta}" class="form-control" id="modalDisponibilidadHasta" name="disponibilidadHasta" required>
-                            <div id="errorDisponibilidadHasta" class="text-danger small mt-1" style="display: none;">Debe ingresar una fecha y hora de fin posterior a la fecha de inicio.</div>
+                            <label for="modalDisponibilidadHasta"
+                                class="form-label font-weight-bold detencion-label">Fecha y Hora de Fin:</label>
+                            <input type="datetime-local" th:field="*{disponibilidadHasta}" class="form-control"
+                                id="modalDisponibilidadHasta" name="disponibilidadHasta" required>
+                            <div id="errorDisponibilidadHasta" class="text-danger small mt-1" style="display: none;">
+                                Debe ingresar una fecha y hora de fin posterior a la fecha de inicio.</div>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                            data-bs-dismiss="modal">Cancelar</button>
                         <button type="button" class="btn btn-primary px-4" onclick="validarModalDisponibilidad()">
                             <i class="fas fa-check me-1"></i> Confirmar Disponibilidad
                         </button>
@@ -606,7 +617,7 @@
         function validarModalDisponibilidad() {
             const desdeVal = $('#modalDisponibilidadDesde').val();
             const hastaVal = $('#modalDisponibilidadHasta').val();
-            
+
             $('#errorDisponibilidadDesde').hide();
             $('#errorDisponibilidadHasta').hide();
 
@@ -635,7 +646,7 @@
             document.getElementById('formProgramarDisponibilidad').submit();
         }
 
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             setModalDisponibilidadDefaults();
             $('#modalProgramarDisponibilidad').on('show.bs.modal', setModalDisponibilidadDefaults);
         });
@@ -838,6 +849,16 @@
                     background: isDark ? '#151c2c' : '#ffffff',
                     color: isDark ? '#f8fafc' : '#0f172a'
                 });
+            } else if (urlParams.get('error') === 'activoDisponible') {
+                Swal.fire({
+                    title: "Activo en Disponibilidad",
+                    text: "El activo se encuentra en disponibilidad programada. Para registrar una detención, primero cancele la disponibilidad.",
+                    icon: "warning",
+                    confirmButtonText: "Entendido",
+                    confirmButtonColor: "#2563eb",
+                    background: isDark ? '#151c2c' : '#ffffff',
+                    color: isDark ? '#f8fafc' : '#0f172a'
+                });
             }
 
             const liberarBtns = document.querySelectorAll(".liberar-btn");
@@ -862,7 +883,7 @@
                     }
 
                     Swal.fire({
-                        title: "¿Está seguro que desea dar por liberado el activo?",
+                        title: "¿Está seguro que desea liberar a producción el activo?",
                         text: "Esta acción enviará la notificación para el cierre de producción.",
                         icon: "question",
                         showCancelButton: true,
@@ -1095,9 +1116,12 @@
             var estado = [[${ activo.estado }]];
             var now = new Date();
 
-            if (disponibilidadDesde && estado !== 'disponible') {
+            if (disponibilidadDesde && estado === 'operativa') {
                 var fechaDesde = parseJavaDate(disponibilidadDesde);
                 if (fechaDesde && fechaDesde <= now) {
+                    if (typeof disponibilidadInterval !== 'undefined') {
+                        clearInterval(disponibilidadInterval);
+                    }
                     location.reload();
                     return;
                 }
@@ -1106,6 +1130,9 @@
             if (disponibilidadHasta && estado === 'disponible') {
                 var fechaHasta = parseJavaDate(disponibilidadHasta);
                 if (fechaHasta && fechaHasta <= now) {
+                    if (typeof disponibilidadInterval !== 'undefined') {
+                        clearInterval(disponibilidadInterval);
+                    }
                     if (document.getElementById("formCancelarCambiarEstadoProd")) {
                         document.getElementById("formCancelarCambiarEstadoProd").submit();
                     } else {
@@ -1118,7 +1145,8 @@
         actualizarTiempo();
         if ($("#tiempoTranscurrido").length) setInterval(actualizarTiempo, 1000);
         if ($("#tiempoRestanteDisponibilidad").length) setInterval(actualizarTiempoRestante, 1000);
-        setInterval(verificarProgramacionDisponibilidad, 3000);
+        // Interval for checking scheduled availability; clear after handling to avoid loops
+        disponibilidadInterval = setInterval(verificarProgramacionDisponibilidad, 3000);
     </script>
 
     <!-- Apache ECharts -->

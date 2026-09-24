@@ -41,7 +41,8 @@ public class DisponibilidadScheduler {
                 Tarea tarea = new Tarea();
                 tarea.setActivo(a);
                 tarea.setEstado("disponible");
-                tarea.setMomentoDetencion(a.getDisponibilidadDesde() != null ? a.getDisponibilidadDesde() : ahora);
+                LocalDateTime momentoInicio = (a.getDisponibilidadDesde() != null && !a.getDisponibilidadDesde().isBefore(ahora)) ? a.getDisponibilidadDesde() : ahora;
+                tarea.setMomentoDetencion(momentoInicio);
                 tarea.setMomentoLiberacion(a.getDisponibilidadHasta());
                 if (a.getTenant() != null) {
                     tarea.setTenant(a.getTenant());
