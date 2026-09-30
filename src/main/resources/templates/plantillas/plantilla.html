@@ -60,6 +60,14 @@
                             </a>
                         </li>
 
+                        <!-- Botón de Silenciar Alarma Sonora de Detención -->
+                        <li class="nav-item ms-1">
+                            <button id="btnSilenciarAlarma" class="btn-alarm-mute d-none" onclick="toggleSilenciarAlarma()" type="button" title="Silenciar / Activar alarma de detención">
+                                <i id="iconSilenciarAlarma" class="fas fa-bell me-1"></i>
+                                <span id="txtSilenciarAlarma">Silenciar Alarma</span>
+                            </button>
+                        </li>
+
                         <!-- Botón de pantalla completa -->
                         <li sec:authorize="hasRole('ROLE_MONITOR') && !hasRole('ROLE_ADMIN')" class="nav-item">
                             <a id="fullscreen-button" class="nav-layout-chip">
@@ -197,6 +205,118 @@
                 });
             }
 
+            // ==========================================
+            // CONTROLES Y ALARMA SONORA DE DETENCIONES
+            // ==========================================
+            let alarmAudioCtx = null;
+            let alarmInterval = null;
+            let isAlarmSilenced = false;
+            let lastKnownDetenidasSet = new Set();
+
+            function initAudioContext() {
+                if (!alarmAudioCtx) {
+                    const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+                    if (AudioCtxClass) {
+                        alarmAudioCtx = new AudioCtxClass();
+                    }
+                }
+                if (alarmAudioCtx && alarmAudioCtx.state === 'suspended') {
+                    alarmAudioCtx.resume();
+                }
+            }
+
+            document.addEventListener('click', initAudioContext, { once: true });
+            document.addEventListener('keydown', initAudioContext, { once: true });
+
+            function playAlarmSound() {
+                if (isAlarmSilenced) return;
+                initAudioContext();
+                if (!alarmAudioCtx) return;
+                if (alarmInterval) return; // Ya está sonando
+
+                let highFreq = true;
+                function produceTone() {
+                    if (isAlarmSilenced || !alarmAudioCtx) {
+                        stopAlarmSound();
+                        return;
+                    }
+                    try {
+                        const osc = alarmAudioCtx.createOscillator();
+                        const gain = alarmAudioCtx.createGain();
+                        osc.type = 'sawtooth';
+                        osc.frequency.setValueAtTime(highFreq ? 880 : 600, alarmAudioCtx.currentTime);
+                        highFreq = !highFreq;
+
+                        gain.gain.setValueAtTime(0.2, alarmAudioCtx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, alarmAudioCtx.currentTime + 0.28);
+
+                        osc.connect(gain);
+                        gain.connect(alarmAudioCtx.destination);
+
+                        osc.start();
+                        osc.stop(alarmAudioCtx.currentTime + 0.28);
+                    } catch (e) {
+                        console.error("Error al reproducir tono de alarma:", e);
+                    }
+                }
+
+                produceTone();
+                alarmInterval = setInterval(produceTone, 350);
+            }
+
+            function stopAlarmSound() {
+                if (alarmInterval) {
+                    clearInterval(alarmInterval);
+                    alarmInterval = null;
+                }
+            }
+
+            function toggleSilenciarAlarma() {
+                if (!isAlarmSilenced) {
+                    isAlarmSilenced = true;
+                    localStorage.setItem('sigma_silenced_assets', JSON.stringify(Array.from(lastKnownDetenidasSet)));
+                    stopAlarmSound();
+                } else {
+                    isAlarmSilenced = false;
+                    localStorage.removeItem('sigma_silenced_assets');
+                }
+                actualizarBotonSilenciar();
+            }
+
+            function actualizarBotonSilenciar() {
+                const btn = document.getElementById('btnSilenciarAlarma');
+                const icon = document.getElementById('iconSilenciarAlarma');
+                const txt = document.getElementById('txtSilenciarAlarma');
+                if (!btn) return;
+
+                const cantidadDetenidas = lastKnownDetenidasSet.size;
+
+                if (cantidadDetenidas === 0) {
+                    btn.classList.add('d-none');
+                    btn.classList.remove('ringing', 'silenced');
+                    stopAlarmSound();
+                    isAlarmSilenced = false;
+                    localStorage.removeItem('sigma_silenced_assets');
+                    return;
+                }
+
+                btn.classList.remove('d-none');
+
+                if (isAlarmSilenced) {
+                    btn.classList.remove('ringing');
+                    btn.classList.add('silenced');
+                    if (icon) icon.className = 'fas fa-bell-slash text-warning me-1';
+                    if (txt) txt.textContent = `Alarma Silenciada (${cantidadDetenidas})`;
+                    stopAlarmSound();
+                } else {
+                    btn.classList.remove('silenced');
+                    btn.classList.add('ringing');
+                    if (icon) icon.className = 'fas fa-bell fa-bounce text-white me-1';
+                    if (txt) txt.textContent = `Silenciar Alarma (${cantidadDetenidas})`;
+                    playAlarmSound();
+                }
+            }
+
             setInterval(function () {
                 // DEBUG: ver qué datos hay
                 const keys = Object.keys(elementosParpadeantes);
@@ -211,16 +331,44 @@
                 // 1. Construir sets de layouts con activos detenidos o liberados
                 const layoutsConDetenida = new Set();
                 const layoutsConLiberada = new Set();
+                const nuevasDetenidas = new Set();
 
                 Object.entries(elementosParpadeantes).forEach(function ([nombre, datos]) {
-                    if (!datos || !datos.layout) return;
-                    const layoutNombre = datos.layout.replace(/\.svg$/i, '').trim().toLowerCase();
+                    if (!datos) return;
                     if (datos.estado === "detenida") {
-                        layoutsConDetenida.add(layoutNombre);
-                    } else if (datos.estado === "liberada") {
+                        nuevasDetenidas.add(nombre);
+                        if (datos.layout) {
+                            const layoutNombre = datos.layout.replace(/\.svg$/i, '').trim().toLowerCase();
+                            layoutsConDetenida.add(layoutNombre);
+                        }
+                    } else if (datos.estado === "liberada" && datos.layout) {
+                        const layoutNombre = datos.layout.replace(/\.svg$/i, '').trim().toLowerCase();
                         layoutsConLiberada.add(layoutNombre);
                     }
                 });
+
+                // Control persistente de silencio usando localStorage
+                if (nuevasDetenidas.size === 0) {
+                    isAlarmSilenced = false;
+                    localStorage.removeItem('sigma_silenced_assets');
+                } else {
+                    let silenciadosGuardados = [];
+                    try {
+                        silenciadosGuardados = JSON.parse(localStorage.getItem('sigma_silenced_assets') || '[]');
+                    } catch (e) {}
+                    const setSilenciados = new Set(silenciadosGuardados);
+
+                    // Buscar si existe al menos una detención que NO haya sido silenciada
+                    const noSilenciadas = Array.from(nuevasDetenidas).filter(id => !setSilenciados.has(id));
+                    if (noSilenciadas.length > 0) {
+                        isAlarmSilenced = false;
+                    } else {
+                        isAlarmSilenced = true;
+                    }
+                }
+
+                lastKnownDetenidasSet = nuevasDetenidas;
+                actualizarBotonSilenciar();
 
                 // 2. Aplicar/quitar clases blink en botones del header (Detenida en ROJO tiene máxima prioridad)
                 document.querySelectorAll(".nav-layout-chip[data-layout]").forEach(function (boton) {

@@ -1332,5 +1332,41 @@ progress.sigma-progress::-moz-progress-bar {
   border-color: #3b82f6 !important;
 }
 
+/* Botón de Silenciar Alarma Sonora */
+.btn-alarm-mute {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 600;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-surface-elevated);
+  color: var(--text-primary);
+  transition: all 0.25s ease;
+  user-select: none;
+}
+
+.btn-alarm-mute.ringing {
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+  border-color: #dc2626 !important;
+  animation: layoutBlinkRed 0.9s ease-in-out infinite !important;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.75) !important;
+}
+
+.btn-alarm-mute.silenced {
+  background-color: rgba(245, 158, 11, 0.15) !important;
+  color: #f59e0b !important;
+  border-color: rgba(245, 158, 11, 0.4) !important;
+}
+
+.btn-alarm-mute:hover {
+  transform: translateY(-1px);
+}
+
+
 
 
