@@ -12,7 +12,7 @@ Aplicación web para gestión de mantenimiento de fabricas
 - el proyecto es grande, debo cuidar los tokens por lo que trabajamos modularmente
 - los modulos son (de acuerdo a su funcionalidad):
     - login, usuarios, permisos
-    - generados de layouts
+    - generador de layouts
     - gestión de paradas de maquinas (activos) desde su notificación hasta el cierre de las mismas (liberación) recolectando datos en tiempo real para los calculos de indicadores (kpi a futuro) y evaluacion de desempeño tecnico.
     - generador de informes
     - preventivos y mejoras

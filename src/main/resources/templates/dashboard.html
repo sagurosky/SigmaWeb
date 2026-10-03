@@ -415,7 +415,7 @@
 
     </div><!-- end dashboard-wrapper -->
 
-    <script>
+    <script th:inline="javascript">
     // ============================================================
     // HELPERS DE COLOR ADAPTADOS AL TEMA
     // ============================================================
@@ -518,47 +518,71 @@
     // ============================================================
     // RENDER KPIs
     // ============================================================
-    function renderKPIs(d) {
-        document.getElementById('kpiCorrectivosAbiertos').textContent = d.correctivosAbiertos;
-        document.getElementById('kpiCorrectivosCerrados').textContent = d.correcivostivCerrados;
-        document.getElementById('kpiMttr').textContent = d.mttrHoras.toFixed(1) + 'h';
-        document.getElementById('kpiMtbf').textContent = d.mtbfHoras.toFixed(0) + 'h';
-        document.getElementById('kpiDisponibilidad').textContent = d.disponibilidad.toFixed(1) + '%';
-        document.getElementById('kpiCumplimientoPrev').textContent = d.cumplimientoPreventivos;
-        document.getElementById('kpiEvalEquipo').textContent = d.promedioEvaluacionEquipo.toFixed(1);
+    function renderKPIs(kpis) {
+        if (!kpis) return;
+        const abiertos = kpis.abiertos ?? kpis.ABIERTOS ?? 0;
+        const cerrados = kpis.cerrados ?? kpis.CERRADOS ?? 0;
+        const mttrRaw = kpis.mttrpromediohoras ?? kpis.mttrPromedioHoras ?? kpis.MTTRPROMEDIOHORAS ?? 0;
+        const mtbfRaw = kpis.mtbfhoras ?? kpis.mtbfHoras ?? kpis.MTBFHORAS ?? 0;
+        const dispRaw = kpis.disponibilidad ?? kpis.DISPONIBILIDAD ?? 0;
+
+        document.getElementById('kpiCorrectivosAbiertos').textContent = abiertos;
+        document.getElementById('kpiCorrectivosCerrados').textContent = cerrados;
+        document.getElementById('kpiMttr').textContent = Number(mttrRaw).toFixed(1) + 'h';
+        document.getElementById('kpiMtbf').textContent = Number(mtbfRaw).toFixed(0) + 'h';
+        document.getElementById('kpiDisponibilidad').textContent = Number(dispRaw).toFixed(1) + '%';
     }
 
     // ============================================================
-    // RENDER CORRECTIVOS
+    // RENDER CORRECTIVOS (AJAX BACKEND)
     // ============================================================
-    function renderCorrectivos() {
+    function renderCorrectivosData(data) {
         const BD = makeBarDefaults();
         const DD = makeDoughnutDefaults();
 
-        const st = getMockEstadoTareas();
-        mkChart('chartEstadoTareas', { type:'doughnut', data:{ labels:st.labels, datasets:[{data:st.values, backgroundColor:['#f43f5e','#fbbf24','#22c55e'], borderWidth:0}]}, options:DD });
+        const st = data.estadoTareas || { labels: [], values: [] };
+        mkChart('chartEstadoTareas', { type:'doughnut', data:{ labels:st.labels, datasets:[{data:st.values, backgroundColor:['#f43f5e','#fbbf24','#22c55e','#38bdf8'], borderWidth:0}]}, options:DD });
 
-        const ap = getMockAfectaProduccion();
+        const ap = data.afectaProduccion || { labels: [], values: [] };
         mkChart('chartAfectaProduccion', { type:'doughnut', data:{ labels:ap.labels, datasets:[{data:ap.values, backgroundColor:['#f43f5e','#38bdf8'], borderWidth:0}]}, options:DD });
 
-        const ef = getMockEvolucionFallas();
+        const ef = data.evolucionFallas || { labels: [], values: [] };
         mkChart('chartEvolucionFallas', { type:'line', data:{ labels:ef.labels, datasets:[{label:'Fallas/mes', data:ef.values, borderColor:'#f43f5e', backgroundColor:'rgba(244,63,94,0.1)', tension:0.4, fill:true, pointRadius:4}]}, options:BD });
 
-        const fe = getMockFallasPorEquipo();
+        const fe = data.fallasPorEquipo || { labels: [], values: [] };
         mkChart('chartFallasPorEquipo', { type:'bar', data:{ labels:fe.labels, datasets:[{label:'Fallas', data:fe.values, backgroundColor:C10, borderRadius:6}]}, options:{...BD, indexAxis:'y'} });
 
-        const mm = getMockMttrMensual();
+        const mm = data.mttrMensual || { labels: [], values: [] };
         mkChart('chartMttrMensual', { type:'bar', data:{ labels:mm.labels, datasets:[{label:'MTTR (h)', data:mm.values, backgroundColor:'rgba(56,189,248,0.7)', borderRadius:6}]}, options:BD });
 
-        const ct = getMockCategoriaTecnica();
+        const ct = data.categoriaTecnica || { labels: [], values: [] };
         mkChart('chartCategoriaTecnica', { type:'doughnut', data:{ labels:ct.labels, datasets:[{data:ct.values, backgroundColor:C10, borderWidth:0}]}, options:DD });
 
-        const dep = getMockPorDepartamento();
+        const dep = data.porDepartamento || { labels: [], values: [] };
         mkChart('chartPorDepartamento', { type:'bar', data:{ labels:dep.labels, datasets:[{label:'Fallas', data:dep.values, backgroundColor:'#818cf8', borderRadius:6}]}, options:BD });
     }
 
+    async function cargarCorrectivosAJAX() {
+        const { desde, hasta } = getFiltros();
+        const overlay = document.getElementById('spinnerOverlay');
+        if (overlay) overlay.style.display = 'flex';
+        try {
+            const baseUrl = /*[[@{/api/dashboard/correctivos}]]*/ '/inicio/api/dashboard/correctivos';
+            const resp = await fetch(`${baseUrl}?desde=${encodeURIComponent(desde)}&hasta=${encodeURIComponent(hasta)}`);
+            if (resp.ok) {
+                const data = await resp.json();
+                renderKPIs(data.kpis);
+                renderCorrectivosData(data);
+            }
+        } catch (e) {
+            console.error("Error al cargar datos de correctivos:", e);
+        } finally {
+            if (overlay) overlay.style.display = 'none';
+        }
+    }
+
     // ============================================================
-    // RENDER PREVENTIVOS
+    // RENDER PREVENTIVOS (MOCK)
     // ============================================================
     function renderPreventivos() {
         const BD = makeBarDefaults();
@@ -584,7 +608,7 @@
     }
 
     // ============================================================
-    // RENDER DESEMPEÑO TÉCNICO
+    // RENDER DESEMPEÑO TÉCNICO (MOCK)
     // ============================================================
     function renderDesempeno() {
         const BD = makeBarDefaults();
@@ -612,11 +636,11 @@
         if (desde && hasta) {
             document.getElementById('dashboardPeriodo').textContent = 'Período: ' + desde + ' → ' + hasta;
         }
-        renderKPIs(getMockKPIs());
-        renderCorrectivos();
+        cargarCorrectivosAJAX();
         renderPreventivos();
         renderDesempeno();
     }
+
 
     // Escuchar cambios de tema para re-renderizar gráficos
     const themeObserver = new MutationObserver((mutations) => {

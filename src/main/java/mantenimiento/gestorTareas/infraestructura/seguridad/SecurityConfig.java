@@ -45,7 +45,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/accionDeDispositivo", "/notificaciones/**").permitAll()
                 .antMatchers("/gestionUsuarios/**", "/crearUsuario/**", "/editarUsuario/**", "/guardarUsuarioEditado/**", "/eliminarUsuario/**", "/gestionar/**", "/tecnicoDatosEmpresa/**", "/editar/**", "/modificar/**").hasRole("ADMIN")
                 .antMatchers("/", "/editar/**", "/modificar/**").hasAnyRole("MANT", "ADMIN", "PROD")
-                .antMatchers("/", "/index/**").hasAnyRole("MANT", "ADMIN", "PROD", "TECNICO", "MONITOR")
+                .antMatchers("/", "/index/**", "/dashboard/**", "/api/dashboard/**").hasAnyRole("MANT", "ADMIN", "PROD", "TECNICO", "MONITOR")
                 .antMatchers("/api/registro").permitAll()
                 .antMatchers("/api/usuario/pagoWebhook").permitAll()
                 .and()

@@ -189,4 +189,66 @@ public interface TareaService extends JpaRepository<Tarea, Long> {
       @Param("fechaFin") LocalDateTime fechaFin,
       @Param("tenantId") Long tenantId);
 
+  // =========================================================================
+  // CONSULTAS AGREGADAS EN BD PARA DASHBOARD (SOLAPA CORRECTIVOS)
+  // =========================================================================
+
+  @Query("SELECT COALESCE(t.estado, 'Sin Estado'), COUNT(t) FROM Tarea t WHERE t.momentoDetencion BETWEEN :inicio AND :fin AND t.estado NOT IN ('disponible', 'finDisponible', 'cancelado') AND (:tenantId IS NULL OR t.tenant.id = :tenantId) GROUP BY t.estado")
+  List<Object[]> contarCorrectivosPorEstado(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin, @Param("tenantId") Long tenantId);
+
+  @Query("SELECT COALESCE(t.afectaProduccion, 'no'), COUNT(t) FROM Tarea t WHERE t.momentoDetencion BETWEEN :inicio AND :fin AND t.estado NOT IN ('disponible', 'finDisponible', 'cancelado') AND (:tenantId IS NULL OR t.tenant.id = :tenantId) GROUP BY t.afectaProduccion")
+  List<Object[]> contarCorrectivosPorAfectaProduccion(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin, @Param("tenantId") Long tenantId);
+
+  @Query(value = "SELECT DATE_FORMAT(t.momento_detencion, '%Y-%m') AS mes, COUNT(*) FROM tareas t WHERE t.momento_detencion BETWEEN :inicio AND :fin AND t.estado NOT IN ('disponible', 'finDisponible', 'cancelado') AND (:tenantId IS NULL OR t.tenant_id = :tenantId) GROUP BY DATE_FORMAT(t.momento_detencion, '%Y-%m') ORDER BY mes ASC", nativeQuery = true)
+  List<Object[]> contarCorrectivosEvolucionMensual(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin, @Param("tenantId") Long tenantId);
+
+  @Query(value = "SELECT COALESCE(a.nombre, 'Sin Equipo') AS equipo, COUNT(*) AS total FROM tareas t LEFT JOIN activo a ON t.activo = a.id WHERE t.momento_detencion BETWEEN :inicio AND :fin AND t.estado NOT IN ('disponible', 'finDisponible', 'cancelado') AND (:tenantId IS NULL OR t.tenant_id = :tenantId) GROUP BY a.nombre ORDER BY total DESC", nativeQuery = true)
+  List<Object[]> contarCorrectivosPorEquipoTop(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin, @Param("tenantId") Long tenantId);
+
+  @Query(value = "SELECT DATE_FORMAT(t.momento_detencion, '%Y-%m') AS mes, ROUND(AVG(TIMESTAMPDIFF(SECOND, t.momento_detencion, t.momento_liberacion) / 3600.0), 2) FROM tareas t WHERE t.momento_detencion BETWEEN :inicio AND :fin AND t.momento_liberacion IS NOT NULL AND t.estado NOT IN ('disponible', 'finDisponible', 'cancelado') AND (:tenantId IS NULL OR t.tenant_id = :tenantId) GROUP BY DATE_FORMAT(t.momento_detencion, '%Y-%m') ORDER BY mes ASC", nativeQuery = true)
+  List<Object[]> obtenerMttrMensual(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin, @Param("tenantId") Long tenantId);
+
+  @Query("SELECT COALESCE(t.categoriaTecnica, 'Sin Categoría'), COUNT(t) FROM Tarea t WHERE t.momentoDetencion BETWEEN :inicio AND :fin AND t.estado NOT IN ('disponible', 'finDisponible', 'cancelado') AND (:tenantId IS NULL OR t.tenant.id = :tenantId) GROUP BY t.categoriaTecnica")
+  List<Object[]> contarCorrectivosPorCategoriaTecnica(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin, @Param("tenantId") Long tenantId);
+
+  @Query("SELECT COALESCE(t.departamentoResponsable, 'Sin Asignar'), COUNT(t) FROM Tarea t WHERE t.momentoDetencion BETWEEN :inicio AND :fin AND t.estado NOT IN ('disponible', 'finDisponible', 'cancelado') AND (:tenantId IS NULL OR t.tenant.id = :tenantId) GROUP BY t.departamentoResponsable")
+  List<Object[]> contarCorrectivosPorDepartamento(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin, @Param("tenantId") Long tenantId);
+
+  @Query(value = """
+      SELECT 
+        SUM(CASE WHEN t.estado NOT IN ('cerrada', 'disponible', 'finDisponible', 'cancelado') THEN 1 ELSE 0 END) AS abiertos,
+        SUM(CASE WHEN t.estado = 'cerrada' THEN 1 ELSE 0 END) AS cerrados,
+        
+        ROUND(COALESCE(
+          SUM(CASE WHEN t.estado = 'cerrada' AND t.momento_liberacion IS NOT NULL 
+                   THEN TIMESTAMPDIFF(SECOND, GREATEST(t.momento_detencion, :inicio), LEAST(t.momento_liberacion, :fin)) / 3600.0 
+                   ELSE 0 END) 
+          / NULLIF(SUM(CASE WHEN t.estado = 'cerrada' THEN 1 ELSE 0 END), 0)
+        , 0), 2) AS mttrPromedioHoras,
+
+        ROUND(COALESCE(
+          ( (TIMESTAMPDIFF(SECOND, :inicio, :fin) / 3600.0) - 
+            SUM(CASE WHEN t.estado NOT IN ('disponible', 'finDisponible', 'cancelado') AND t.momento_liberacion IS NOT NULL 
+                     THEN TIMESTAMPDIFF(SECOND, GREATEST(t.momento_detencion, :inicio), LEAST(t.momento_liberacion, :fin)) / 3600.0 
+                     ELSE 0 END) 
+          ) / NULLIF(COUNT(t.id), 0)
+        , (TIMESTAMPDIFF(SECOND, :inicio, :fin) / 3600.0)), 1) AS mtbfHoras,
+
+        ROUND(COALESCE(
+          ( ( (TIMESTAMPDIFF(SECOND, :inicio, :fin) / 3600.0) - 
+              SUM(CASE WHEN t.estado NOT IN ('disponible', 'finDisponible', 'cancelado') AND t.momento_liberacion IS NOT NULL 
+                       THEN TIMESTAMPDIFF(SECOND, GREATEST(t.momento_detencion, :inicio), LEAST(t.momento_liberacion, :fin)) / 3600.0 
+                       ELSE 0 END) 
+            ) / (TIMESTAMPDIFF(SECOND, :inicio, :fin) / 3600.0) 
+          ) * 100.0
+        , 100.0), 1) AS disponibilidad
+
+      FROM tareas t 
+      WHERE t.momento_detencion BETWEEN :inicio AND :fin 
+        AND t.estado NOT IN ('disponible', 'finDisponible', 'cancelado') 
+        AND (:tenantId IS NULL OR t.tenant_id = :tenantId)
+      """, nativeQuery = true)
+  Map<String, Object> obtenerKpisCorrectivosGlobales(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin, @Param("tenantId") Long tenantId);
+
 }
+
