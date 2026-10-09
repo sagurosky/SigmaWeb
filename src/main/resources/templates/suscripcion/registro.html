@@ -1,8 +1,7 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-      xmlns:temporals="http://www.thymeleaf.org/extras/thymeleaf-temporals">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+    xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+    xmlns:temporals="http://www.thymeleaf.org/extras/thymeleaf-temporals">
 
 <head th:replace="plantillas/plantilla::head">
     <title>Historial de Detenciones | SigmaWeb</title>
@@ -13,13 +12,106 @@
     <div th:replace="plantillas/plantilla::menu"></div>
     <div th:replace="plantillas/plantilla::notificaciones"></div>
 
-    <!-- DataTables Bootstrap 4 Integration -->
+    <!-- DataTables CSS only (JS loaded at bottom, jQuery comes from plantilla) -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js"></script>
+
+    <style>
+        /* ── Filter Panel ─────────────────────────────────────────── */
+        .filter-card-panel {
+            background-color: var(--bg-surface-elevated) !important;
+            border: 1px solid var(--border-color) !important;
+        }
+
+        .filter-label {
+            color: var(--text-primary) !important;
+            font-weight: 600;
+        }
+
+        .filter-input {
+            background-color: var(--bg-input) !important;
+            color: var(--text-primary) !important;
+            border: 1.5px solid var(--border-color) !important;
+            border-radius: var(--radius-md) !important;
+            min-height: 38px;
+            font-size: 0.875rem !important;
+        }
+
+        .filter-input option {
+            background-color: var(--bg-surface) !important;
+            color: var(--text-primary) !important;
+        }
+
+        /* ── DataTables wrapper ───────────────────────────────────── */
+        .dataTables_wrapper {
+            padding: 0.5rem 0 !important;
+        }
+
+        .dataTables_wrapper .dataTables_length label,
+        .dataTables_wrapper .dataTables_filter label,
+        .dataTables_wrapper .dataTables_info,
+        .dataTables_wrapper .dataTables_paginate {
+            color: var(--text-primary) !important;
+            font-size: 0.875rem !important;
+        }
+
+        .dataTables_wrapper .dataTables_length select,
+        .dataTables_wrapper .dataTables_filter input {
+            background-color: var(--bg-input) !important;
+            color: var(--text-primary) !important;
+            border: 1.5px solid var(--border-color) !important;
+            border-radius: var(--radius-md) !important;
+            padding: 0.3rem 0.6rem !important;
+        }
+
+        /* ── Table header ─────────────────────────────────────────── */
+        table#tabla thead th {
+            color: var(--text-primary) !important;
+            background-color: var(--bg-surface-elevated) !important;
+            border-bottom: 2px solid var(--border-color) !important;
+            white-space: nowrap;
+        }
+
+        table#tabla tbody td {
+            color: var(--text-primary) !important;
+            border-color: var(--border-color) !important;
+            vertical-align: middle;
+        }
+
+        /* ── Time badge ───────────────────────────────────────────── */
+        .time-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 20px;
+            background: var(--accent-primary, #4f6ef2);
+            color: #fff !important;
+            margin-left: 8px;
+            white-space: nowrap;
+        }
+
+        /* ── Devoluciones default hidden ──────────────────────────── */
+        [id^="devoluciones"] {
+            display: none;
+        }
+
+        /* ── Pagination dark-mode fix ─────────────────────────────── */
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            color: var(--text-primary) !important;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current,
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+            background: var(--accent-primary, #4f6ef2) !important;
+            border-color: var(--accent-primary, #4f6ef2) !important;
+            color: #fff !important;
+        }
+    </style>
 
     <div class="container my-4 animated-fadeIn">
-        
+
         <!-- Main Card Header -->
         <div class="sigma-card">
             <div class="sigma-card-header">
@@ -32,85 +124,87 @@
                 </a>
             </div>
 
-            <!-- Table Container (Clean Data Only) -->
-            <div class="table-responsive">
+            <!-- ── Filter Controls Panel ────────────────────────────── -->
+            <div class="p-3 m-3 rounded-3 border filter-card-panel">
+                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                    <h5 class="mb-0 font-weight-bold" style="font-size: 0.95rem; color: var(--text-primary);">
+                        <i class="fas fa-filter text-primary me-2 mr-2"></i>Filtros de Búsqueda
+                    </h5>
+                    <button type="button" id="btnLimpiarFiltros" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-rotate-left me-1 mr-1"></i>Limpiar Filtros
+                    </button>
+                </div>
+                <div class="row g-3 align-items-end">
+                    <div class="col-lg-3 col-md-6 mb-2">
+                        <label for="filtroFechaDesde" class="form-label small mb-1 filter-label">Fecha Desde</label>
+                        <input type="date" id="filtroFechaDesde" class="form-control form-control-sm filter-input" />
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-2">
+                        <label for="filtroFechaHasta" class="form-label small mb-1 filter-label">Fecha Hasta</label>
+                        <input type="date" id="filtroFechaHasta" class="form-control form-control-sm filter-input" />
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-2">
+                        <label for="filtroActivo" class="form-label small mb-1 filter-label">Activo</label>
+                        <select id="filtroActivo" class="form-control form-select form-control-sm filter-input">
+                            <option value="">Todos los activos</option>
+                            <!-- Options populated via JS after DataTable init -->
+                        </select>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-2">
+                        <label for="filtroDescripcion" class="form-label small mb-1 filter-label">Descripción / Palabra clave</label>
+                        <input type="text" id="filtroDescripcion" class="form-control form-control-sm filter-input" placeholder="Filtrar por palabra clave..." />
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Table ─────────────────────────────────────────────── -->
+            <div class="table-responsive px-3 pb-3">
                 <table id="tabla" class="table table-hover align-middle w-100">
                     <thead>
                         <tr>
-                            <th style="width: 15%;">Fecha</th>
-                            <th style="width: 20%;">Activo</th>
-                            <th style="width: 35%;">Descripción del Evento</th>
+                            <th style="width: 18%;">Fecha y Hora</th>
+                            <th style="width: 18%;">Activo</th>
+                            <th style="width: 34%;">Descripción del Evento</th>
                             <th style="width: 18%; text-align: center;">Tiempo Detenido (min)</th>
-                            <th style="width: 12%; text-align: center;">Acción</th>
+                            <th style="width: 12%; text-align: center;" class="no-sort">Acción</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr th:each="tarea: ${tareas}">
-                            <td th:id="fecha+${tarea.id}" class="fw-semibold">fecha</td>
+                            <!--
+                                data-order uses ISO timestamp for correct numeric sort.
+                                The Thymeleaf date span is a fallback; JS will replace it.
+                            -->
+                            <td th:id="'fecha'+${tarea.id}"
+                                th:data-order="${tarea.momentoDetencion}"
+                                class="fw-semibold">
+                                <span th:text="${#temporals.format(tarea.momentoDetencion, 'dd/MM/yyyy')}">fecha</span>
+                                <span th:if="${tarea.momentoDetencion != null}"
+                                      class="time-badge">
+                                    <i class="far fa-clock"></i>
+                                    <span th:text="${#temporals.format(tarea.momentoDetencion, 'HH:mm')}">00:00</span>
+                                </span>
+                            </td>
                             <td>
-                                <span class="badge bg-surface-elevated text-primary border px-2 py-1 rounded-2" th:text="${tarea.activo.nombre}">activo</span>
+                                <span class="badge bg-surface-elevated text-primary border px-2 py-1 rounded-2"
+                                    th:text="${tarea.activo.nombre}">activo</span>
                             </td>
                             <td th:text="${tarea.descripcion}">descripcion</td>
                             <td class="text-center">
-                                <span class="status-badge status-detenida px-3 py-1" th:id="tiempoDetenido+${tarea.id}">0</span>
+                                <span class="status-badge status-detenida px-3 py-1"
+                                    th:id="'tiempoDetenido'+${tarea.id}">0</span>
                             </td>
 
-                            <input type="hidden" th:id="tiempoAsistencia+${tarea.id}"/>
-                            <input type="hidden" th:id="tiempoLiberacion+${tarea.id}"/>
-                            <input type="hidden" th:id="tiempoCierre+${tarea.id}"/>
-
-                            <td class="text-center" th:id="detalle+${tarea.id}">
-                                <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" th:data-target="'#modalDetalle' + ${tarea.id}" th:id="${tarea.id}" onclick="desplegarGrafico(this.id)">
+                            <td class="text-center" th:id="'detalle'+${tarea.id}">
+                                <input type="hidden" th:id="'tiempoAsistencia'+${tarea.id}" />
+                                <input type="hidden" th:id="'tiempoLiberacion'+${tarea.id}" />
+                                <input type="hidden" th:id="'tiempoCierre'+${tarea.id}" />
+                                <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
+                                    th:data-target="'#modalDetalle' + ${tarea.id}" th:id="${tarea.id}"
+                                    onclick="desplegarGrafico(this.id)">
                                     <i class="fas fa-chart-pie me-1"></i> Detalle
                                 </button>
                             </td>
-
-                            <!-- Inline Script for Calculations per Task -->
-                            <script th:inline="javascript">
-                                (function() {
-                                    var detencion = [[${tarea.momentoDetencion}]];
-                                    var asignacion = [[${tarea.momentoAsignacion}]];
-                                    var liberacion = [[${tarea.momentoLiberacion}]];
-                                    var cierre = [[${tarea.momentoCierre}]];
-                                    var id = [[${tarea.id}]];
-
-                                    var momentoDetencion = new Date(detencion);
-                                    var momentoAsignacion = new Date(asignacion);
-                                    var momentoLiberacion = new Date(liberacion);
-                                    var momentoCierre = new Date(cierre);
-
-                                    $("#fecha" + id).text(formatDate(momentoDetencion));
-
-                                    var diferenciaMilisegundos = momentoLiberacion - momentoDetencion;
-                                    var segundos = Math.floor(diferenciaMilisegundos / 1000);
-                                    var minutos = Math.floor(segundos / 60);
-                                    $("#tiempoDetenido" + id).text(minutos + " min");
-
-                                    diferenciaMilisegundos = momentoCierre - momentoLiberacion;
-                                    segundos = Math.floor(diferenciaMilisegundos / 1000);
-                                    minutos = Math.floor(segundos / 60);
-                                    $("#tiempoCierre" + id).text(minutos);
-
-                                    diferenciaMilisegundos = momentoAsignacion - momentoDetencion;
-                                    segundos = Math.floor(diferenciaMilisegundos / 1000);
-                                    minutos = Math.floor(segundos / 60);
-                                    $("#tiempoAsistencia" + id).text(minutos);
-
-                                    diferenciaMilisegundos = momentoLiberacion - momentoAsignacion;
-                                    segundos = Math.floor(diferenciaMilisegundos / 1000);
-                                    minutos = Math.floor(segundos / 60);
-                                    $("#tiempoLiberacion" + id).text(minutos);
-
-                                    function formatDate(date) {
-                                        var day = date.getDate();
-                                        var month = date.getMonth() + 1;
-                                        var year = date.getFullYear();
-                                        if (day < 10) day = '0' + day;
-                                        if (month < 10) month = '0' + month;
-                                        return day + '/' + month + '/' + year;
-                                    }
-                                })();
-                            </script>
                         </tr>
                     </tbody>
                 </table>
@@ -118,16 +212,19 @@
         </div>
     </div>
 
-    <!-- Modals Rendered OUTSIDE Table & Card to Prevent Clipping & Z-Index Backing Issues -->
+    <!-- ── Modals (outside main card) ─────────────────────────────────── -->
     <div th:each="tarea: ${tareas}">
-        <div class="modal fade" th:id="'modalDetalle' + ${tarea.id}" tabindex="-1" role="dialog" aria-labelledby="modalLabelDetalle" aria-hidden="true">
+        <div class="modal fade" th:id="'modalDetalle' + ${tarea.id}" tabindex="-1" role="dialog"
+            aria-labelledby="modalLabelDetalle" aria-hidden="true">
             <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="modalLabelDetalle">
-                            <i class="fas fa-circle-info text-primary me-2"></i> Detalle del Evento #<span th:text="${tarea.id}"></span>
+                            <i class="fas fa-circle-info text-primary me-2"></i> Detalle del Evento #<span
+                                th:text="${tarea.id}"></span>
                         </h5>
-                        <button type="button" class="close text-white border-0 bg-transparent fs-4" data-dismiss="modal" aria-label="Close">
+                        <button type="button" class="close text-white border-0 bg-transparent fs-4" data-dismiss="modal"
+                            aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
@@ -137,75 +234,144 @@
                             <!-- Timestamps & Pie Chart Grid -->
                             <div class="row g-3 mb-3 align-items-center">
                                 <div class="col-md-6">
-                                    <div class="p-3 rounded-3 border" style="background: var(--bg-surface-elevated); border-color: var(--border-color) !important;">
+                                    <div class="p-3 rounded-3 border"
+                                        style="background: var(--bg-surface-elevated); border-color: var(--border-color) !important;">
                                         <div class="row g-2 mb-2 pb-2 border-bottom">
-                                            <div class="col-6 detencion-label"><i class="fas fa-clock text-danger me-1"></i> Detención:</div>
-                                            <div class="col-6 detencion-value text-end" th:text="${#temporals.format(tarea.momentoDetencion, 'HH:mm:ss')}"></div>
+                                            <div class="col-6 detencion-label"><i
+                                                    class="fas fa-clock text-danger me-1"></i> Detención:</div>
+                                            <div class="col-6 detencion-value text-end"
+                                                th:text="${#temporals.format(tarea.momentoDetencion, 'HH:mm:ss')}">
+                                            </div>
                                         </div>
                                         <div class="row g-2 mb-2 pb-2 border-bottom">
-                                            <div class="col-6 detencion-label"><i class="fas fa-user-clock text-warning me-1"></i> Asignación:</div>
-                                            <div class="col-6 detencion-value text-end" th:text="${#temporals.format(tarea.momentoAsignacion, 'HH:mm:ss')}"></div>
+                                            <div class="col-6 detencion-label"><i
+                                                    class="fas fa-user-clock text-warning me-1"></i> Asignación:</div>
+                                            <div class="col-6 detencion-value text-end"
+                                                th:text="${#temporals.format(tarea.momentoAsignacion, 'HH:mm:ss')}">
+                                            </div>
                                         </div>
                                         <div class="row g-2 mb-2 pb-2 border-bottom">
-                                            <div class="col-6 detencion-label"><i class="fas fa-check-circle text-success me-1"></i> Liberación:</div>
-                                            <div class="col-6 detencion-value text-end" th:text="${#temporals.format(tarea.momentoLiberacion, 'HH:mm:ss')}"></div>
+                                            <div class="col-6 detencion-label"><i
+                                                    class="fas fa-check-circle text-success me-1"></i> Liberación:</div>
+                                            <div class="col-6 detencion-value text-end"
+                                                th:text="${#temporals.format(tarea.momentoLiberacion, 'HH:mm:ss')}">
+                                            </div>
                                         </div>
                                         <div class="row g-2">
-                                            <div class="col-6 detencion-label"><i class="fas fa-lock text-info me-1"></i> Cierre:</div>
-                                            <div class="col-6 detencion-value text-end" th:text="${#temporals.format(tarea.momentoCierre, 'HH:mm:ss')}"></div>
+                                            <div class="col-6 detencion-label"><i
+                                                    class="fas fa-lock text-info me-1"></i> Cierre:</div>
+                                            <div class="col-6 detencion-value text-end"
+                                                th:text="${#temporals.format(tarea.momentoCierre, 'HH:mm:ss')}"></div>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-6 text-center">
-                                    <div class="p-2 rounded-3 border bg-body" style="border-color: var(--border-color) !important;">
-                                        <div th:id="'grafico'+${tarea.id}" class="grafico" style="height: 220px; width: 100%;"></div>
+                                    <div class="p-2 rounded-3 border bg-body"
+                                        style="border-color: var(--border-color) !important;">
+                                        <div th:id="'grafico'+${tarea.id}" class="grafico"
+                                            style="height: 220px; width: 100%;"></div>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Technical Details -->
-                            <div class="p-3 rounded-3 border mb-3" style="background: var(--bg-surface-elevated); border-color: var(--border-color) !important;">
+                            <div class="p-3 rounded-3 border mb-3"
+                                style="background: var(--bg-surface-elevated); border-color: var(--border-color) !important;">
                                 <div class="mb-2">
-                                    <strong class="detencion-label d-block mb-1"><i class="fas fa-exclamation-triangle text-warning me-1"></i> Motivo de Demora en Cierre:</strong>
-                                    <span class="text-secondary" th:text="${tarea.motivoDemoraCierre != null ? tarea.motivoDemoraCierre : 'Sin demoras registradas'}"></span>
+                                    <strong class="detencion-label d-block mb-1"><i
+                                            class="fas fa-file-alt text-primary me-1"></i> Informe Técnico:</strong>
+                                    <th:block th:if="${tarea.informe != null and tarea.informe.estadoInforme == 'aprobado'}">
+                                        <a th:href="@{'/verInforme/' + ${tarea.id}}" class="btn btn-sm btn-success text-white fw-bold me-2">
+                                            <i class="fas fa-external-link-alt me-1"></i> Ver Informe
+                                        </a>
+                                    </th:block>
+                                    <th:block th:if="${tarea.informe == null or tarea.informe.estadoInforme != 'aprobado'}">
+                                        <span class="badge bg-secondary px-2 py-1" th:if="${tarea.informe == null or tarea.informe.estadoInforme == null or tarea.informe.estadoInforme == 'noEvaluado'}">
+                                            Sin informe generado
+                                        </span>
+                                        <span class="badge bg-warning text-dark px-2 py-1" th:if="${tarea.informe != null and tarea.informe.estadoInforme == 'pendiente'}">
+                                            Estado: Pendiente
+                                        </span>
+                                        <span class="badge bg-info text-dark px-2 py-1" th:if="${tarea.informe != null and (tarea.informe.estadoInforme == 'enRevision' or tarea.informe.estadoInforme == 'EnRevision')}">
+                                            Estado: En Revisión
+                                        </span>
+                                        <span class="badge bg-danger px-2 py-1" th:if="${tarea.informe != null and tarea.informe.estadoInforme == 'noAprobado'}">
+                                            Estado: No Aprobado
+                                        </span>
+                                        <span class="badge bg-dark px-2 py-1" th:if="${tarea.informe != null and tarea.informe.estadoInforme == 'descartado'}">
+                                            Estado: Descartado
+                                        </span>
+                                        <span class="badge bg-secondary px-2 py-1" th:if="${tarea.informe != null and tarea.informe.estadoInforme != null and tarea.informe.estadoInforme != 'pendiente' and tarea.informe.estadoInforme != 'enRevision' and tarea.informe.estadoInforme != 'EnRevision' and tarea.informe.estadoInforme != 'noAprobado' and tarea.informe.estadoInforme != 'descartado' and tarea.informe.estadoInforme != 'noEvaluado'}">
+                                            Estado: <span th:text="${tarea.informe.estadoInforme}"></span>
+                                        </span>
+                                    </th:block>
                                 </div>
                                 <div class="mb-2">
-                                    <strong class="detencion-label d-block mb-1"><i class="fas fa-tags text-primary me-1"></i> Categoría Técnica:</strong>
+                                    <strong class="detencion-label d-block mb-1"><i
+                                            class="fas fa-tags text-primary me-1"></i> Categoría Técnica:</strong>
                                     <span class="badge bg-primary px-2 py-1" th:text="${tarea.categoriaTecnica}"></span>
                                 </div>
                                 <div>
-                                    <strong class="detencion-label d-block mb-1"><i class="fas fa-align-left text-info me-1"></i> Descripción del Evento:</strong>
-                                    <div th:text="${tarea.descripcion}" class="p-2 rounded border bg-body text-secondary" style="white-space: pre-wrap; word-break: break-word;"></div>
+                                    <strong class="detencion-label d-block mb-1"><i
+                                            class="fas fa-align-left text-info me-1"></i> Descripción del
+                                        Evento:</strong>
+                                    <div th:text="${tarea.descripcion}"
+                                        class="p-2 rounded border bg-body text-secondary"
+                                        style="white-space: pre-wrap; word-break: break-word;"></div>
                                 </div>
                             </div>
 
                             <!-- Feedback Accordion -->
-                            <div class="p-3 rounded-3 border" style="background: var(--bg-surface-elevated); border-color: var(--border-color) !important;">
+                            <div class="p-3 rounded-3 border"
+                                style="background: var(--bg-surface-elevated); border-color: var(--border-color) !important;">
                                 <div class="d-flex align-items-center justify-content-between">
-                                    <strong class="detencion-label"><i class="fas fa-comments text-success me-1"></i> Devolución del Cliente Interno</strong>
-                                    <button type="button" class="btn btn-sm btn-secondary" th:id="'botonDevoluciones'+${tarea.id}">
+                                    <strong class="detencion-label"><i class="fas fa-comments text-success me-1"></i>
+                                        Devolución del Cliente Interno</strong>
+                                    <button type="button" class="btn btn-sm btn-secondary btn-ver-devolucion"
+                                        th:data-id="${tarea.id}">
                                         Ver Devolución
                                     </button>
                                 </div>
 
                                 <div class="mt-3" th:id="'devoluciones'+${tarea.id}">
                                     <div class="row g-2 small">
-                                        <div class="col-md-6"><span class="detencion-label">Satisfacción General:</span> <strong th:text="${tarea.evaluacion?.satisfaccion}"></strong></div>
-                                        <div class="col-md-6"><span class="detencion-label">Predisposición Percibida:</span> <strong th:text="${tarea.evaluacion?.predisposicion}"></strong></div>
-                                        <div class="col-md-6"><span class="detencion-label">Nivel de Responsabilidad:</span> <strong th:text="${tarea.evaluacion?.responsabilidad}"></strong></div>
-                                        <div class="col-md-6"><span class="detencion-label">Cumplimiento de Seguridad:</span> <strong th:text="${tarea.evaluacion?.seguridad}"></strong></div>
-                                        <div class="col-md-6"><span class="detencion-label">Conocimiento Técnico:</span> <strong th:text="${tarea.evaluacion?.conocimiento}"></strong></div>
-                                        <div class="col-md-6"><span class="detencion-label">Trato Recibido:</span> <strong th:text="${tarea.evaluacion?.trato}"></strong></div>
-                                        <div class="col-md-6"><span class="detencion-label">Prolijidad (5S):</span> <strong th:text="${tarea.evaluacion?.prolijidad}"></strong></div>
-                                        <div class="col-md-6"><span class="detencion-label">Puntualidad:</span> <strong th:text="${tarea.evaluacion?.puntualidad}"></strong></div>
-                                        <div class="col-md-6"><span class="detencion-label">Eficiencia:</span> <strong th:text="${tarea.evaluacion?.eficiencia}"></strong></div>
-                                        <div class="col-md-6"><span class="detencion-label">Calidad del Trabajo:</span> <strong th:text="${tarea.evaluacion?.calidad}"></strong></div>
-                                        <div class="col-md-6"><span class="detencion-label">Comunicación:</span> <strong th:text="${tarea.evaluacion?.comunicacion}"></strong></div>
-                                        <div class="col-md-6"><span class="detencion-label">Trabajo en Equipo:</span> <strong th:text="${tarea.evaluacion?.trabajoEnEquipo}"></strong></div>
-                                        <div class="col-md-6"><span class="detencion-label">Resolución de Problemas:</span> <strong th:text="${tarea.evaluacion?.resolucion}"></strong></div>
-                                        <div class="col-md-6"><span class="detencion-label">Creatividad e Innovación:</span> <strong th:text="${tarea.evaluacion?.creatividad}"></strong></div>
-                                        <div class="col-md-6"><span class="detencion-label">Iniciativa:</span> <strong th:text="${tarea.evaluacion?.iniciativa}"></strong></div>
-                                        <div class="col-md-6"><span class="detencion-label">Autogestión:</span> <strong th:text="${tarea.evaluacion?.autogestion}"></strong></div>
+                                        <div class="col-md-6"><span class="detencion-label">Satisfacción General:</span>
+                                            <strong th:text="${tarea.evaluacion?.satisfaccion}"></strong></div>
+                                        <div class="col-md-6"><span class="detencion-label">Predisposición
+                                                Percibida:</span> <strong
+                                                th:text="${tarea.evaluacion?.predisposicion}"></strong></div>
+                                        <div class="col-md-6"><span class="detencion-label">Nivel de
+                                                Responsabilidad:</span> <strong
+                                                th:text="${tarea.evaluacion?.responsabilidad}"></strong></div>
+                                        <div class="col-md-6"><span class="detencion-label">Cumplimiento de
+                                                Seguridad:</span> <strong
+                                                th:text="${tarea.evaluacion?.seguridad}"></strong></div>
+                                        <div class="col-md-6"><span class="detencion-label">Conocimiento Técnico:</span>
+                                            <strong th:text="${tarea.evaluacion?.conocimiento}"></strong></div>
+                                        <div class="col-md-6"><span class="detencion-label">Trato Recibido:</span>
+                                            <strong th:text="${tarea.evaluacion?.trato}"></strong></div>
+                                        <div class="col-md-6"><span class="detencion-label">Prolijidad (5S):</span>
+                                            <strong th:text="${tarea.evaluacion?.prolijidad}"></strong></div>
+                                        <div class="col-md-6"><span class="detencion-label">Puntualidad:</span> <strong
+                                                th:text="${tarea.evaluacion?.puntualidad}"></strong></div>
+                                        <div class="col-md-6"><span class="detencion-label">Eficiencia:</span> <strong
+                                                th:text="${tarea.evaluacion?.eficiencia}"></strong></div>
+                                        <div class="col-md-6"><span class="detencion-label">Calidad del Trabajo:</span>
+                                            <strong th:text="${tarea.evaluacion?.calidad}"></strong></div>
+                                        <div class="col-md-6"><span class="detencion-label">Comunicación:</span> <strong
+                                                th:text="${tarea.evaluacion?.comunicacion}"></strong></div>
+                                        <div class="col-md-6"><span class="detencion-label">Trabajo en Equipo:</span>
+                                            <strong th:text="${tarea.evaluacion?.trabajoEnEquipo}"></strong></div>
+                                        <div class="col-md-6"><span class="detencion-label">Resolución de
+                                                Problemas:</span> <strong
+                                                th:text="${tarea.evaluacion?.resolucion}"></strong></div>
+                                        <div class="col-md-6"><span class="detencion-label">Creatividad e
+                                                Innovación:</span> <strong
+                                                th:text="${tarea.evaluacion?.creatividad}"></strong></div>
+                                        <div class="col-md-6"><span class="detencion-label">Iniciativa:</span> <strong
+                                                th:text="${tarea.evaluacion?.iniciativa}"></strong></div>
+                                        <div class="col-md-6"><span class="detencion-label">Autogestión:</span> <strong
+                                                th:text="${tarea.evaluacion?.autogestion}"></strong></div>
                                     </div>
                                 </div>
                             </div>
@@ -220,66 +386,193 @@
         </div>
     </div>
 
-    <!-- ECharts & Page Scripts -->
+    <!-- ── Inline calculation scripts (run before DT init, jQuery already loaded) ── -->
+    <script th:inline="javascript" th:each="tarea: ${tareas}">
+        (function () {
+            var detencion   = /*[[${tarea.momentoDetencion}]]*/ null;
+            var asignacion  = /*[[${tarea.momentoAsignacion}]]*/ null;
+            var liberacion  = /*[[${tarea.momentoLiberacion}]]*/ null;
+            var cierre      = /*[[${tarea.momentoCierre}]]*/ null;
+            var id          = /*[[${tarea.id}]]*/ 0;
+
+            var mDetencion  = new Date(detencion);
+            var mAsignacion = new Date(asignacion);
+            var mLiberacion = new Date(liberacion);
+            var mCierre     = new Date(cierre);
+
+            function diffMin(a, b) {
+                var d = Math.floor((b - a) / 60000);
+                return isNaN(d) ? 0 : Math.max(0, d);
+            }
+
+            var minDetenido  = diffMin(mDetencion, mLiberacion);
+            var minAsistencia = diffMin(mDetencion, mAsignacion);
+            var minLiberacion = diffMin(mAsignacion, mLiberacion);
+            var minCierre     = diffMin(mLiberacion, mCierre);
+
+            $("#tiempoDetenido"  + id).text(minDetenido + " min");
+            $("#tiempoDetenido"  + id).closest('td').attr('data-order', minDetenido);
+            $("#tiempoAsistencia"+ id).val(minAsistencia);
+            $("#tiempoLiberacion"+ id).val(minLiberacion);
+            $("#tiempoCierre"    + id).val(minCierre);
+        })();
+    </script>
+
+    <!-- ── ECharts ────────────────────────────────────────────────────── -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.0/echarts.min.js"></script>
-    <script th:inline="javascript">
-        $(document).ready(function() {
-            // DataTables Initialization
-            $('#tabla').DataTable({
-                "paging": true,
-                "searching": true,
-                "ordering": true,
-                "info": true,
-                "responsive": true,
-                "language": {
-                    "url": "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+
+    <!-- ── DataTables JS (loaded AFTER jQuery from plantilla) ────────── -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+
+            // ── 1. Custom filter extension ────────────────────────────
+            $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+                if (settings.nTable.id !== 'tabla') return true;
+
+                var fechaDesde  = $('#filtroFechaDesde').val();
+                var fechaHasta  = $('#filtroFechaHasta').val();
+                var filtroActivo = $('#filtroActivo').val().trim().toLowerCase();
+                var filtroDesc  = $('#filtroDescripcion').val().toLowerCase().trim();
+
+                var rowNode = settings.aoData[dataIndex].nTr;
+                var $tds = $(rowNode).children('td');
+
+                // Date range – data-order holds the ISO string (e.g. "2026-10-07T14:30:00")
+                var rawOrder = $tds.eq(0).attr('data-order') || '';
+                if (rawOrder) {
+                    var rowDate = rawOrder.split('T')[0]; // "YYYY-MM-DD"
+                    if (fechaDesde && rowDate < fechaDesde) return false;
+                    if (fechaHasta && rowDate > fechaHasta) return false;
+                }
+
+                // Activo filter
+                if (filtroActivo) {
+                    var rowActivo = $tds.eq(1).text().trim().toLowerCase();
+                    if (rowActivo !== filtroActivo) return false;
+                }
+
+                // Description keyword
+                if (filtroDesc) {
+                    var rowDesc = $tds.eq(2).text().toLowerCase();
+                    if (!rowDesc.includes(filtroDesc)) return false;
+                }
+
+                return true;
+            });
+
+            // ── 2. DataTables init ────────────────────────────────────
+            var dtLengthMenu = [Array(10, 25, 50, 100, -1), Array(10, 25, 50, 100, 'Todos')];
+            var dtOrder      = [Array(0, 'desc')];
+            var table = $('#tabla').DataTable({
+                paging:      true,
+                lengthChange: true,
+                lengthMenu:  dtLengthMenu,
+                pageLength:  10,
+                searching:   true,
+                ordering:    true,
+                order:       dtOrder,
+                info:        true,
+                responsive:  false,
+                columnDefs:  [{ orderable: false, targets: 4 }],
+                dom: "<'row mb-3 align-items-center'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6 text-end'f>>" +
+                     "<'row'<'col-sm-12'tr>>" +
+                     "<'row mt-3 align-items-center'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 text-end'p>>",
+                language: {
+                    processing:   "Procesando...",
+                    search:       "Buscar:",
+                    lengthMenu:   "Mostrar _MENU_ registros por página",
+                    info:         "Mostrando _START_ a _END_ de _TOTAL_ registros",
+                    infoEmpty:    "Mostrando 0 a 0 de 0 registros",
+                    infoFiltered: "(filtrado de _MAX_ registros en total)",
+                    zeroRecords:  "No se encontraron detenciones coincidentes",
+                    emptyTable:   "No hay detenciones registradas",
+                    paginate: {
+                        first:    "Primero",
+                        previous: "Anterior",
+                        next:     "Siguiente",
+                        last:     "Último"
+                    }
                 }
             });
 
-            // Hide feedback details by default
-            $("[id^=devoluciones]").hide();
-
-            $("[id^=botonDevoluciones]").click(function() {
-                let tareaId = $(this).attr("id").replace("botonDevoluciones", "");
-                $("#devoluciones" + tareaId).slideToggle(300);
+            // ── 3. Populate Activo dropdown from DataTable data ───────
+            //    Must be done AFTER DataTable init so we can iterate all rows (all pages)
+            var activosSet = {};
+            table.rows().every(function () {
+                var activoText = $(this.node()).children('td').eq(1).text().trim();
+                if (activoText) activosSet[activoText] = true;
+            });
+            var $sel = $('#filtroActivo');
+            Object.keys(activosSet).sort().forEach(function (act) {
+                $sel.append(new Option(act, act));
             });
 
-            $("[id^=detalle]").click(function () {
-                const id = $(this).attr("id");
-                desplegarGrafico(id);
+            // ── 4. Live filter: redraw on every input change ──────────
+            $('#filtroFechaDesde, #filtroFechaHasta, #filtroActivo, #filtroDescripcion')
+                .on('change input', function () {
+                    table.draw();
+                });
+
+            // ── 5. Clear filters ──────────────────────────────────────
+            $('#btnLimpiarFiltros').on('click', function () {
+                $('#filtroFechaDesde').val('');
+                $('#filtroFechaHasta').val('');
+                $('#filtroActivo').val('');
+                $('#filtroDescripcion').val('');
+                table.draw();
+            });
+
+            // ── 6. "Ver Devolución" toggle (delegated, works for all modals) ──
+            $(document).on('click', '.btn-ver-devolucion', function () {
+                var tareaId = $(this).data('id');
+                $('#devoluciones' + tareaId).slideToggle(300);
             });
         });
 
-        const opcionesGrafico = (id) => {
+        // ── ECharts helpers ───────────────────────────────────────────
+        function opcionesGrafico(id) {
+            var cleanId = ('' + id).replace(/\D/g, '');
+            var vAsistencia = parseInt($('#tiempoAsistencia' + cleanId).val()) || 0;
+            var vLiberacion = parseInt($('#tiempoLiberacion' + cleanId).val()) || 0;
+            var vCierre     = parseInt($('#tiempoCierre'     + cleanId).val()) || 0;
+
             return {
-                tooltip: { trigger: "item" },
-                legend: { top: "0%", left: "center", textStyle: { color: 'inherit' } },
+                tooltip: { trigger: 'item' },
+                legend:  { top: '0%', left: 'center', textStyle: { color: 'inherit' } },
                 series: [{
-                    name: "Demoras",
-                    type: "pie",
-                    radius: ["50%", "80%"],
+                    name: 'Demoras',
+                    type: 'pie',
+                    radius: ['50%', '80%'],
                     avoidLabelOverlap: false,
-                    itemStyle: { borderRadius: 6, borderColor: "var(--bg-surface)", borderWidth: 2 },
+                    itemStyle: { borderRadius: 6, borderColor: 'var(--bg-surface)', borderWidth: 2 },
                     label: { show: false },
                     data: [
-                        { value: parseInt($("#tiempoAsistencia" + id).text()) || 0, name: "Asignación" },
-                        { value: parseInt($("#tiempoLiberacion" + id).text()) || 0, name: "Liberación" },
-                        { value: parseInt($("#tiempoCierre" + id).text()) || 0, name: "Cierre" }
+                        { value: vAsistencia, name: 'Asignación' },
+                        { value: vLiberacion, name: 'Liberación' },
+                        { value: vCierre,     name: 'Cierre' }
                     ]
                 }]
             };
-        };
+        }
 
-        const desplegarGrafico = (id) => {
-            setTimeout(function() {
-                const elem = document.getElementById("grafico" + id);
+        function desplegarGrafico(id) {
+            var cleanId = ('' + id).replace(/\D/g, '');
+            setTimeout(function () {
+                var elem = document.getElementById('grafico' + cleanId);
                 if (elem) {
-                    const chart = echarts.init(elem);
-                    chart.setOption(opcionesGrafico(id));
+                    var existing = echarts.getInstanceByDom(elem);
+                    if (existing) existing.dispose();
+                    var chart = echarts.init(elem);
+                    chart.setOption(opcionesGrafico(cleanId));
                     chart.resize();
                 }
             }, 300);
-        };
+        }
     </script>
+
 </body>
+
 </html>
