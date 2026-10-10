@@ -18,6 +18,18 @@
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js"></script>
 
+    <style>
+        .alarma-demora {
+            font-size: 1.15rem;
+            cursor: pointer;
+            transition: transform 0.2s ease, color 0.2s ease;
+        }
+        .alarma-demora:hover {
+            transform: scale(1.25);
+            color: #b02a37 !important;
+        }
+    </style>
+
     <div class="container my-4 animated-fadeIn">
         
         <!-- Header Hero Card -->
@@ -53,9 +65,15 @@
                     <tbody id="tbodyNoEvaluadas">
                         <tr th:each="tarea :${tareasNoEvaluadas}" th:id="'row-no-evaluada-' + ${tarea.id}">
                             <td>
-                                <div class="form-control-static fw-semibold w-100">
+                                <div class="form-control-static fw-semibold w-100 d-flex align-items-center flex-wrap">
                                     <span th:text="${#temporals.format(tarea.momentoLiberacion, 'dd/MM/yyyy')}"></span>
                                     <span th:text="${#temporals.format(tarea.momentoLiberacion, 'HH:mm')}" class="badge bg-primary ms-1"></span>
+                                    <span th:if="${tarea.momentoDetencion != null and tarea.momentoLiberacion != null and T(java.time.Duration).between(tarea.momentoDetencion, tarea.momentoLiberacion).toMinutes() gt 30}"
+                                          class="ms-2"
+                                          th:title="|Alarma: tiempo de intervención superior a 30 min (${T(java.time.Duration).between(tarea.momentoDetencion, tarea.momentoLiberacion).toMinutes()} min desde notificación hasta liberación)|"
+                                          data-toggle="tooltip">
+                                        <i class="fas fa-bell text-danger alarma-demora"></i>
+                                    </span>
                                 </div>
                             </td>
                             <td>
@@ -233,7 +251,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr th:each="tarea :${tareasAprobados}">
+                        <tr th:each="tarea :${tareasAprobados}" th:id="'row-aprobada-' + ${tarea.id}">
                             <td>
                                 <div class="form-control-static fw-semibold w-100">
                                     <span th:text="${#temporals.format(tarea.momentoLiberacion, 'dd/MM/yyyy')}"></span>
@@ -244,12 +262,35 @@
                                 <div class="form-control-static font-weight-bold text-primary w-100" th:text="${tarea.activo.nombre}">activo</div>
                             </td>
                             <td>
-                                <div class="form-control-static w-100" th:text="${tarea.descripcion}">descripción</div>
+                                <div class="form-control-static w-100">
+                                    <span th:text="${tarea.descripcion}">descripción</span>
+                                    <span th:if="${tarea.informe != null and tarea.informe.estadoFinal == 'paliativo'}"
+                                          class="badge ms-1"
+                                          style="background-color: #f97316; color: #fff; font-size: 0.72rem;">
+                                        <i class="fas fa-triangle-exclamation me-1"></i>Paliativo
+                                    </span>
+                                    <span th:if="${tarea.informe != null and tarea.informe.estadoFinal == 'paliativo sugerido'}"
+                                          class="badge ms-1"
+                                          style="background-color: #16a34a; color: #fff; font-size: 0.72rem;"
+                                          title="Ya se generó una sugerencia de preventivo para normalizar este paliativo"
+                                          data-toggle="tooltip">
+                                        <i class="fas fa-circle-check me-1"></i>Paliativo Sugerido
+                                    </span>
+                                </div>
                             </td>
                             <td class="text-center align-middle">
-                                <a th:href="@{/verInforme/}+${tarea.id}" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-eye me-1"></i> Ver Informe
-                                </a>
+                                <div class="d-flex flex-column align-items-center gap-1">
+                                    <a th:href="@{/verInforme/}+${tarea.id}" class="btn btn-primary btn-sm w-100">
+                                        <i class="fas fa-eye me-1"></i> Ver Informe
+                                    </a>
+                                    <button th:if="${tarea.informe != null and tarea.informe.estadoFinal == 'paliativo'}"
+                                            type="button"
+                                            class="btn btn-warning btn-sm w-100"
+                                            th:onclick="'abrirModalSugerencia(' + ${tarea.id} + ', ' + ${tarea.activo.id} + ')'"
+                                            title="Generar sugerencia de preventivo/mejora para normalizar este paliativo">
+                                        <i class="fas fa-circle-plus me-1"></i> Sugerir Preventivo
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     </tbody>
@@ -259,9 +300,82 @@
 
     </div>
 
+    <!-- Modal Sugerencia Paliativo -->
+    <div class="modal fade" id="modalSugerenciaPaliativo" tabindex="-1" role="dialog" aria-labelledby="labelModalPaliativo" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="labelModalPaliativo">
+                        <i class="fas fa-circle-plus text-warning me-2"></i> Sugerencia: Normalizar Paliativo
+                    </h5>
+                    <button type="button" class="close text-white border-0 bg-transparent fs-4" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body text-start">
+                    <div class="alert alert-warning d-flex align-items-start gap-2 mb-3" role="alert">
+                        <i class="fas fa-triangle-exclamation mt-1"></i>
+                        <div class="small">
+                            Este informe fue cerrado como <strong>paliativo</strong>. Se sugiere crear un preventivo o mejora
+                            para normalizar la situación definitivamente. Los campos están pre-completados con los datos del informe.
+                        </div>
+                    </div>
+
+                    <input type="hidden" id="paliActivoId" />
+                    <input type="hidden" id="paliTareaId" />
+
+                    <div class="mb-3">
+                        <label class="form-label detencion-label">Categoría:</label>
+                        <select id="paliCategoria" class="form-select" required>
+                            <option value="preventivo">Preventivo</option>
+                            <option value="mejora">Mejora</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label detencion-label">Descripción / Título:</label>
+                        <input type="text" id="paliDescripcion" class="form-control" required />
+                        <div class="form-text text-muted small">Se agrega automáticamente "(normalizar paliativo)" al final.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label detencion-label">Detalle (pre-completado desde el informe):</label>
+                        <textarea id="paliDetalle" class="form-control" rows="5"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label detencion-label">Periodicidad / Frecuencia:</label>
+                        <select id="paliFrecuencia" class="form-select">
+                            <option value="una vez">Una vez</option>
+                            <option value="mensual">Mensual</option>
+                            <option value="trimestral">Trimestral</option>
+                            <option value="semestral">Semestral</option>
+                            <option value="anual">Anual</option>
+                        </select>
+                    </div>
+
+                    <div id="paliMensajeOk" class="alert alert-success d-none" role="alert">
+                        <i class="fas fa-check-circle me-2"></i> Sugerencia creada exitosamente. Puede verla en la sección de Preventivos del activo.
+                    </div>
+                    <div id="paliMensajeError" class="alert alert-danger d-none" role="alert">
+                        <i class="fas fa-times-circle me-2"></i> Ocurrió un error al crear la sugerencia. Intente nuevamente.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" id="btnGuardarSugerenciaPaliativo" class="btn btn-warning">
+                        <i class="fas fa-save me-1"></i> Guardar Sugerencia
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts AJAX & DataTables -->
     <script th:inline="javascript">
         $(document).ready(function() {
+            $('[data-toggle="tooltip"]').tooltip();
+
             $('#informesAprobados').DataTable({
                 "paging": true,
                 "searching": true,
@@ -352,7 +466,7 @@
                             var fechaHtml = '<div class="form-control-static fw-semibold w-100"><span>' + response.fecha + '</span> <span class="badge bg-primary ms-1">' + response.hora + '</span></div>';
                             var activoHtml = '<div class="form-control-static font-weight-bold text-primary w-100">' + response.activoNombre + '</div>';
                             var descHtml = '<div class="form-control-static w-100">' + response.descripcion + '</div>';
-                            var verBtn = '<a href="' + contextPath + 'verInforme/' + response.id + '" class="btn btn-primary btn-sm"><i class="fas fa-eye me-1"></i> Ver Informe</a>';
+                            var verBtn = '<div class="d-flex flex-column align-items-center gap-1"><a href="' + contextPath + 'verInforme/' + response.id + '" class="btn btn-primary btn-sm w-100"><i class="fas fa-eye me-1"></i> Ver Informe</a></div>';
                             dt.row.add([
                                 fechaHtml,
                                 activoHtml,
@@ -368,6 +482,96 @@
                 }
             });
         }
+
+        function abrirModalSugerencia(tareaId, activoId) {
+            var contextPath = /*[[@{/}]]*/ '/inicio/';
+            // Resetear mensajes
+            $('#paliMensajeOk').addClass('d-none');
+            $('#paliMensajeError').addClass('d-none');
+            $('#btnGuardarSugerenciaPaliativo').prop('disabled', false);
+
+            $.ajax({
+                url: contextPath + 'api/informes/datos-paliativo/' + tareaId,
+                type: 'GET',
+                success: function(data) {
+                    $('#paliActivoId').val(data.activoId);
+                    $('#paliTareaId').val(tareaId);
+                    $('#paliDescripcion').val(data.descripcion);
+                    $('#paliDetalle').val(data.detalle);
+                    $('#modalSugerenciaPaliativo').modal('show');
+                },
+                error: function(err) {
+                    console.error('Error al obtener datos paliativo:', err);
+                    alert('No se pudieron cargar los datos del informe.');
+                }
+            });
+        }
+
+        $('#btnGuardarSugerenciaPaliativo').on('click', function() {
+            var contextPath = /*[[@{/}]]*/ '/inicio/';
+            var tareaId     = $('#paliTareaId').val();
+            var activoId    = $('#paliActivoId').val();
+            var categoria   = $('#paliCategoria').val();
+            var descripcion = $('#paliDescripcion').val().trim();
+            var detalle     = $('#paliDetalle').val().trim();
+            var frecuencia  = $('#paliFrecuencia').val();
+
+            if (!descripcion) {
+                $('#paliDescripcion').focus();
+                return;
+            }
+
+            $(this).prop('disabled', true);
+
+            $.ajax({
+                url: contextPath + 'api/informes/crear-sugerencia',
+                type: 'POST',
+                data: {
+                    tareaId: tareaId,
+                    activoId: activoId,
+                    categoria: categoria,
+                    descripcion: descripcion,
+                    detalle: detalle,
+                    frecuencia: frecuencia
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $('#paliMensajeOk').removeClass('d-none');
+                        $('#paliMensajeError').addClass('d-none');
+
+                        // Actualizar la fila en la tabla: cambiar badge y eliminar botón
+                        var $row = $('#row-aprobada-' + response.tareaId);
+                        if ($row.length) {
+                            // Cambiar badge naranja a badge verde
+                            $row.find('.badge[style*="f97316"]')
+                                .css('background-color', '#16a34a')
+                                .attr('title', 'Ya se generó una sugerencia de preventivo para normalizar este paliativo')
+                                .html('<i class="fas fa-circle-check me-1"></i>Paliativo Sugerido');
+                            // Ocultar el botón de sugerir
+                            $row.find('button.btn-warning').fadeOut(300, function() { $(this).remove(); });
+                        }
+
+                        // Cerrar modal despues de 2 segundos
+                        setTimeout(function() {
+                            $('#modalSugerenciaPaliativo').modal('hide');
+                            $('#paliMensajeOk').addClass('d-none');
+                            $('#btnGuardarSugerenciaPaliativo').prop('disabled', false);
+                        }, 2000);
+
+                    } else if (response.yaExiste) {
+                        // Alguien ya creó la sugerencia (race condition o doble click)
+                        $('#paliMensajeError').removeClass('d-none')
+                            .find('i').next().text(' Este paliativo ya tiene una sugerencia creada.');
+                        $('#btnGuardarSugerenciaPaliativo').prop('disabled', false);
+                    }
+                },
+                error: function(err) {
+                    console.error('Error al crear sugerencia paliativo:', err);
+                    $('#paliMensajeError').removeClass('d-none');
+                    $('#btnGuardarSugerenciaPaliativo').prop('disabled', false);
+                }
+            });
+        });
     </script>
 </body>
 </html>

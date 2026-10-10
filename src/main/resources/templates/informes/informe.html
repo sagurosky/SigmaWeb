@@ -127,6 +127,7 @@
                                 <option value="reparado">Reparado</option>
                                 <option value="en observacion">En Observación</option>
                                 <option value="paliativo">Paliativo</option>
+                                <option th:if="*{estadoFinal == 'paliativo sugerido'}" value="paliativo sugerido">Paliativo Sugerido</option>
                                 <option value="irreparable">Irreparable</option>
                             </select>
                         </div>

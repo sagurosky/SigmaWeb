@@ -5,6 +5,8 @@ import mantenimiento.gestorTareas.infraestructura.util.Convertidor;
 import mantenimiento.gestorTareas.infraestructura.util.TiempoUtils;
 import mantenimiento.gestorTareas.modulo.equipos.ActivoDao;
 import mantenimiento.gestorTareas.modulo.equipos.ActivoService;
+import mantenimiento.gestorTareas.modulo.equipos.Preventivo;
+import mantenimiento.gestorTareas.modulo.equipos.PreventivoService;
 import mantenimiento.gestorTareas.modulo.produccion.ProduccionService;
 import mantenimiento.gestorTareas.modulo.produccion.ProductoService;
 import mantenimiento.gestorTareas.modulo.tareas.Asignacion;
@@ -80,6 +82,8 @@ public class ControladorInformes {
     ProductoService productoService;
     @Autowired
     InformeService informeService;
+    @Autowired
+    PreventivoService preventivoService;
 
     
     @GetMapping("/informes")
@@ -368,6 +372,93 @@ public class ControladorInformes {
         resp.put("fecha", fecha);
         resp.put("hora", hora);
 
+        return ResponseEntity.ok(resp);
+    }
+
+    /**
+     * Devuelve los datos pre-armados del informe paliativo para completar el modal de sugerencia.
+     */
+    @RequestMapping(value = "/api/informes/datos-paliativo/{tareaId}", method = {RequestMethod.GET, RequestMethod.POST})
+    @ResponseBody
+    public ResponseEntity<?> datosPaliativo(@PathVariable("tareaId") Long tareaId) {
+        Tarea tarea = tareaService.findById(tareaId).orElse(null);
+        if (tarea == null || tarea.getInforme() == null) {
+            return ResponseEntity.badRequest().body("Tarea o informe no encontrado");
+        }
+        Informe informe = tarea.getInforme();
+
+        // Armar descripción sugerida: descripción de la tarea + " (normalizar paliativo)"
+        String descTarea = tarea.getDescripcion() != null ? tarea.getDescripcion().trim() : "";
+        String descripcionSugerida = descTarea + " (normalizar paliativo)";
+
+        // Armar detalle con info del informe
+        StringBuilder detalle = new StringBuilder();
+        if (informe.getCausaRaiz() != null && !informe.getCausaRaiz().isBlank()) {
+            detalle.append("Causa raíz: ").append(informe.getCausaRaiz()).append("\n");
+        }
+        if (informe.getAcciones() != null && !informe.getAcciones().isBlank()) {
+            detalle.append("Acciones paliativas realizadas: ").append(informe.getAcciones()).append("\n");
+        }
+        if (informe.getRecomendaciones() != null && !informe.getRecomendaciones().isBlank()) {
+            detalle.append("Recomendaciones: ").append(informe.getRecomendaciones());
+        }
+
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("activoId", tarea.getActivo() != null ? tarea.getActivo().getId() : null);
+        resp.put("activoNombre", tarea.getActivo() != null ? tarea.getActivo().getNombre() : "");
+        resp.put("descripcion", descripcionSugerida);
+        resp.put("detalle", detalle.toString().trim());
+        return ResponseEntity.ok(resp);
+    }
+
+    /**
+     * Crea un Preventivo/Mejora directamente desde la pantalla de informes (paliativos).
+     * Tras crearlo, marca el informe como "paliativo sugerido" para evitar duplicados.
+     */
+    @RequestMapping(value = "/api/informes/crear-sugerencia", method = {RequestMethod.GET, RequestMethod.POST})
+    @ResponseBody
+    public ResponseEntity<?> crearSugerenciaPaliativo(
+            @RequestParam("tareaId") Long tareaId,
+            @RequestParam("activoId") Long activoId,
+            @RequestParam("categoria") String categoria,
+            @RequestParam("descripcion") String descripcion,
+            @RequestParam("detalle") String detalle,
+            @RequestParam("frecuencia") String frecuencia) {
+
+        // Verificar que el informe aún no fue sugerido (doble check server-side)
+        Tarea tarea = tareaService.findById(tareaId).orElse(null);
+        if (tarea == null || tarea.getInforme() == null) {
+            return ResponseEntity.badRequest().body("Tarea o informe no encontrado");
+        }
+        Informe informe = tarea.getInforme();
+        if (!"paliativo".equals(informe.getEstadoFinal())) {
+            Map<String, Object> already = new HashMap<>();
+            already.put("success", false);
+            already.put("yaExiste", true);
+            return ResponseEntity.ok(already);
+        }
+
+        Preventivo preventivo = new Preventivo();
+        preventivo.setActivo(activo.findById(activoId).orElse(null));
+        preventivo.setCategoria(categoria);
+        preventivo.setDescripcion(descripcion);
+        preventivo.setDetalle(detalle);
+        preventivo.setFrecuencia(frecuencia);
+        preventivo.setEstado("pendiente");
+        preventivo.setFechaDeCreacion(TiempoUtils.ahora());
+
+        Authentication aut = SecurityContextHolder.getContext().getAuthentication();
+        preventivo.setSolicita(aut.getName());
+
+        preventivoService.save(preventivo);
+
+        // Marcar el informe como "paliativo sugerido" para bloquear futuras sugerencias
+        informe.setEstadoFinal("paliativo sugerido");
+        informeService.save(informe);
+
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("success", true);
+        resp.put("tareaId", tareaId);
         return ResponseEntity.ok(resp);
     }
 

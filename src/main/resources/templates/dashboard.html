@@ -1,7 +1,6 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+    xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head th:replace="plantillas/plantilla::head">
     <title>Dashboard | SigmaWeb</title>
@@ -25,6 +24,7 @@
     .dash-page-header {
         margin-bottom: 28px;
     }
+
     .dash-page-title {
         font-size: 1.75rem;
         font-weight: 800;
@@ -35,6 +35,7 @@
         gap: 0.6rem;
         letter-spacing: -0.03em;
     }
+
     .dash-page-subtitle {
         font-size: 0.875rem;
         color: var(--text-muted);
@@ -54,12 +55,14 @@
         box-shadow: var(--shadow-sm);
         transition: background-color var(--transition-normal), border-color var(--transition-normal);
     }
+
     .filter-bar label {
         color: var(--text-muted);
         font-size: 0.82rem;
         font-weight: 600;
         white-space: nowrap;
     }
+
     .filter-bar input[type="date"],
     .filter-bar select {
         background-color: var(--bg-input) !important;
@@ -71,12 +74,14 @@
         font-family: var(--font-family-base) !important;
         transition: border-color var(--transition-fast) !important;
     }
+
     .filter-bar input[type="date"]:focus,
     .filter-bar select:focus {
         outline: none !important;
         border-color: var(--border-focus) !important;
         box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2) !important;
     }
+
     .btn-apply-filter {
         background: linear-gradient(135deg, var(--accent-primary), #7c3aed);
         color: white;
@@ -89,7 +94,11 @@
         transition: opacity 0.2s, transform 0.1s;
         font-family: var(--font-family-base);
     }
-    .btn-apply-filter:hover { opacity: 0.88; transform: translateY(-1px); }
+
+    .btn-apply-filter:hover {
+        opacity: 0.88;
+        transform: translateY(-1px);
+    }
 
     /* KPI Grid */
     .dash-kpi-grid {
@@ -98,6 +107,7 @@
         gap: 14px;
         margin-bottom: 24px;
     }
+
     .dash-kpi-card {
         background-color: var(--bg-card);
         border: 1px solid var(--border-color);
@@ -106,24 +116,47 @@
         position: relative;
         overflow: hidden;
         transition: transform var(--transition-fast), box-shadow var(--transition-fast),
-                    background-color var(--transition-normal), border-color var(--transition-normal);
+            background-color var(--transition-normal), border-color var(--transition-normal);
     }
+
     .dash-kpi-card:hover {
         transform: translateY(-3px);
         box-shadow: var(--shadow-lg);
     }
+
     .dash-kpi-card::before {
         content: '';
         position: absolute;
-        top: 0; left: 0; width: 100%; height: 3px;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
         border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     }
-    .dash-kpi-card.correctivos::before { background: linear-gradient(90deg,#f43f5e,#fb923c); }
-    .dash-kpi-card.preventivos::before { background: linear-gradient(90deg,#22c55e,#16a34a); }
-    .dash-kpi-card.mttr::before        { background: linear-gradient(90deg,#0ea5e9,#38bdf8); }
-    .dash-kpi-card.mtbf::before        { background: linear-gradient(90deg,#a855f7,#818cf8); }
-    .dash-kpi-card.disponib::before    { background: linear-gradient(90deg,#f59e0b,#fbbf24); }
-    .dash-kpi-card.tecnicos::before    { background: linear-gradient(90deg,#14b8a6,#2dd4bf); }
+
+    .dash-kpi-card.correctivos::before {
+        background: linear-gradient(90deg, #f43f5e, #fb923c);
+    }
+
+    .dash-kpi-card.preventivos::before {
+        background: linear-gradient(90deg, #22c55e, #16a34a);
+    }
+
+    .dash-kpi-card.mttr::before {
+        background: linear-gradient(90deg, #0ea5e9, #38bdf8);
+    }
+
+    .dash-kpi-card.mtbf::before {
+        background: linear-gradient(90deg, #a855f7, #818cf8);
+    }
+
+    .dash-kpi-card.disponib::before {
+        background: linear-gradient(90deg, #f59e0b, #fbbf24);
+    }
+
+    .dash-kpi-card.tecnicos::before {
+        background: linear-gradient(90deg, #14b8a6, #2dd4bf);
+    }
 
     .dash-kpi-label {
         font-size: 0.7rem;
@@ -133,6 +166,7 @@
         color: var(--text-muted);
         margin-bottom: 8px;
     }
+
     .dash-kpi-value {
         font-size: 1.9rem;
         font-weight: 800;
@@ -140,14 +174,17 @@
         line-height: 1;
         letter-spacing: -0.03em;
     }
+
     .dash-kpi-sub {
         font-size: 0.72rem;
         color: var(--text-muted);
         margin-top: 5px;
     }
+
     .dash-kpi-icon {
         position: absolute;
-        top: 14px; right: 14px;
+        top: 14px;
+        right: 14px;
         font-size: 1.4rem;
         opacity: 0.12;
     }
@@ -160,6 +197,7 @@
         border-bottom: 1px solid var(--border-color);
         transition: border-color var(--transition-normal);
     }
+
     .dash-tab-btn {
         background: none;
         border: none;
@@ -175,13 +213,23 @@
         align-items: center;
         gap: 0.4rem;
     }
-    .dash-tab-btn:hover { color: var(--text-secondary); }
+
+    .dash-tab-btn:hover {
+        color: var(--text-secondary);
+    }
+
     .dash-tab-btn.active {
         color: var(--accent-primary);
         border-bottom-color: var(--accent-primary);
     }
-    .dash-tab-pane { display: none; }
-    .dash-tab-pane.active { display: block; }
+
+    .dash-tab-pane {
+        display: none;
+    }
+
+    .dash-tab-pane.active {
+        display: block;
+    }
 
     /* Chart cards grid */
     .charts-grid {
@@ -189,16 +237,24 @@
         grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
         gap: 18px;
     }
+
     .dash-chart-card {
         background-color: var(--bg-card);
         border: 1px solid var(--border-color);
         border-radius: var(--radius-lg);
         padding: 20px;
         transition: box-shadow var(--transition-fast),
-                    background-color var(--transition-normal), border-color var(--transition-normal);
+            background-color var(--transition-normal), border-color var(--transition-normal);
     }
-    .dash-chart-card:hover { box-shadow: var(--shadow-md); }
-    .dash-chart-card.wide { grid-column: 1 / -1; }
+
+    .dash-chart-card:hover {
+        box-shadow: var(--shadow-md);
+    }
+
+    .dash-chart-card.wide {
+        grid-column: 1 / -1;
+    }
+
     .dash-chart-title {
         font-size: 0.78rem;
         font-weight: 700;
@@ -210,7 +266,20 @@
         align-items: center;
         gap: 0.4rem;
     }
-    canvas { max-height: 300px; }
+
+    .dash-chart-container {
+        position: relative;
+        width: 100%;
+        height: 280px;
+    }
+
+    .dash-chart-container.tall {
+        height: 340px;
+    }
+
+    canvas {
+        max-height: 340px;
+    }
 
     /* Spinner */
     .spinner-overlay {
@@ -222,15 +291,25 @@
         align-items: center;
         justify-content: center;
     }
-    .spinner-overlay.active { display: flex; }
+
+    .spinner-overlay.active {
+        display: flex;
+    }
+
     .spinner-ring {
-        width: 48px; height: 48px;
-        border: 4px solid rgba(56,189,248,0.2);
+        width: 48px;
+        height: 48px;
+        border: 4px solid rgba(56, 189, 248, 0.2);
         border-top-color: var(--accent-primary);
         border-radius: 50%;
         animation: spin 0.8s linear infinite;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
 </style>
 
 <body>
@@ -239,7 +318,9 @@
     <div th:replace="plantillas/plantilla::menu"></div>
     <div th:replace="plantillas/plantilla::logo"></div>
 
-    <div class="spinner-overlay" id="spinnerOverlay"><div class="spinner-ring"></div></div>
+    <div class="spinner-overlay" id="spinnerOverlay">
+        <div class="spinner-ring"></div>
+    </div>
 
     <div class="dashboard-wrapper">
 
@@ -264,9 +345,9 @@
                 <option value="365">Último año</option>
             </select>
             <label>Desde:</label>
-            <input type="date" id="filtroDesde"/>
+            <input type="date" id="filtroDesde" />
             <label>Hasta:</label>
-            <input type="date" id="filtroHasta"/>
+            <input type="date" id="filtroHasta" />
             <button class="btn-apply-filter" onclick="recargarDashboard()" id="btnAplicarFiltro">
                 <i class="fas fa-filter me-1"></i> Aplicar
             </button>
@@ -347,8 +428,15 @@
                     <canvas id="chartEvolucionFallas"></canvas>
                 </div>
                 <div class="dash-chart-card wide">
-                    <div class="dash-chart-title"><i class="fas fa-trophy"></i> Top 10 Equipos con Más Fallas</div>
-                    <canvas id="chartFallasPorEquipo"></canvas>
+                    <div class="dash-chart-title" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span><i class="fas fa-trophy"></i> Top 10 Equipos con Más Fallas (Análisis Pareto 80/20)</span>
+                        <span style="font-size: 0.72rem; font-weight: 600; padding: 3px 10px; border-radius: 12px; background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.25);">
+                            <i class="fas fa-chart-bar"></i> Diagrama Pareto
+                        </span>
+                    </div>
+                    <div class="dash-chart-container tall">
+                        <canvas id="chartFallasPorEquipo"></canvas>
+                    </div>
                 </div>
                 <div class="dash-chart-card wide">
                     <div class="dash-chart-title"><i class="fas fa-stopwatch"></i> MTTR Promedio por Mes (horas)</div>
@@ -370,23 +458,38 @@
             <div class="charts-grid">
                 <div class="dash-chart-card">
                     <div class="dash-chart-title"><i class="fas fa-circle-notch"></i> Estado de Preventivos</div>
-                    <canvas id="chartEstadoPreventivos"></canvas>
+                    <div class="dash-chart-container">
+                        <canvas id="chartEstadoPreventivos"></canvas>
+                    </div>
                 </div>
                 <div class="dash-chart-card">
                     <div class="dash-chart-title"><i class="fas fa-redo"></i> Preventivos por Frecuencia</div>
-                    <canvas id="chartFrecuenciaPreventivos"></canvas>
+                    <div class="dash-chart-container">
+                        <canvas id="chartFrecuenciaPreventivos"></canvas>
+                    </div>
                 </div>
                 <div class="dash-chart-card wide">
                     <div class="dash-chart-title"><i class="fas fa-calendar-alt"></i> Preventivos por Mes (Programados vs Realizados)</div>
-                    <canvas id="chartPreventivosVsRealizados"></canvas>
+                    <div class="dash-chart-container">
+                        <canvas id="chartPreventivosVsRealizados"></canvas>
+                    </div>
                 </div>
                 <div class="dash-chart-card wide">
-                    <div class="dash-chart-title"><i class="fas fa-trophy"></i> Top Equipos con Más Preventivos</div>
-                    <canvas id="chartEquiposPreventivos"></canvas>
+                    <div class="dash-chart-title" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span><i class="fas fa-trophy"></i> Top Equipos con Más Preventivos</span>
+                        <span style="font-size: 0.72rem; font-weight: 600; padding: 3px 10px; border-radius: 12px; background: rgba(45, 212, 191, 0.12); color: #2dd4bf; border: 1px solid rgba(45, 212, 191, 0.25);">
+                            <i class="fas fa-chart-bar"></i> Diagrama Pareto
+                        </span>
+                    </div>
+                    <div class="dash-chart-container tall">
+                        <canvas id="chartEquiposPreventivos"></canvas>
+                    </div>
                 </div>
                 <div class="dash-chart-card">
                     <div class="dash-chart-title"><i class="fas fa-tags"></i> Preventivos por Categoría</div>
-                    <canvas id="chartCategoriaPreventivos"></canvas>
+                    <div class="dash-chart-container">
+                        <canvas id="chartCategoriaPreventivos"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -396,19 +499,27 @@
             <div class="charts-grid">
                 <div class="dash-chart-card">
                     <div class="dash-chart-title"><i class="fas fa-medal"></i> Ranking por Promedio de Evaluación</div>
-                    <canvas id="chartRankingTecnicos"></canvas>
+                    <div class="dash-chart-container">
+                        <canvas id="chartRankingTecnicos"></canvas>
+                    </div>
                 </div>
                 <div class="dash-chart-card">
                     <div class="dash-chart-title"><i class="fas fa-spider"></i> Radar Promedio del Equipo</div>
-                    <canvas id="chartRadarEquipo"></canvas>
+                    <div class="dash-chart-container">
+                        <canvas id="chartRadarEquipo"></canvas>
+                    </div>
                 </div>
                 <div class="dash-chart-card wide">
                     <div class="dash-chart-title"><i class="fas fa-hard-hat"></i> Correctivos Cerrados por Técnico</div>
-                    <canvas id="chartTareasPorTecnico"></canvas>
+                    <div class="dash-chart-container">
+                        <canvas id="chartTareasPorTecnico"></canvas>
+                    </div>
                 </div>
                 <div class="dash-chart-card wide">
                     <div class="dash-chart-title"><i class="fas fa-cogs"></i> Preventivos Realizados por Técnico</div>
-                    <canvas id="chartPreventivosPorTecnico"></canvas>
+                    <div class="dash-chart-container">
+                        <canvas id="chartPreventivosPorTecnico"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -416,248 +527,617 @@
     </div><!-- end dashboard-wrapper -->
 
     <script th:inline="javascript">
-    // ============================================================
-    // HELPERS DE COLOR ADAPTADOS AL TEMA
-    // ============================================================
-    function getThemeColors() {
-        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-        return {
-            isDark,
-            tickColor:   isDark ? '#94a3b8' : '#475569',
-            gridColor:   isDark ? 'rgba(148,163,184,0.08)' : 'rgba(71,85,105,0.08)',
-            legendColor: isDark ? '#94a3b8' : '#475569',
-            fontFamily:  'Plus Jakarta Sans, sans-serif'
-        };
-    }
-
-    const C10 = ['#f43f5e','#fb923c','#fbbf24','#a3e635','#34d399','#22d3ee','#818cf8','#e879f9','#f472b6','#94a3b8'];
-
-    function makeBarDefaults() {
-        const { tickColor, gridColor, legendColor, fontFamily } = getThemeColors();
-        return {
-            responsive: true, maintainAspectRatio: true,
-            plugins: { legend: { labels: { color: legendColor, font: { family: fontFamily, size: 12 } } } },
-            scales: {
-                x: { ticks: { color: tickColor, font: { family: fontFamily } }, grid: { color: gridColor } },
-                y: { ticks: { color: tickColor, font: { family: fontFamily } }, grid: { color: gridColor } }
-            }
-        };
-    }
-
-    function makeDoughnutDefaults() {
-        const { legendColor, fontFamily } = getThemeColors();
-        return {
-            responsive: true, maintainAspectRatio: true,
-            plugins: { legend: { position: 'bottom', labels: { color: legendColor, font: { family: fontFamily, size: 12 }, padding: 16 } } }
-        };
-    }
-
-    let charts = {};
-    function mkChart(id, config) {
-        if (charts[id]) charts[id].destroy();
-        const ctx = document.getElementById(id);
-        if (!ctx) return;
-        charts[id] = new Chart(ctx.getContext('2d'), config);
-    }
-
-    // ============================================================
-    // TABS Y FILTROS
-    // ============================================================
-    function activarTab(tabId, btn) {
-        document.querySelectorAll('.dash-tab-pane').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.dash-tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('tab-' + tabId).classList.add('active');
-        btn.classList.add('active');
-    }
-
-    function aplicarPeriodoRapido(dias) {
-        if (!dias) return;
-        const hasta = new Date(), desde = new Date();
-        desde.setDate(hasta.getDate() - parseInt(dias));
-        document.getElementById('filtroHasta').value = hasta.toISOString().split('T')[0];
-        document.getElementById('filtroDesde').value = desde.toISOString().split('T')[0];
-    }
-
-    function getFiltros() {
-        return { desde: document.getElementById('filtroDesde').value, hasta: document.getElementById('filtroHasta').value };
-    }
-
-    // ============================================================
-    // DATOS MOCK — reemplazar por fetch() cuando se implemente el backend
-    // ============================================================
-    //
-    // INSTRUCCIONES PARA INTEGRACIÓN CON BACKEND
-    // ------------------------------------------
-    // Crear un controlador: modulo/tareas/ControladorDashboard.java (o similar)
-    // con el mapping /api/dashboard/**
-    // Todos los endpoints reciben @RequestParam String desde, String hasta (formato YYYY-MM-DD)
-    // y devuelven ResponseEntity con un Map o DTO simple.
-    //
-
-    function getMockKPIs() {
-        return { correctivosAbiertos:12, correcivostivCerrados:47, mttrHoras:4.2, mtbfHoras:183,
-                 disponibilidad:97.7, cumplimientoPreventivos:'82%', promedioEvaluacionEquipo:8.4 };
-    }
-    function getMockEstadoTareas()          { return { labels:['Pendiente','Asignada','Cerrada'], values:[5,7,47] }; }
-    function getMockAfectaProduccion()      { return { labels:['Afecta producción','No afecta'], values:[18,41] }; }
-    function getMockEvolucionFallas()       { return { labels:['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago'], values:[8,14,6,11,9,15,12,7] }; }
-    function getMockFallasPorEquipo()       { return { labels:['Compresor A','Selladora L1','Conveyor 3','Bomba Hidr.','Inyectora B','Enfriador','Cortadora','Mezcladora','Agitador 2','Válvula Ppal'], values:[14,11,9,8,7,6,5,5,4,3] }; }
-    function getMockMttrMensual()           { return { labels:['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago'], values:[5.2,3.8,6.1,4.4,3.9,5.5,4.1,3.2] }; }
-    function getMockCategoriaTecnica()      { return { labels:['Mecánica','Eléctrica','Neumática','Hidráulica','Software','Otro'], values:[22,18,9,7,5,3] }; }
-    function getMockPorDepartamento()       { return { labels:['Planta A','Planta B','Logística','Calidad','RRHH'], values:[28,21,9,5,2] }; }
-    function getMockEstadoPreventivos()     { return { labels:['Realizado','Programado','Vencido'], values:[34,8,6] }; }
-    function getMockFrecuenciaPreventivos() { return { labels:['Diaria','Semanal','Mensual','Trimestral','Anual'], values:[5,12,18,8,5] }; }
-    function getMockPreventivosVsRealizados() { return { labels:['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago'], programados:[10,12,11,13,10,12,11,9], realizados:[9,10,8,12,9,11,9,8] }; }
-    function getMockEquiposPreventivos()    { return { labels:['Compresor A','Selladora L1','Inyectora B','Bomba Hidr.','Conveyor 3'], values:[12,9,8,7,5] }; }
-    function getMockCategoriaPreventivos()  { return { labels:['Lubricación','Limpieza','Calibración','Inspección','Reemplazo'], values:[14,11,8,9,6] }; }
-    function getMockRankingTecnicos()       { return { labels:['García J.','López A.','Martínez P.','Fernández M.','Rodríguez C.'], values:[9.2,8.8,8.5,8.1,7.9] }; }
-    function getMockRadarEquipo()           { return { labels:['Eficiencia','Calidad','Comunicación','Trabajo equipo','Resolución','Iniciativa','Seguridad','Puntualidad','Conocimiento'], values:[8.4,8.7,7.9,8.2,8.5,7.8,9.1,8.0,8.6] }; }
-    function getMockTareasPorTecnico()      { return { labels:['García J.','López A.','Martínez P.','Fernández M.','Rodríguez C.'], values:[18,14,12,10,8] }; }
-    function getMockPreventivosPorTecnico() { return { labels:['García J.','Martínez P.','Fernández M.','López A.','Rodríguez C.'], values:[9,8,7,6,4] }; }
-
-    // ============================================================
-    // RENDER KPIs
-    // ============================================================
-    function renderKPIs(kpis) {
-        if (!kpis) return;
-        const abiertos = kpis.abiertos ?? kpis.ABIERTOS ?? 0;
-        const cerrados = kpis.cerrados ?? kpis.CERRADOS ?? 0;
-        const mttrRaw = kpis.mttrpromediohoras ?? kpis.mttrPromedioHoras ?? kpis.MTTRPROMEDIOHORAS ?? 0;
-        const mtbfRaw = kpis.mtbfhoras ?? kpis.mtbfHoras ?? kpis.MTBFHORAS ?? 0;
-        const dispRaw = kpis.disponibilidad ?? kpis.DISPONIBILIDAD ?? 0;
-
-        document.getElementById('kpiCorrectivosAbiertos').textContent = abiertos;
-        document.getElementById('kpiCorrectivosCerrados').textContent = cerrados;
-        document.getElementById('kpiMttr').textContent = Number(mttrRaw).toFixed(1) + 'h';
-        document.getElementById('kpiMtbf').textContent = Number(mtbfRaw).toFixed(0) + 'h';
-        document.getElementById('kpiDisponibilidad').textContent = Number(dispRaw).toFixed(1) + '%';
-    }
-
-    // ============================================================
-    // RENDER CORRECTIVOS (AJAX BACKEND)
-    // ============================================================
-    function renderCorrectivosData(data) {
-        const BD = makeBarDefaults();
-        const DD = makeDoughnutDefaults();
-
-        const st = data.estadoTareas || { labels: [], values: [] };
-        mkChart('chartEstadoTareas', { type:'doughnut', data:{ labels:st.labels, datasets:[{data:st.values, backgroundColor:['#f43f5e','#fbbf24','#22c55e','#38bdf8'], borderWidth:0}]}, options:DD });
-
-        const ap = data.afectaProduccion || { labels: [], values: [] };
-        mkChart('chartAfectaProduccion', { type:'doughnut', data:{ labels:ap.labels, datasets:[{data:ap.values, backgroundColor:['#f43f5e','#38bdf8'], borderWidth:0}]}, options:DD });
-
-        const ef = data.evolucionFallas || { labels: [], values: [] };
-        mkChart('chartEvolucionFallas', { type:'line', data:{ labels:ef.labels, datasets:[{label:'Fallas/mes', data:ef.values, borderColor:'#f43f5e', backgroundColor:'rgba(244,63,94,0.1)', tension:0.4, fill:true, pointRadius:4}]}, options:BD });
-
-        const fe = data.fallasPorEquipo || { labels: [], values: [] };
-        mkChart('chartFallasPorEquipo', { type:'bar', data:{ labels:fe.labels, datasets:[{label:'Fallas', data:fe.values, backgroundColor:C10, borderRadius:6}]}, options:{...BD, indexAxis:'y'} });
-
-        const mm = data.mttrMensual || { labels: [], values: [] };
-        mkChart('chartMttrMensual', { type:'bar', data:{ labels:mm.labels, datasets:[{label:'MTTR (h)', data:mm.values, backgroundColor:'rgba(56,189,248,0.7)', borderRadius:6}]}, options:BD });
-
-        const ct = data.categoriaTecnica || { labels: [], values: [] };
-        mkChart('chartCategoriaTecnica', { type:'doughnut', data:{ labels:ct.labels, datasets:[{data:ct.values, backgroundColor:C10, borderWidth:0}]}, options:DD });
-
-        const dep = data.porDepartamento || { labels: [], values: [] };
-        mkChart('chartPorDepartamento', { type:'bar', data:{ labels:dep.labels, datasets:[{label:'Fallas', data:dep.values, backgroundColor:'#818cf8', borderRadius:6}]}, options:BD });
-    }
-
-    async function cargarCorrectivosAJAX() {
-        const { desde, hasta } = getFiltros();
-        const overlay = document.getElementById('spinnerOverlay');
-        if (overlay) overlay.style.display = 'flex';
-        try {
-            const baseUrl = /*[[@{/api/dashboard/correctivos}]]*/ '/inicio/api/dashboard/correctivos';
-            const resp = await fetch(`${baseUrl}?desde=${encodeURIComponent(desde)}&hasta=${encodeURIComponent(hasta)}`);
-            if (resp.ok) {
-                const data = await resp.json();
-                renderKPIs(data.kpis);
-                renderCorrectivosData(data);
-            }
-        } catch (e) {
-            console.error("Error al cargar datos de correctivos:", e);
-        } finally {
-            if (overlay) overlay.style.display = 'none';
+        // ============================================================
+        // HELPERS DE COLOR ADAPTADOS AL TEMA
+        // ============================================================
+        function getThemeColors() {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            return {
+                isDark,
+                tickColor: isDark ? '#94a3b8' : '#475569',
+                gridColor: isDark ? 'rgba(148,163,184,0.08)' : 'rgba(71,85,105,0.08)',
+                legendColor: isDark ? '#94a3b8' : '#475569',
+                fontFamily: 'Plus Jakarta Sans, sans-serif'
+            };
         }
-    }
 
-    // ============================================================
-    // RENDER PREVENTIVOS (MOCK)
-    // ============================================================
-    function renderPreventivos() {
-        const BD = makeBarDefaults();
-        const DD = makeDoughnutDefaults();
+        const C10 = ['#f43f5e', '#fb923c', '#fbbf24', '#a3e635', '#34d399', '#22d3ee', '#818cf8', '#e879f9', '#f472b6', '#94a3b8'];
 
-        const ep = getMockEstadoPreventivos();
-        mkChart('chartEstadoPreventivos', { type:'doughnut', data:{labels:ep.labels, datasets:[{data:ep.values, backgroundColor:['#22c55e','#38bdf8','#f43f5e'], borderWidth:0}]}, options:DD });
-
-        const fp = getMockFrecuenciaPreventivos();
-        mkChart('chartFrecuenciaPreventivos', { type:'bar', data:{labels:fp.labels, datasets:[{label:'Cantidad', data:fp.values, backgroundColor:'#22c55e', borderRadius:6}]}, options:BD });
-
-        const vr = getMockPreventivosVsRealizados();
-        mkChart('chartPreventivosVsRealizados', { type:'bar', data:{labels:vr.labels, datasets:[
-            {label:'Programados', data:vr.programados, backgroundColor:'rgba(56,189,248,0.7)', borderRadius:4},
-            {label:'Realizados',  data:vr.realizados,  backgroundColor:'rgba(34,197,94,0.7)',  borderRadius:4}
-        ]}, options:BD });
-
-        const eqp = getMockEquiposPreventivos();
-        mkChart('chartEquiposPreventivos', { type:'bar', data:{labels:eqp.labels, datasets:[{label:'Preventivos', data:eqp.values, backgroundColor:'#2dd4bf', borderRadius:6}]}, options:{...BD, indexAxis:'y'} });
-
-        const cap = getMockCategoriaPreventivos();
-        mkChart('chartCategoriaPreventivos', { type:'doughnut', data:{labels:cap.labels, datasets:[{data:cap.values, backgroundColor:['#22c55e','#38bdf8','#a855f7','#fbbf24','#f43f5e'], borderWidth:0}]}, options:DD });
-    }
-
-    // ============================================================
-    // RENDER DESEMPEÑO TÉCNICO (MOCK)
-    // ============================================================
-    function renderDesempeno() {
-        const BD = makeBarDefaults();
-        const { tickColor, gridColor, legendColor, fontFamily } = getThemeColors();
-
-        const rk = getMockRankingTecnicos();
-        mkChart('chartRankingTecnicos', { type:'bar', data:{labels:rk.labels, datasets:[{label:'Promedio', data:rk.values, backgroundColor:C10, borderRadius:6}]}, options:{...BD, indexAxis:'y', scales:{...BD.scales, x:{...BD.scales.x, min:0, max:10}}} });
-
-        const rd = getMockRadarEquipo();
-        mkChart('chartRadarEquipo', { type:'radar', data:{labels:rd.labels, datasets:[{label:'Promedio equipo', data:rd.values, backgroundColor:'rgba(56,189,248,0.15)', borderColor:'#38bdf8', pointBackgroundColor:'#38bdf8', pointRadius:4}]},
-            options:{ responsive:true, plugins:{legend:{labels:{color:legendColor, font:{family:fontFamily,size:12}}}}, scales:{r:{min:0,max:10, ticks:{color:tickColor,backdropColor:'transparent',font:{family:fontFamily,size:10}}, grid:{color:gridColor}, angleLines:{color:gridColor}, pointLabels:{color:legendColor,font:{family:fontFamily,size:11}}}}} });
-
-        const tt = getMockTareasPorTecnico();
-        mkChart('chartTareasPorTecnico', { type:'bar', data:{labels:tt.labels, datasets:[{label:'Correctivos cerrados', data:tt.values, backgroundColor:'#f43f5e', borderRadius:6}]}, options:BD });
-
-        const pt = getMockPreventivosPorTecnico();
-        mkChart('chartPreventivosPorTecnico', { type:'bar', data:{labels:pt.labels, datasets:[{label:'Preventivos realizados', data:pt.values, backgroundColor:'#22c55e', borderRadius:6}]}, options:BD });
-    }
-
-    // ============================================================
-    // RECARGA Y TEMA
-    // ============================================================
-    function recargarDashboard() {
-        const { desde, hasta } = getFiltros();
-        if (desde && hasta) {
-            document.getElementById('dashboardPeriodo').textContent = 'Período: ' + desde + ' → ' + hasta;
+        function makeBarDefaults() {
+            const { tickColor, gridColor, legendColor, fontFamily } = getThemeColors();
+            return {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { labels: { color: legendColor, font: { family: fontFamily, size: 12 } } } },
+                scales: {
+                    x: { ticks: { color: tickColor, font: { family: fontFamily, size: 11 } }, grid: { color: gridColor } },
+                    y: { ticks: { color: tickColor, font: { family: fontFamily, size: 11 } }, grid: { color: gridColor }, beginAtZero: true }
+                }
+            };
         }
-        cargarCorrectivosAJAX();
-        renderPreventivos();
-        renderDesempeno();
-    }
 
+        function makeDoughnutDefaults() {
+            const { legendColor, fontFamily } = getThemeColors();
+            return {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom', labels: { color: legendColor, font: { family: fontFamily, size: 12 }, padding: 16 } } }
+            };
+        }
 
-    // Escuchar cambios de tema para re-renderizar gráficos
-    const themeObserver = new MutationObserver((mutations) => {
-        mutations.forEach(m => {
-            if (m.attributeName === 'data-theme') {
-                // Pequeño delay para que las variables CSS actualicen
-                setTimeout(() => recargarDashboard(), 50);
+        let charts = {};
+        function mkChart(id, config) {
+            if (charts[id]) charts[id].destroy();
+            const ctx = document.getElementById(id);
+            if (!ctx) return;
+            charts[id] = new Chart(ctx.getContext('2d'), config);
+        }
+
+        // ============================================================
+        // TABS Y FILTROS
+        // ============================================================
+        function activarTab(tabId, btn) {
+            document.querySelectorAll('.dash-tab-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.dash-tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        function aplicarPeriodoRapido(dias) {
+            if (!dias) return;
+            const hasta = new Date(), desde = new Date();
+            desde.setDate(hasta.getDate() - parseInt(dias));
+            document.getElementById('filtroHasta').value = hasta.toISOString().split('T')[0];
+            document.getElementById('filtroDesde').value = desde.toISOString().split('T')[0];
+        }
+
+        function getFiltros() {
+            return { desde: document.getElementById('filtroDesde').value, hasta: document.getElementById('filtroHasta').value };
+        }
+
+        // ============================================================
+        // DATOS MOCK — reemplazar por fetch() cuando se implemente el backend
+        // ============================================================
+        //
+        // INSTRUCCIONES PARA INTEGRACIÓN CON BACKEND
+        // ------------------------------------------
+        // Crear un controlador: modulo/tareas/ControladorDashboard.java (o similar)
+        // con el mapping /api/dashboard/**
+        // Todos los endpoints reciben @RequestParam String desde, String hasta (formato YYYY-MM-DD)
+        // y devuelven ResponseEntity con un Map o DTO simple.
+        //
+
+        function getMockKPIs() {
+            return {
+                correctivosAbiertos: 12, correcivostivCerrados: 47, mttrHoras: 4.2, mtbfHoras: 183,
+                disponibilidad: 97.7, cumplimientoPreventivos: '82%', promedioEvaluacionEquipo: 8.4
+            };
+        }
+        function getMockEstadoTareas() { return { labels: ['Pendiente', 'Asignada', 'Cerrada'], values: [5, 7, 47] }; }
+        function getMockAfectaProduccion() { return { labels: ['Afecta producción', 'No afecta'], values: [18, 41] }; }
+        function getMockEvolucionFallas() { return { labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago'], values: [8, 14, 6, 11, 9, 15, 12, 7] }; }
+        function getMockFallasPorEquipo() { return { labels: ['Compresor A', 'Selladora L1', 'Conveyor 3', 'Bomba Hidr.', 'Inyectora B', 'Enfriador', 'Cortadora', 'Mezcladora', 'Agitador 2', 'Válvula Ppal'], values: [14, 11, 9, 8, 7, 6, 5, 5, 4, 3] }; }
+        function getMockMttrMensual() { return { labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago'], values: [5.2, 3.8, 6.1, 4.4, 3.9, 5.5, 4.1, 3.2] }; }
+        function getMockCategoriaTecnica() { return { labels: ['Mecánica', 'Eléctrica', 'Neumática', 'Hidráulica', 'Software', 'Otro'], values: [22, 18, 9, 7, 5, 3] }; }
+        function getMockPorDepartamento() { return { labels: ['Planta A', 'Planta B', 'Logística', 'Calidad', 'RRHH'], values: [28, 21, 9, 5, 2] }; }
+        function getMockEstadoPreventivos() { return { labels: ['Realizado', 'Programado', 'Vencido'], values: [34, 8, 6] }; }
+        function getMockFrecuenciaPreventivos() { return { labels: ['Diaria', 'Semanal', 'Mensual', 'Trimestral', 'Anual'], values: [5, 12, 18, 8, 5] }; }
+        function getMockPreventivosVsRealizados() { return { labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago'], programados: [10, 12, 11, 13, 10, 12, 11, 9], realizados: [9, 10, 8, 12, 9, 11, 9, 8] }; }
+        function getMockEquiposPreventivos() { return { labels: ['Compresor A', 'Selladora L1', 'Inyectora B', 'Bomba Hidr.', 'Conveyor 3'], values: [12, 9, 8, 7, 5] }; }
+        function getMockCategoriaPreventivos() { return { labels: ['Lubricación', 'Limpieza', 'Calibración', 'Inspección', 'Reemplazo'], values: [14, 11, 8, 9, 6] }; }
+        function getMockRankingTecnicos() { return { labels: ['García J.', 'López A.', 'Martínez P.', 'Fernández M.', 'Rodríguez C.'], values: [9.2, 8.8, 8.5, 8.1, 7.9] }; }
+        function getMockRadarEquipo() { return { labels: ['Eficiencia', 'Calidad', 'Comunicación', 'Trabajo equipo', 'Resolución', 'Iniciativa', 'Seguridad', 'Puntualidad', 'Conocimiento'], values: [8.4, 8.7, 7.9, 8.2, 8.5, 7.8, 9.1, 8.0, 8.6] }; }
+        function getMockTareasPorTecnico() { return { labels: ['García J.', 'López A.', 'Martínez P.', 'Fernández M.', 'Rodríguez C.'], values: [18, 14, 12, 10, 8] }; }
+        function getMockPreventivosPorTecnico() { return { labels: ['García J.', 'Martínez P.', 'Fernández M.', 'López A.', 'Rodríguez C.'], values: [9, 8, 7, 6, 4] }; }
+
+        // ============================================================
+        // RENDER KPIs
+        // ============================================================
+        function renderKPIs(kpis) {
+            if (!kpis) return;
+            const abiertos = kpis.abiertos ?? kpis.ABIERTOS ?? 0;
+            const cerrados = kpis.cerrados ?? kpis.CERRADOS ?? 0;
+            const mttrRaw = kpis.mttrpromediohoras ?? kpis.mttrPromedioHoras ?? kpis.MTTRPROMEDIOHORAS ?? 0;
+            const mtbfRaw = kpis.mtbfhoras ?? kpis.mtbfHoras ?? kpis.MTBFHORAS ?? 0;
+            const dispRaw = kpis.disponibilidad ?? kpis.DISPONIBILIDAD ?? 0;
+
+            document.getElementById('kpiCorrectivosAbiertos').textContent = abiertos;
+            document.getElementById('kpiCorrectivosCerrados').textContent = cerrados;
+            document.getElementById('kpiMttr').textContent = Number(mttrRaw).toFixed(1) + 'h';
+            document.getElementById('kpiMtbf').textContent = Number(mtbfRaw).toFixed(0) + 'h';
+            document.getElementById('kpiDisponibilidad').textContent = Number(dispRaw).toFixed(1) + '%';
+        }
+
+        // ============================================================
+        // RENDER CORRECTIVOS (AJAX BACKEND)
+        // ============================================================
+        function renderCorrectivosData(data) {
+            const BD = makeBarDefaults();
+            const DD = makeDoughnutDefaults();
+
+            const st = data.estadoTareas || { labels: [], values: [] };
+            mkChart('chartEstadoTareas', { type: 'doughnut', data: { labels: st.labels, datasets: [{ data: st.values, backgroundColor: ['#f43f5e', '#fbbf24', '#22c55e', '#38bdf8'], borderWidth: 0 }] }, options: DD });
+
+            const ap = data.afectaProduccion || { labels: [], values: [] };
+            mkChart('chartAfectaProduccion', { type: 'doughnut', data: { labels: ap.labels, datasets: [{ data: ap.values, backgroundColor: ['#f43f5e', '#38bdf8'], borderWidth: 0 }] }, options: DD });
+
+            const ef = data.evolucionFallas || { labels: [], values: [] };
+            mkChart('chartEvolucionFallas', { type: 'line', data: { labels: ef.labels, datasets: [{ label: 'Fallas/mes', data: ef.values, borderColor: '#f43f5e', backgroundColor: 'rgba(244,63,94,0.1)', tension: 0.4, fill: true, pointRadius: 4 }] }, options: BD });
+
+            // Top 10 Equipos con más fallas — Diagrama de Pareto (Barras + Línea % Acumulado)
+            const feRaw = data.fallasPorEquipo || { labels: [], values: [] };
+            const feLabels = feRaw.labels || [];
+            const feValues = (feRaw.values || []).map(v => Number(v));
+
+            const feTotal = feValues.reduce((a, b) => a + b, 0);
+            let feRunning = 0;
+            const feParetoAcum = feValues.map(v => {
+                feRunning += v;
+                return feTotal > 0 ? Math.round((feRunning / feTotal) * 100) : 0;
+            });
+
+            const feColors = ['#f43f5e', '#fb923c', '#fbbf24', '#a3e635', '#34d399', '#22d3ee', '#818cf8', '#e879f9', '#f472b6', '#94a3b8'];
+            const { tickColor: feTickColor, gridColor: feGridColor, legendColor: feLegendColor, fontFamily: feFontFamily } = getThemeColors();
+
+            mkChart('chartFallasPorEquipo', {
+                data: {
+                    labels: feLabels,
+                    datasets: [
+                        {
+                            type: 'bar',
+                            label: 'Cantidad de Fallas',
+                            data: feValues,
+                            backgroundColor: feColors.slice(0, feValues.length),
+                            borderRadius: 6,
+                            borderSkipped: false,
+                            yAxisID: 'y'
+                        },
+                        {
+                            type: 'line',
+                            label: '% Acumulado (Pareto)',
+                            data: feParetoAcum,
+                            borderColor: '#38bdf8',
+                            backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                            borderWidth: 2.5,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            pointBackgroundColor: '#38bdf8',
+                            tension: 0.3,
+                            fill: false,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { color: feLegendColor, font: { family: feFontFamily, size: 12 } }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleFont: { family: feFontFamily, size: 13, weight: 'bold' },
+                            bodyFont: { family: feFontFamily, size: 12 },
+                            padding: 10,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    if (context.dataset.yAxisID === 'y1') {
+                                        return ` % Acumulado: ${context.raw}%`;
+                                    }
+                                    return ` Fallas: ${context.raw}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: feTickColor, font: { family: feFontFamily, size: 11 }, maxRotation: 35 },
+                            grid: { color: feGridColor }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            beginAtZero: true,
+                            ticks: { color: feTickColor, font: { family: feFontFamily, size: 11 }, precision: 0 },
+                            grid: { color: feGridColor },
+                            title: { display: true, text: 'Nº Fallas', color: feTickColor, font: { family: feFontFamily, size: 11, weight: 'bold' } }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            beginAtZero: true,
+                            min: 0,
+                            max: 100,
+                            ticks: { color: '#38bdf8', font: { family: feFontFamily, size: 11 }, callback: v => v + '%' },
+                            grid: { drawOnChartArea: false },
+                            title: { display: true, text: '% Acumulado', color: '#38bdf8', font: { family: feFontFamily, size: 11, weight: 'bold' } }
+                        }
+                    }
+                }
+            });
+
+            const mm = data.mttrMensual || { labels: [], values: [] };
+            mkChart('chartMttrMensual', { type: 'bar', data: { labels: mm.labels, datasets: [{ label: 'MTTR (h)', data: mm.values, backgroundColor: 'rgba(56,189,248,0.7)', borderRadius: 6 }] }, options: BD });
+
+            const ct = data.categoriaTecnica || { labels: [], values: [] };
+            mkChart('chartCategoriaTecnica', { type: 'doughnut', data: { labels: ct.labels, datasets: [{ data: ct.values, backgroundColor: C10, borderWidth: 0 }] }, options: DD });
+
+            const dep = data.porDepartamento || { labels: [], values: [] };
+            mkChart('chartPorDepartamento', { type: 'bar', data: { labels: dep.labels, datasets: [{ label: 'Fallas', data: dep.values, backgroundColor: '#818cf8', borderRadius: 6 }] }, options: BD });
+        }
+
+        async function cargarCorrectivosAJAX() {
+            const { desde, hasta } = getFiltros();
+            const overlay = document.getElementById('spinnerOverlay');
+            if (overlay) overlay.style.display = 'flex';
+            try {
+                const baseUrl = /*[[@{/api/dashboard/correctivos}]]*/ '/inicio/api/dashboard/correctivos';
+                const url = `${baseUrl}?desde=${encodeURIComponent(desde)}&hasta=${encodeURIComponent(hasta)}`;
+                const resp = await fetch(url);
+                if (resp.ok) {
+                    const data = await resp.json();
+                    renderKPIs(data.kpis);
+                    renderCorrectivosData(data);
+                } else {
+                    const errText = await resp.text();
+                    console.error(`[Dashboard] API respondió ${resp.status} para ${url}:`, errText);
+                    // Mostrar datos mock como fallback para que los charts no queden vacíos
+                    renderCorrectivosData({
+                        estadoTareas: getMockEstadoTareas(),
+                        afectaProduccion: getMockAfectaProduccion(),
+                        evolucionFallas: getMockEvolucionFallas(),
+                        fallasPorEquipo: getMockFallasPorEquipo(),
+                        mttrMensual: getMockMttrMensual(),
+                        categoriaTecnica: getMockCategoriaTecnica(),
+                        porDepartamento: getMockPorDepartamento()
+                    });
+                }
+            } catch (e) {
+                console.error('[Dashboard] Error de red al cargar datos de correctivos:', e);
+                // Fallback a mock si hay error de red
+                renderCorrectivosData({
+                    estadoTareas: getMockEstadoTareas(),
+                    afectaProduccion: getMockAfectaProduccion(),
+                    evolucionFallas: getMockEvolucionFallas(),
+                    fallasPorEquipo: getMockFallasPorEquipo(),
+                    mttrMensual: getMockMttrMensual(),
+                    categoriaTecnica: getMockCategoriaTecnica(),
+                    porDepartamento: getMockPorDepartamento()
+                });
+            } finally {
+                if (overlay) overlay.style.display = 'none';
             }
+        }
+
+
+        // ============================================================
+        // RENDER PREVENTIVOS (AJAX BACKEND)
+        // ============================================================
+        function renderPreventivosData(data) {
+            const BD = makeBarDefaults();
+            const DD = makeDoughnutDefaults();
+
+            // 1. Estado de Preventivos
+            const ep = data.estadoPreventivos || { labels: [], values: [] };
+            mkChart('chartEstadoPreventivos', {
+                type: 'doughnut',
+                data: {
+                    labels: ep.labels,
+                    datasets: [{ data: ep.values, backgroundColor: ['#22c55e', '#38bdf8', '#f43f5e', '#fbbf24', '#a855f7'], borderWidth: 0 }]
+                },
+                options: DD
+            });
+
+            // 2. Frecuencia de Preventivos
+            const fp = data.frecuenciaPreventivos || { labels: [], values: [] };
+            mkChart('chartFrecuenciaPreventivos', {
+                type: 'bar',
+                data: {
+                    labels: fp.labels,
+                    datasets: [{ label: 'Cantidad', data: fp.values, backgroundColor: '#22c55e', borderRadius: 6 }]
+                },
+                options: BD
+            });
+
+            // 3. Programados vs Realizados
+            const vr = data.preventivosVsRealizados || { labels: [], programados: [], realizados: [] };
+            mkChart('chartPreventivosVsRealizados', {
+                type: 'bar',
+                data: {
+                    labels: vr.labels,
+                    datasets: [
+                        { label: 'Programados', data: vr.programados, backgroundColor: 'rgba(56,189,248,0.7)', borderRadius: 4 },
+                        { label: 'Realizados', data: vr.realizados, backgroundColor: 'rgba(34,197,94,0.7)', borderRadius: 4 }
+                    ]
+                },
+                options: BD
+            });
+
+            // 4. Equipos con Más Preventivos (Pareto 80/20)
+            const eqpRaw = data.equiposPreventivos || { labels: [], values: [] };
+            const eqpLabels = eqpRaw.labels || [];
+            const eqpValues = (eqpRaw.values || []).map(v => Number(v));
+
+            const eqpTotal = eqpValues.reduce((a, b) => a + b, 0);
+            let eqpRunning = 0;
+            const eqpParetoAcum = eqpValues.map(v => {
+                eqpRunning += v;
+                return eqpTotal > 0 ? Math.round((eqpRunning / eqpTotal) * 100) : 0;
+            });
+
+            const { tickColor: eqpTickColor, gridColor: eqpGridColor, legendColor: eqpLegendColor, fontFamily: eqpFontFamily } = getThemeColors();
+
+            mkChart('chartEquiposPreventivos', {
+                data: {
+                    labels: eqpLabels,
+                    datasets: [
+                        {
+                            type: 'bar',
+                            label: 'Cantidad Preventivos',
+                            data: eqpValues,
+                            backgroundColor: '#2dd4bf',
+                            borderRadius: 6,
+                            borderSkipped: false,
+                            yAxisID: 'y'
+                        },
+                        {
+                            type: 'line',
+                            label: '% Acumulado (Pareto)',
+                            data: eqpParetoAcum,
+                            borderColor: '#38bdf8',
+                            backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                            borderWidth: 2.5,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            pointBackgroundColor: '#38bdf8',
+                            tension: 0.3,
+                            fill: false,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { color: eqpLegendColor, font: { family: eqpFontFamily, size: 12 } }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleFont: { family: eqpFontFamily, size: 13, weight: 'bold' },
+                            bodyFont: { family: eqpFontFamily, size: 12 },
+                            padding: 10,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    if (context.dataset.yAxisID === 'y1') {
+                                        return ` % Acumulado: ${context.raw}%`;
+                                    }
+                                    return ` Preventivos: ${context.raw}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: eqpTickColor, font: { family: eqpFontFamily, size: 11 }, maxRotation: 35 },
+                            grid: { color: eqpGridColor }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            beginAtZero: true,
+                            ticks: { color: eqpTickColor, font: { family: eqpFontFamily, size: 11 }, precision: 0 },
+                            grid: { color: eqpGridColor },
+                            title: { display: true, text: 'Nº Preventivos', color: eqpTickColor, font: { family: eqpFontFamily, size: 11, weight: 'bold' } }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            beginAtZero: true,
+                            min: 0,
+                            max: 100,
+                            ticks: { color: '#38bdf8', font: { family: eqpFontFamily, size: 11 }, callback: v => v + '%' },
+                            grid: { drawOnChartArea: false },
+                            title: { display: true, text: '% Acumulado', color: '#38bdf8', font: { family: eqpFontFamily, size: 11, weight: 'bold' } }
+                        }
+                    }
+                }
+            });
+
+            // 5. Preventivos por Categoría
+            const cap = data.categoriaPreventivos || { labels: [], values: [] };
+            mkChart('chartCategoriaPreventivos', {
+                type: 'doughnut',
+                data: {
+                    labels: cap.labels,
+                    datasets: [{ data: cap.values, backgroundColor: ['#22c55e', '#38bdf8', '#a855f7', '#fbbf24', '#f43f5e', '#818cf8', '#fb923c', '#e879f9'], borderWidth: 0 }]
+                },
+                options: DD
+            });
+        }
+
+        async function cargarPreventivosAJAX() {
+            const { desde, hasta } = getFiltros();
+            try {
+                const baseUrl = /*[[@{/api/dashboard/preventivos}]]*/ '/inicio/api/dashboard/preventivos';
+                const url = `${baseUrl}?desde=${encodeURIComponent(desde)}&hasta=${encodeURIComponent(hasta)}`;
+                const resp = await fetch(url);
+                if (resp.ok) {
+                    const data = await resp.json();
+                    renderPreventivosData(data);
+                } else {
+                    console.error(`[Dashboard] API Preventivos respondió ${resp.status}`);
+                    renderPreventivosData({
+                        estadoPreventivos: getMockEstadoPreventivos(),
+                        frecuenciaPreventivos: getMockFrecuenciaPreventivos(),
+                        preventivosVsRealizados: getMockPreventivosVsRealizados(),
+                        equiposPreventivos: getMockEquiposPreventivos(),
+                        categoriaPreventivos: getMockCategoriaPreventivos()
+                    });
+                }
+            } catch (e) {
+                console.error('[Dashboard] Error al cargar preventivos AJAX:', e);
+                renderPreventivosData({
+                    estadoPreventivos: getMockEstadoPreventivos(),
+                    frecuenciaPreventivos: getMockFrecuenciaPreventivos(),
+                    preventivosVsRealizados: getMockPreventivosVsRealizados(),
+                    equiposPreventivos: getMockEquiposPreventivos(),
+                    categoriaPreventivos: getMockCategoriaPreventivos()
+                });
+            }
+        }
+
+        // ============================================================
+        // RENDER DESEMPEÑO TÉCNICO (AJAX BACKEND)
+        // ============================================================
+        function renderDesempenoData(data) {
+            const BD = makeBarDefaults();
+            const { tickColor, gridColor, legendColor, fontFamily } = getThemeColors();
+
+            // 1. Ranking por Promedio de Evaluación
+            const rk = data.rankingTecnicos || { labels: [], values: [] };
+            mkChart('chartRankingTecnicos', {
+                type: 'bar',
+                data: {
+                    labels: rk.labels,
+                    datasets: [{ label: 'Promedio', data: rk.values, backgroundColor: C10, borderRadius: 6 }]
+                },
+                options: {
+                    ...BD,
+                    scales: {
+                        ...BD.scales,
+                        y: { ...BD.scales.y, min: 0, max: 10 }
+                    }
+                }
+            });
+
+            // 2. Radar Promedio del Equipo
+            const rd = data.radarEquipo || { labels: [], values: [] };
+            mkChart('chartRadarEquipo', {
+                type: 'radar',
+                data: {
+                    labels: rd.labels,
+                    datasets: [{
+                        label: 'Promedio equipo',
+                        data: rd.values,
+                        backgroundColor: 'rgba(56,189,248,0.15)',
+                        borderColor: '#38bdf8',
+                        pointBackgroundColor: '#38bdf8',
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: legendColor, font: { family: fontFamily, size: 12 } } }
+                    },
+                    scales: {
+                        r: {
+                            min: 0,
+                            max: 10,
+                            ticks: { color: tickColor, backdropColor: 'transparent', font: { family: fontFamily, size: 10 } },
+                            grid: { color: gridColor },
+                            angleLines: { color: gridColor },
+                            pointLabels: { color: legendColor, font: { family: fontFamily, size: 11 } }
+                        }
+                    }
+                }
+            });
+
+            // 3. Correctivos Cerrados por Técnico
+            const tt = data.tareasPorTecnico || { labels: [], values: [] };
+            mkChart('chartTareasPorTecnico', {
+                type: 'bar',
+                data: {
+                    labels: tt.labels,
+                    datasets: [{ label: 'Correctivos cerrados', data: tt.values, backgroundColor: '#f43f5e', borderRadius: 6 }]
+                },
+                options: BD
+            });
+
+            // 4. Preventivos Realizados por Técnico
+            const pt = data.preventivosPorTecnico || { labels: [], values: [] };
+            mkChart('chartPreventivosPorTecnico', {
+                type: 'bar',
+                data: {
+                    labels: pt.labels,
+                    datasets: [{ label: 'Preventivos realizados', data: pt.values, backgroundColor: '#22c55e', borderRadius: 6 }]
+                },
+                options: BD
+            });
+        }
+
+        async function cargarDesempenoAJAX() {
+            const { desde, hasta } = getFiltros();
+            try {
+                const baseUrl = /*[[@{/api/dashboard/desempeno}]]*/ '/inicio/api/dashboard/desempeno';
+                const url = `${baseUrl}?desde=${encodeURIComponent(desde)}&hasta=${encodeURIComponent(hasta)}`;
+                const resp = await fetch(url);
+                if (resp.ok) {
+                    const data = await resp.json();
+                    renderDesempenoData(data);
+                } else {
+                    console.error(`[Dashboard] API Desempeño respondió ${resp.status}`);
+                    renderDesempenoData({
+                        rankingTecnicos: getMockRankingTecnicos(),
+                        radarEquipo: getMockRadarEquipo(),
+                        tareasPorTecnico: getMockTareasPorTecnico(),
+                        preventivosPorTecnico: getMockPreventivosPorTecnico()
+                    });
+                }
+            } catch (e) {
+                console.error('[Dashboard] Error al cargar desempeño AJAX:', e);
+                renderDesempenoData({
+                    rankingTecnicos: getMockRankingTecnicos(),
+                    radarEquipo: getMockRadarEquipo(),
+                    tareasPorTecnico: getMockTareasPorTecnico(),
+                    preventivosPorTecnico: getMockPreventivosPorTecnico()
+                });
+            }
+        }
+
+        // ============================================================
+        // RECARGA Y TEMA
+        // ============================================================
+        function recargarDashboard() {
+            const { desde, hasta } = getFiltros();
+            if (desde && hasta) {
+                document.getElementById('dashboardPeriodo').textContent = 'Período: ' + desde + ' → ' + hasta;
+            }
+            cargarCorrectivosAJAX();
+            cargarPreventivosAJAX();
+            cargarDesempenoAJAX();
+        }
+
+
+        // Escuchar cambios de tema para re-renderizar gráficos
+        const themeObserver = new MutationObserver((mutations) => {
+            mutations.forEach(m => {
+                if (m.attributeName === 'data-theme') {
+                    // Pequeño delay para que las variables CSS actualicen
+                    setTimeout(() => recargarDashboard(), 50);
+                }
+            });
         });
-    });
 
-    document.addEventListener('DOMContentLoaded', () => {
-        aplicarPeriodoRapido('30');
-        recargarDashboard();
-        // Observar cambios de tema en el html element
-        themeObserver.observe(document.documentElement, { attributes: true });
-    });
+        document.addEventListener('DOMContentLoaded', () => {
+            aplicarPeriodoRapido('30');
+            recargarDashboard();
+            // Observar cambios de tema en el html element
+            themeObserver.observe(document.documentElement, { attributes: true });
+        });
     </script>
 </body>
+
 </html>
