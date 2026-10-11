@@ -376,7 +376,7 @@
                         <span>MTBF</span>
                         <i class="fas fa-history text-primary"></i>
                     </div>
-                    <div class="kpi-value" th:text="${mtbf}+' min'"></div>
+                    <div class="kpi-value" id="kpiMtbf" th:attr="data-minutos=${mtbf}" th:text="${mtbf}+' min'"></div>
                     <div class="kpi-subtitle">Tiempo Medio Entre Fallas</div>
                 </div>
 
@@ -385,7 +385,7 @@
                         <span>MTTR</span>
                         <i class="fas fa-tools text-warning"></i>
                     </div>
-                    <div class="kpi-value" th:text="${mttr}+' min'"></div>
+                    <div class="kpi-value" id="kpiMttr" th:attr="data-minutos=${mttr}" th:text="${mttr}+' min'"></div>
                     <div class="kpi-subtitle">Tiempo Medio de Reparación</div>
                 </div>
 
@@ -407,6 +407,27 @@
                     <div class="kpi-subtitle">Estimación en 24hs</div>
                 </div>
             </div>
+
+            <!-- Formateo de visualización de MTBF y MTTR (> 60 min en hs y min) -->
+            <script>
+                function formatearKpiTiempo(elementoId) {
+                    var el = document.getElementById(elementoId);
+                    if (!el || el.dataset.kpiFormatted === 'true') return;
+                    var valRaw = el.getAttribute('data-minutos') || el.textContent || '';
+                    var limpio = valRaw.replace(/min/i, '').trim().replace(',', '.');
+                    var num = parseFloat(limpio);
+                    if (!isNaN(num) && num > 60) {
+                        var totalMin = Math.round(num);
+                        var hs = Math.floor(totalMin / 60);
+                        var min = totalMin % 60;
+                        el.textContent = min > 0 ? (hs + ' hs ' + min + ' min') : (hs + ' hs');
+                        el.title = valRaw.includes('min') ? valRaw : (valRaw + ' min');
+                        el.dataset.kpiFormatted = 'true';
+                    }
+                }
+                formatearKpiTiempo('kpiMtbf');
+                formatearKpiTiempo('kpiMttr');
+            </script>
         </div>
 
         <!-- Botones de Acción Secundaria -->
@@ -816,6 +837,8 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+            formatearKpiTiempo('kpiMtbf');
+            formatearKpiTiempo('kpiMttr');
             const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
             const urlParams = new URLSearchParams(window.location.search);
 

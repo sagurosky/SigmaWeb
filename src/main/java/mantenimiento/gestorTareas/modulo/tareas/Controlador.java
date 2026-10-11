@@ -103,6 +103,13 @@ public class Controlador {
         // informacion;
         String nombreUsuario = SecurityContextHolder.getContext().getAuthentication().getName();
         Usuario usuario = usuarioDao.findByUsername(nombreUsuario);
+
+        // SuperAdmin no pertenece a ningún tenant: redirigir directo a gestión de usuarios
+        boolean isSuperAdmin = usuario.getRoles().stream()
+                .anyMatch(r -> "ROLE_SUPERADMIN".equals(r.getNombre()));
+        if (isSuperAdmin) {
+            return "redirect:/gestionUsuarios";
+        }
         if (usuario.getRoles().get(0).getNombre().equals("ROLE_TECNICO")) {
 
             Tecnico tecnico = tecnicoService.traerPorUsuario(usuario, TenantContext.getTenantId());

@@ -97,6 +97,8 @@
                                 <span class="user-info-pill" title="Rol del usuario">
                                     <i class="fas fa-user-shield"></i>
                                     <span id="selRol" th:each='rol:${#authentication.getAuthorities()}'>
+                                        <span hidden="true" th:if='${rol.toString().equals("ROLE_SUPERADMIN")}'
+                                            th:text='SuperAdmin ' />
                                         <span hidden="true" th:if='${rol.toString().equals("ROLE_ADMIN")}'
                                             th:text='Administrador ' />
                                         <span hidden="true" th:if='${rol.toString().equals("ROLE_MANT")}'

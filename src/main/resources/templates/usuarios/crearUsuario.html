@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+    xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head th:replace="plantillas/plantilla::head">
     <title>Crear Usuario | SigmaWeb</title>
@@ -147,9 +148,20 @@
 
                 <form method="POST" th:action="@{/gestionar}" th:object="${usuario}" id="formCrearUsuario">
 
+                    <!-- Aclaración discreta para SuperAdmin -->
+                    <div sec:authorize="hasRole('ROLE_SUPERADMIN')" class="p-3 mb-3 rounded-3"
+                        style="background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.25);">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-crown text-primary" style="font-size: 1.1rem;"></i>
+                            <div style="font-size: 0.88rem; color: var(--text-primary); line-height: 1.4;">
+                                <strong>Sesión de SuperAdmin:</strong> Al crear un usuario con rol <strong>Administrador</strong>, se le asignará automáticamente un <strong>nuevo Tenant ID</strong> (nueva empresa cliente independiente).
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Usuario -->
                     <div class="form-floating mb-3">
-                        <input type="text" class="form-control" id="usernameInput" name="username"
+                        <input type="text" class="control form-control" id="usernameInput" name="username"
                             placeholder=" " required>
                         <label for="usernameInput"><i class="fas fa-user me-1"></i> Nombre de usuario</label>
                         <span th:if="${#fields.hasErrors('username')}" th:errors="*{username}"
@@ -157,12 +169,20 @@
                     </div>
 
                     <!-- Contraseña -->
-                    <div class="form-floating mb-4">
-                        <input type="password" class="form-control" id="passwordInput" name="password"
+                    <div class="form-floating mb-3">
+                        <input type="password" class="control form-control" id="passwordInput" name="password"
                             placeholder=" " required>
                         <label for="passwordInput"><i class="fas fa-lock me-1"></i> Contraseña</label>
                         <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}"
                             class="text-danger small mt-1 d-block"></span>
+                    </div>
+
+                    <!-- Nombre de Empresa (Solo visible para SuperAdmin) -->
+                    <div sec:authorize="hasRole('ROLE_SUPERADMIN')" class="form-floating mb-3">
+                        <input type="text" class="control form-control" id="nombreEmpresaInput" name="nombreEmpresa"
+                            placeholder=" ">
+                        <label for="nombreEmpresaInput"><i class="fas fa-building me-1"></i> Nombre de la Empresa / Cliente (opcional)</label>
+                        <div class="form-text text-muted small ms-1">Si se deja vacío, se identificará como "Empresa [usuario]".</div>
                     </div>
 
                     <!-- Selector de Rol -->
@@ -179,6 +199,7 @@
                                     <i class="fas fa-shield-alt role-icon"></i>
                                     <span class="role-name">Administrador</span>
                                     <span class="role-desc">Acceso total al sistema</span>
+                                    <span sec:authorize="hasRole('ROLE_SUPERADMIN')" class="badge bg-primary text-white mt-1" style="font-size: 0.65rem;">+ Nuevo Tenant ID</span>
                                 </label>
                             </div>
 

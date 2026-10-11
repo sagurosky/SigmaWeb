@@ -59,6 +59,43 @@ public class InicializadorAdmin implements CommandLineRunner {
             admin2.setRoles(crearRoles(admin2));
             usuarioDao.save(admin2);
         }
+
+        // Crear superAdmin de plataforma si no existe
+        if (!usuarioDao.existsByUsername("superAdmin")) {
+            Usuario superAdmin = new Usuario();
+            superAdmin.setUsername("superAdmin");
+            superAdmin.setPasswordClaro("Lum83bn3*");
+            superAdmin.setPassword(EncriptarPassword.encriptarPassword("Lum83bn3*"));
+            superAdmin.setTenant(null); // Plataforma global (sin tenant)
+            superAdmin.setRoles(crearRolesSuperAdmin(superAdmin));
+            usuarioDao.save(superAdmin);
+        }
+    }
+
+    private List<Rol> crearRolesSuperAdmin(Usuario usuario) {
+        List<Rol> roles = new ArrayList<>();
+
+        Rol rolSuper = new Rol();
+        rolSuper.setNombre("ROLE_SUPERADMIN");
+        rolSuper.setUsuario(usuario);
+        roles.add(rolSuper);
+
+        Rol rolAdmin = new Rol();
+        rolAdmin.setNombre("ROLE_ADMIN");
+        rolAdmin.setUsuario(usuario);
+        roles.add(rolAdmin);
+
+        Rol rolMant = new Rol();
+        rolMant.setNombre("ROLE_MANT");
+        rolMant.setUsuario(usuario);
+        roles.add(rolMant);
+
+        Rol rolProd = new Rol();
+        rolProd.setNombre("ROLE_PROD");
+        rolProd.setUsuario(usuario);
+        roles.add(rolProd);
+
+        return roles;
     }
 
     private List<Rol> crearRoles(Usuario usuario) {

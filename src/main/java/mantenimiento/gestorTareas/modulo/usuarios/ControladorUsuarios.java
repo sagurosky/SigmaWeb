@@ -1,4 +1,5 @@
 package mantenimiento.gestorTareas.modulo.usuarios;
+import mantenimiento.gestorTareas.infraestructura.multitenant.Tenant;
 import mantenimiento.gestorTareas.infraestructura.multitenant.TenantContext;
 import mantenimiento.gestorTareas.infraestructura.multitenant.TenantDao;
 import mantenimiento.gestorTareas.infraestructura.seguridad.EncriptarPassword;
@@ -9,12 +10,15 @@ import mantenimiento.gestorTareas.modulo.tareas.Servicio;
 import mantenimiento.gestorTareas.modulo.tecnicos.Tecnico;
 import mantenimiento.gestorTareas.modulo.tecnicos.TecnicoService;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -58,7 +62,9 @@ public class ControladorUsuarios {
                 : null;
         model.addAttribute("usuarioActual", usernameActual);
 
-        List<Tecnico> tecnicosFiltrados = tecnicoService.traerHabilitados(TenantContext.getTenantId()).stream()
+        List<Tecnico> tecnicosFiltrados = (TenantContext.getTenantId() != null
+                ? tecnicoService.traerHabilitados(TenantContext.getTenantId())
+                : Collections.<Tecnico>emptyList()).stream()
                 .filter(t -> t.getUsuario() != null && t.getUsuario().getRoles() != null && !t.getUsuario().getRoles().isEmpty() 
                         && "ROLE_TECNICO".equals(t.getUsuario().getRoles().get(0).getNombre()))
                 .collect(Collectors.toList());
@@ -74,6 +80,10 @@ public class ControladorUsuarios {
     public String crearUsuarios(Usuario usuario, Rol rol, Model model) {
         if (!ArchivoExterno.getString("editarUsuarios").equals("si")) return "redirect:/layout";
         model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isSuperAdmin = auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_SUPERADMIN"));
+        model.addAttribute("isSuperAdmin", isSuperAdmin);
         return "usuarios/crearUsuario";
     }
 
@@ -104,7 +114,9 @@ public class ControladorUsuarios {
     }
 
     @PostMapping("/gestionar")
-    public String gestionar(@Valid Usuario usuario, Errors errores, Rol rol, Model model) {
+    public String gestionar(@Valid Usuario usuario, Errors errores, Rol rol,
+                            @RequestParam(value = "nombreEmpresa", required = false) String nombreEmpresa,
+                            Model model) {
         Boolean yaExiste = usuarioDao.findByUsername(usuario.getUsername()) != null;
 
         if (errores.hasErrors() || yaExiste) {
@@ -112,6 +124,10 @@ public class ControladorUsuarios {
                 errores.rejectValue("username", "500", "ya existe ese usuario");
             }
             model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            boolean isSuperAdmin = auth != null && auth.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_SUPERADMIN"));
+            model.addAttribute("isSuperAdmin", isSuperAdmin);
             return "usuarios/crearUsuario";
         }
 
@@ -133,9 +149,40 @@ public class ControladorUsuarios {
         usuario.setPasswordClaro(usuario.getPassword());
         usuario.setPassword(EncriptarPassword.encriptarPassword(usuario.getPassword()));
 
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isSuperAdmin = auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_SUPERADMIN"));
+
+        // Si es SuperAdmin y crea un Administrador, generamos un Tenant nuevo para esta nueva empresa
+        if (isSuperAdmin && "ROLE_ADMIN".equals(rol.getNombre())) {
+            Tenant nuevoTenant = new Tenant();
+            String emp = (nombreEmpresa != null && !nombreEmpresa.trim().isEmpty())
+                    ? nombreEmpresa.trim()
+                    : "Empresa " + usuario.getUsername();
+            nuevoTenant.setEmpresa(emp);
+            nuevoTenant.setNombre(emp);
+            nuevoTenant.setFechaAlta(LocalDateTime.now());
+
+            String baseEmail = usuario.getUsername().toLowerCase() + "@sigmawebapp.com";
+            String emailContacto = baseEmail;
+            int counter = 1;
+            while (tenantDao.existsByEmailContacto(emailContacto)) {
+                emailContacto = usuario.getUsername().toLowerCase() + counter + "@sigmawebapp.com";
+                counter++;
+            }
+            nuevoTenant.setEmailContacto(emailContacto);
+
+            nuevoTenant = tenantDao.save(nuevoTenant);
+            usuario.setTenant(nuevoTenant);
+            rol.setTenant(nuevoTenant);
+        }
+
         usuarioService.guardar(usuario);
         usuario = usuarioDao.findByUsername(usuario.getUsername());
         rol.setUsuario(usuario);
+        if (usuario.getTenant() != null) {
+            rol.setTenant(usuario.getTenant());
+        }
         rolDao.save(rol);
 
         if ("ROLE_ADMIN".equals(rol.getNombre())) {
@@ -144,6 +191,9 @@ public class ControladorUsuarios {
                 Rol rAux = new Rol();
                 rAux.setUsuario(usuario);
                 rAux.setNombre(rName);
+                if (usuario.getTenant() != null) {
+                    rAux.setTenant(usuario.getTenant());
+                }
                 rolDao.save(rAux);
             }
         }
@@ -226,7 +276,8 @@ public class ControladorUsuarios {
 
         if (usuarioBD.getRoles().stream().anyMatch(rol -> "ROLE_TECNICO".equals(rol.getNombre())) &&
             usuarioBD.getRoles().stream().noneMatch(rol -> "ROLE_ADMIN".equals(rol.getNombre()))) {
-            Tecnico tecnico = tecnicoService.traerPorUsuario(usuarioBD, TenantContext.getTenantId());
+            Long tenantIdEdit = (usuarioBD.getTenant() != null) ? usuarioBD.getTenant().getId() : TenantContext.getTenantId();
+            Tecnico tecnico = tecnicoService.traerPorUsuario(usuarioBD, tenantIdEdit);
             if (tecnico != null) {
                 tecnico.setUsuario(usuarioBD);
                 tecnicoService.save(tecnico);
@@ -261,7 +312,8 @@ public class ControladorUsuarios {
                     return "redirect:/gestionUsuarios";
                 }
 
-                Tecnico tecnico = tecnicoService.traerPorUsuario(usuarioReq, TenantContext.getTenantId());
+                Long tenantIdEliminar = (usuarioReq.getTenant() != null) ? usuarioReq.getTenant().getId() : TenantContext.getTenantId();
+                Tecnico tecnico = tecnicoService.traerPorUsuario(usuarioReq, tenantIdEliminar);
                 if (tecnico != null) {
                     tecnicoService.delete(tecnico);
                 }
