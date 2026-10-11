@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="plantillas/plantilla::head">
+    <title>Perfil Técnico | SigmaWeb</title>
+</head>
+
+<body>
+    <header th:replace="plantillas/plantilla::header"></header>
+    <div th:replace="plantillas/plantilla::menu"></div>
+    <div th:replace="plantillas/plantilla::notificaciones"></div>
+
+    <div class="container my-4 animated-fadeIn">
+        
+        <form th:action="@{/modificarTecnico}" method="post" th:object="${tecnico}" enctype="multipart/form-data">
+            <input type="hidden" id="id" th:field="*{id}">
+
+            <!-- Main Title & Actions Card -->
+            <div class="sigma-card">
+                <div class="sigma-card-header">
+                    <h2 class="sigma-card-title mb-0">
+                        <i class="fas fa-user-gear text-primary"></i>
+                        <span>Perfil Técnico</span>
+                    </h2>
+                    <div class="d-flex align-items-center gap-2">
+                        <button th:if="${not #strings.contains(url, 'activo')}"
+                                sec:authorize="hasRole('ROLE_ADMIN')||hasRole('ROLE_TECNICO')"
+                                type="submit" class="btn btn-primary btn-sm">
+                            <i class="fas fa-save me-1"></i> Guardar Cambios
+                        </button>
+                        <a th:href="@{${url != null ? url : '/layout'}}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left me-1"></i> Volver
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Section 1: Datos Personales -->
+                <div class="p-3 rounded-3 border mb-4" style="background: var(--bg-surface-elevated); border-color: var(--border-color) !important;">
+                    <h4 class="h5 font-weight-bold mb-3">
+                        <i class="fas fa-id-card text-primary me-2"></i> Datos Personales
+                    </h4>
+
+                    <div class="mb-3">
+                        <label for="acercaDeMi" class="form-label detencion-label">
+                            Acerca de mí
+                            <i class="fa-regular fa-circle-question text-primary ms-1 custom-popover" tabindex="0" data-container="body" data-trigger="focus" data-toggle="popover" data-placement="right" data-content="Breve carta de presentación, por ejemplo: 'Soy técnico mecánico con experiencia en mantenimiento industrial y solución de problemas mecánicos.'"></i>
+                        </label>
+                        <textarea class="form-control" id="acercaDeMi" th:field="*{acercaDeMi}" rows="2" placeholder="Describa su perfil profesional..."></textarea>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="nombre" class="form-label detencion-label">Nombre</label>
+                            <input type="text" class="form-control" id="nombre" th:field="*{nombre}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="apellido" class="form-label detencion-label">Apellido</label>
+                            <input type="text" class="form-control" id="apellido" th:field="*{apellido}" required>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="fechaNacimiento" class="form-label detencion-label">Fecha de Nacimiento</label>
+                            <input type="date" class="form-control" id="fechaNacimiento" th:field="*{fechaNacimiento}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="edad" class="form-label detencion-label">Edad</label>
+                            <input type="text" class="form-control" id="edad" th:field="*{edad}" disabled>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="telefono" class="form-label detencion-label">Teléfono</label>
+                            <input type="text" class="form-control" id="telefono" th:field="*{telefono}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="email" class="form-label detencion-label">Email</label>
+                            <input type="email" class="form-control" id="email" th:field="*{email}">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="direccion" class="form-label detencion-label">Dirección</label>
+                        <input type="text" class="form-control" id="direccion" th:field="*{direccion}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="formacion" class="form-label detencion-label">
+                            Formación Académica
+                            <i class="fa-regular fa-circle-question text-primary ms-1 custom-popover" tabindex="0" data-container="body" data-trigger="focus" data-toggle="popover" data-placement="right" data-content="Títulos obtenidos, cursos, especializaciones, etc."></i>
+                        </label>
+                        <textarea class="form-control" id="formacion" th:field="*{formacionAcademica}" rows="2"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="experiencia" class="form-label detencion-label">
+                            Experiencia Laboral
+                            <i class="fa-regular fa-circle-question text-primary ms-1 custom-popover" tabindex="0" data-container="body" data-trigger="focus" data-toggle="popover" data-placement="right" data-content="Listado de empresas, cargos y años de servicio en cada organización."></i>
+                        </label>
+                        <textarea class="form-control" id="experiencia" th:field="*{experienciaLaboral}" rows="2"></textarea>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="conocimientos" class="form-label detencion-label">
+                                Conocimientos Varios
+                                <i class="fa-regular fa-circle-question text-primary ms-1 custom-popover" tabindex="0" data-container="body" data-trigger="focus" data-toggle="popover" data-placement="right" data-content="Conocimientos empíricos y habilidades prácticas adicionales."></i>
+                            </label>
+                            <textarea class="form-control" id="conocimientos" th:field="*{conocimientosVarios}" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="pasatiempos" class="form-label detencion-label">Pasatiempos / Intereses</label>
+                            <textarea class="form-control" id="pasatiempos" th:field="*{pasatiempos}" rows="2"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Datos Empresa -->
+                <div class="p-3 rounded-3 border mb-4" style="background: var(--bg-surface-elevated); border-color: var(--border-color) !important;">
+                    <h4 class="h5 font-weight-bold mb-3">
+                        <i class="fas fa-building text-primary me-2"></i> Datos de Empresa
+                    </h4>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="legajo" class="form-label detencion-label">Legajo</label>
+                            <input type="text" class="form-control" id="legajo" th:field="*{legajo}" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="estado" class="form-label detencion-label">Estado</label>
+                            <select class="form-select" id="estado" th:field="*{estado}" required>
+                                <option value="0">Seleccione</option>
+                                <option value="activo">Activo</option>
+                                <option value="licencia médica">Licencia Médica</option>
+                                <option value="vacaciones">Vacaciones</option>
+                                <option value="suspendido">Suspendido</option>
+                                <option value="baja">Baja</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="especialidad" class="form-label detencion-label">Especialidad</label>
+                            <select th:field="*{especialidad}" class="form-select" required>
+                                <option value="0">Seleccione</option>
+                                <option value="mecánica">Mecánica</option>
+                                <option value="hidráulica">Hidráulica</option>
+                                <option value="neumática">Neumática</option>
+                                <option value="electrónica">Electrónica</option>
+                                <option value="programación">Programación</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="fechaIngresoPlanta" class="form-label detencion-label">Fecha de Ingreso a Planta</label>
+                            <input type="date" th:field="*{fechaIngresoPlanta}" class="form-control" id="fechaIngresoPlanta" required>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="habilidades" class="form-label detencion-label">
+                                Habilidades
+                                <i class="fa-regular fa-circle-question text-primary ms-1 custom-popover" tabindex="0" data-container="body" data-trigger="focus" data-toggle="popover" data-placement="right" data-content="Información técnica sobre el concepto del colaborador según sus superiores."></i>
+                            </label>
+                            <input type="text" th:field="*{habilidades}" class="form-control" id="habilidades">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="promedioEvaluaciones" class="form-label detencion-label">
+                                Promedio Gral. Evaluaciones
+                                <i class="fa-regular fa-circle-question text-primary ms-1 custom-popover" tabindex="0" data-container="body" data-trigger="focus" data-toggle="popover" data-placement="right" data-content="Promedio global obtenido de la totalidad de intervenciones registradas."></i>
+                            </label>
+                            <input type="text" th:field="*{promedioEvaluaciones}" class="form-control" id="promedioEvaluaciones" disabled>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="proyectosDestacados" class="form-label detencion-label">Proyectos Destacados / Logros</label>
+                            <textarea class="form-control" th:field="*{proyectosDestacados}" id="proyectosDestacados" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="notasAdicionales" class="form-label detencion-label">Notas Adicionales</label>
+                            <textarea class="form-control" th:field="*{notasAdicionales}" id="notasAdicionales" rows="2"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Desempeño & Métricas -->
+                <div class="p-3 rounded-3 border mb-4" style="background: var(--bg-surface-elevated); border-color: var(--border-color) !important;">
+                    <h4 class="h5 font-weight-bold mb-3">
+                        <i class="fas fa-chart-line text-primary me-2"></i> Evaluaciones de Desempeño
+                        <i class="fa-regular fa-circle-question text-primary ms-1 custom-popover" tabindex="0" data-container="body" data-trigger="focus" data-toggle="popover" data-placement="right" data-content="Promedio de calificaciones recibidas en cada categoría durante las intervenciones."></i>
+                    </h4>
+
+                    <div class="row g-4 align-items-start">
+                        <!-- Progress Bars Column -->
+                        <div class="col-lg-7">
+                            <div class="d-flex flex-column gap-3">
+                                
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <span class="detencion-label small">Satisfacción Cliente Interno:</span>
+                                    <div class="d-flex align-items-center gap-2" style="width: 55%;">
+                                        <progress class="sigma-progress" th:value="${satisfaccion}" max="10" id="satisfaccionClienteInterno"></progress>
+                                        <span id="satisfaccionClienteInternoValor" class="badge bg-surface-elevated text-primary border px-2"></span>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <span class="detencion-label small">Predisposición para la Tarea:</span>
+                                    <div class="d-flex align-items-center gap-2" style="width: 55%;">
+                                        <progress class="sigma-progress" th:value="${predisposicion}" max="10" id="predisposicionParaLaTarea"></progress>
+                                        <span id="predisposicionParaLaTareaValor" class="badge bg-surface-elevated text-primary border px-2"></span>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <span class="detencion-label small">Responsabilidad:</span>
+                                    <div class="d-flex align-items-center gap-2" style="width: 55%;">
+                                        <progress class="sigma-progress" th:value="${responsabilidad}" max="10" id="responsabilidad"></progress>
+                                        <span id="responsabilidadValor" class="badge bg-surface-elevated text-primary border px-2"></span>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <span class="detencion-label small">Cumplimiento Normas de Seguridad:</span>
+                                    <div class="d-flex align-items-center gap-2" style="width: 55%;">
+                                        <progress class="sigma-progress" th:value="${seguridad}" max="10" id="cumplimientoNormasSeguridad"></progress>
+                                        <span id="cumplimientoNormasSeguridadValor" class="badge bg-surface-elevated text-primary border px-2"></span>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <span class="detencion-label small">Conocimiento Gral. de su Trabajo:</span>
+                                    <div class="d-flex align-items-center gap-2" style="width: 55%;">
+                                        <progress class="sigma-progress" th:value="${conocimiento}" max="10" id="nivelDeConocimiento"></progress>
+                                        <span id="nivelDeConocimientoValor" class="badge bg-surface-elevated text-primary border px-2"></span>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <span class="detencion-label small">Trato Recibido por Cliente:</span>
+                                    <div class="d-flex align-items-center gap-2" style="width: 55%;">
+                                        <progress class="sigma-progress" th:value="${trato}" max="10" id="tratoRecibidoPorCliente"></progress>
+                                        <span id="tratoRecibidoPorClienteValor" class="badge bg-surface-elevated text-primary border px-2"></span>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <span class="detencion-label small">Prolijidad (5S):</span>
+                                    <div class="d-flex align-items-center gap-2" style="width: 55%;">
+                                        <progress class="sigma-progress" th:value="${prolijidad}" max="10" id="prolijidad"></progress>
+                                        <span id="prolijidadValor" class="badge bg-surface-elevated text-primary border px-2"></span>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <span class="detencion-label small">Puntualidad:</span>
+                                    <div class="d-flex align-items-center gap-2" style="width: 55%;">
+                                        <progress class="sigma-progress" th:value="${puntualidad}" max="10" id="puntualidad"></progress>
+                                        <span id="puntualidadValor" class="badge bg-surface-elevated text-primary border px-2"></span>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <span class="detencion-label small">Eficiencia:</span>
+                                    <div class="d-flex align-items-center gap-2" style="width: 55%;">
+                                        <progress class="sigma-progress" th:value="${eficiencia}" max="10" id="eficiencia"></progress>
+                                        <span id="eficienciaValor" class="badge bg-surface-elevated text-primary border px-2"></span>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <span class="detencion-label small">Calidad de su Trabajo:</span>
+                                    <div class="d-flex align-items-center gap-2" style="width: 55%;">
+                                        <progress class="sigma-progress" th:value="${calidad}" max="10" id="calidadDelTrabajo"></progress>
+                                        <span id="calidadDelTrabajoValor" class="badge bg-surface-elevated text-primary border px-2"></span>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <span class="detencion-label small">Comunicación:</span>
+                                    <div class="d-flex align-items-center gap-2" style="width: 55%;">
+                                        <progress class="sigma-progress" th:value="${comunicacion}" max="10" id="comunicacion"></progress>
+                                        <span id="comunicacionValor" class="badge bg-surface-elevated text-primary border px-2"></span>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <span class="detencion-label small">Trabajo en Equipo:</span>
+                                    <div class="d-flex align-items-center gap-2" style="width: 55%;">
+                                        <progress class="sigma-progress" th:value="${trabajoEnEquipo}" max="10" id="trabajoEnEquipo"></progress>
+                                        <span id="trabajoEnEquipoValor" class="badge bg-surface-elevated text-primary border px-2"></span>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <span class="detencion-label small">Resolución de Problemas:</span>
+                                    <div class="d-flex align-items-center gap-2" style="width: 55%;">
+                                        <progress class="sigma-progress" th:value="${resolucion}" max="10" id="resolucionDeProblemas"></progress>
+                                        <span id="resolucionDeProblemasValor" class="badge bg-surface-elevated text-primary border px-2"></span>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <span class="detencion-label small">Creatividad e Innovación:</span>
+                                    <div class="d-flex align-items-center gap-2" style="width: 55%;">
+                                        <progress class="sigma-progress" th:value="${creatividad}" max="10" id="creatividadEInnovacion"></progress>
+                                        <span id="creatividadEInnovacionValor" class="badge bg-surface-elevated text-primary border px-2"></span>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <span class="detencion-label small">Iniciativa:</span>
+                                    <div class="d-flex align-items-center gap-2" style="width: 55%;">
+                                        <progress class="sigma-progress" th:value="${iniciativa}" max="10" id="iniciativa"></progress>
+                                        <span id="iniciativaValor" class="badge bg-surface-elevated text-primary border px-2"></span>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <span class="detencion-label small">Autogestión:</span>
+                                    <div class="d-flex align-items-center gap-2" style="width: 55%;">
+                                        <progress class="sigma-progress" th:value="${autogestion}" max="10" id="autogestion"></progress>
+                                        <span id="autogestionValor" class="badge bg-surface-elevated text-primary border px-2"></span>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <span class="detencion-label small">Formación Continua:</span>
+                                    <div class="d-flex align-items-center gap-2" style="width: 55%;">
+                                        <progress class="sigma-progress" th:value="${formacionContinua}" max="10" id="formacionContinua"></progress>
+                                        <span id="formacionContinuaValor" class="badge bg-surface-elevated text-primary border px-2"></span>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- KPI Stat Cards Column -->
+                        <div class="col-lg-5">
+                            <div class="d-flex flex-column gap-3">
+                                <div class="kpi-card">
+                                    <div class="kpi-title"><i class="fas fa-calendar-check text-primary me-1"></i> Preventivos Último Mes</div>
+                                    <div class="kpi-value text-primary" th:text="${cantidadPreventivosMes}">0</div>
+                                </div>
+
+                                <div class="kpi-card">
+                                    <div class="kpi-title"><i class="fas fa-calendar-days text-info me-1"></i> Preventivos Último Año</div>
+                                    <div class="kpi-value text-info" th:text="${cantidadPreventivosAnio}">0</div>
+                                </div>
+
+                                <div class="kpi-card">
+                                    <div class="kpi-title"><i class="fas fa-list-check text-success me-1"></i> Preventivos Total</div>
+                                    <div class="kpi-value text-success" th:text="${cantidadPreventivosTotal}">0</div>
+                                </div>
+
+                                <div class="hr my-2 border-top"></div>
+
+                                <div class="kpi-card">
+                                    <div class="kpi-title"><i class="fas fa-file-lines text-warning me-1"></i> Informes Último Mes</div>
+                                    <div class="kpi-value text-warning" th:text="${cantidadInformesMes}">0</div>
+                                </div>
+
+                                <div class="kpi-card">
+                                    <div class="kpi-title"><i class="fas fa-folder-open text-secondary me-1"></i> Informes Último Año</div>
+                                    <div class="kpi-value text-secondary" th:text="${cantidadInformesAnio}">0</div>
+                                </div>
+
+                                <div class="kpi-card">
+                                    <div class="kpi-title"><i class="fas fa-clipboard-list text-primary me-1"></i> Informes Total</div>
+                                    <div class="kpi-value text-primary" th:text="${cantidadInformesTotal}">0</div>
+                                </div>
+
+                                <div class="kpi-card border-danger">
+                                    <div class="kpi-title text-danger"><i class="fas fa-clock text-danger me-1"></i> Informes Pendientes</div>
+                                    <div class="kpi-value text-danger" th:text="${cantidadInformesPendientes}">0</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Actions -->
+                <div class="d-flex align-items-center justify-content-between pt-2">
+                    <button th:if="${not #strings.contains(url, 'activo')}"
+                            sec:authorize="hasRole('ROLE_ADMIN')||hasRole('ROLE_TECNICO')"
+                            type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i> Guardar Cambios
+                    </button>
+                    <a th:href="@{${url != null ? url : '/layout'}}" class="btn btn-secondary ms-auto">
+                        <i class="fas fa-arrow-left me-1"></i> Volver
+                    </a>
+                </div>
+
+            </div>
+        </form>
+    </div>
+
+    <!-- Scripts for Popovers & Progress Values -->
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            // Enable Bootstrap Popovers
+            if (typeof $ !== 'undefined' && $.fn.popover) {
+                $('[data-toggle="popover"]').popover({ trigger: 'focus' });
+            }
+
+            // Sync progress values to span text
+            function actualizarProgress(id) {
+                var slider = document.getElementById(id);
+                var output = document.getElementById(id + "Valor");
+                if (slider && output) {
+                    output.innerHTML = (slider.value || 0) + ' / 10';
+                }
+            }
+
+            var progressElements = document.querySelectorAll('progress');
+            progressElements.forEach(function (progressElement) {
+                actualizarProgress(progressElement.id);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.tymeleaf.org"
+    xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<!--<meta id="meta-refresh" http-equiv="refresh" content="5">-->
+
+<head th:replace="plantillas/plantilla::head">
+    <title>Lista de tareas</title>
+    <meta charset="UTF-8" />
+
+
+</head>
+<style>
+    <!--    body{
+    -->
+<!--        /*background: #4169E1;*/-->
+<!--        background: url('/recursos/fondoLayout3.jpg') no-repeat center center fixed;-->
+<!--             background-size: cover;-->
+<!--    }-->
+.mapadiv {
+width: 100%;
+max-width: 1400px;
+margin: 0 auto;
+}
+.mapadiv > div {
+width: 100%;
+display: flex;
+justify-content: center;
+}
+.mapadiv svg {
+width: 100%;
+height: auto;
+max-height: 85vh;
+display: block;
+}
+.mapadiv path {
+fill: rgba(0, 0, 0, 0);
+transition: fill 0.25s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.25s cubic-bezier(0.4, 0, 0.2, 1), filter 0.25s
+cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+cursor: pointer;
+}
+
+.mapadiv path:hover {
+fill: rgba(56, 189, 248, 0.35) !important;
+stroke: #0284c7 !important;
+stroke-width: 2px !important;
+filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.65)) !important;
+}
+
+
+/* Estilo inicial: la tarjeta está fuera de la pantalla */
+.card-hidden {
+position: absolute;
+left: -100%; /* Comienza fuera de la pantalla (a la izquierda) */
+top: 60%; /* Asegúrate de que la posición vertical se mantenga */
+transition: left 0.5s ease; /* Transición suave para el desplazamiento horizontal */
+}
+
+/* Estilo cuando la tarjeta es visible */
+.card-visible {
+position: absolute;
+left: 5%;
+top: 60%; /* La tarjeta se desplaza a la posición final dentro de la pantalla */
+transition: left 0.5s ease;
+}
+
+</style>
+
+<style>
+    /* Layout background: adapts to light/dark theme */
+    body.layout-page {
+        background-color: var(--bg-body);
+        background-image:
+            radial-gradient(circle at 15% 20%, rgba(37, 99, 235, 0.09) 0%, transparent 45%),
+            radial-gradient(circle at 80% 75%, rgba(124, 58, 237, 0.07) 0%, transparent 40%),
+            radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.05) 0%, transparent 70%);
+        background-attachment: fixed;
+        min-height: 100vh;
+        transition: background-color var(--transition-normal);
+    }
+
+    html[data-theme="dark"] body.layout-page {
+        background-color: var(--bg-body);
+        background-image:
+            radial-gradient(circle at 15% 20%, rgba(37, 99, 235, 0.18) 0%, transparent 45%),
+            radial-gradient(circle at 80% 75%, rgba(124, 58, 237, 0.12) 0%, transparent 40%),
+            radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.3) 0%, transparent 70%);
+    }
+</style>
+
+<body class="layout-page">
+    <header th:replace="plantillas/plantilla::header">lista de tareas</header>
+    <div th:replace="plantillas/plantilla::menu"></div>
+    <div th:replace="plantillas/plantilla::logo"></div>
+
+
+    <div class="container-fluid ">
+
+
+        <div class="row">
+
+
+
+
+
+
+
+
+
+            <!-- Contenedor del card, inicialmente oculto -->
+            <div id="cardInfo" class="card card-hidden shadow-lg border-0"
+                style="width: 22rem; position: absolute; z-index: 9999; border-radius: var(--radius-lg, 12px); overflow: hidden; background-color: var(--bg-surface);">
+                <div
+                    class="card-header border-bottom d-flex align-items-center justify-content-between py-2 px-3 bg-surface-elevated">
+                    <div class="d-flex align-items-center gap-2 overflow-hidden me-2">
+                        <i class="fas fa-clipboard-check text-primary"></i>
+                        <span id="popupActivoNombre" class="fw-bold text-truncate text-body"
+                            style="font-size: 0.9rem;">Preventivos</span>
+                        <span id="popupBadgeCount"
+                            class="badge bg-primary-subtle text-primary rounded-pill small ms-1">0</span>
+                    </div>
+                    <a id="popupVerLink" href="#" class="btn btn-xs btn-outline-primary text-nowrap d-none"
+                        style="font-size: 0.75rem; padding: 0.2rem 0.55rem; border-radius: var(--radius-sm, 6px);"
+                        title="Ver listado completo de preventivos">
+                        <i class="fas fa-external-link-alt me-1"></i>Listado
+                    </a>
+                </div>
+                <div class="card-body p-3" id="listaPreventivos" style="max-height: 320px; overflow-y: auto;">
+                </div>
+            </div>
+
+
+            <!--<div  class="col-md-10" style="text-align: center; padding-left: 50px" id="contenedorLayout" >-->
+
+            <div class="col-md-12" style="text-align: center; " id="contenedorLayout">
+                <div class="mapadiv">
+                    <div th:utext="${svgContent}"></div>
+
+                </div>
+            </div>
+
+
+            <div sec:authorize="hasRole('ROLE_MANT')">
+
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+                <script th:inline="javascript">
+                    /*<![CDATA[*/
+                    var preventivos = [[${ preventivosNoValidados }]];
+                    var informes = [[${ informesPendientesSupervisor }]];
+
+                    toastr.options = {
+                        "closeButton": true,
+                        "debug": false,
+                        "newestOnTop": false,
+                        "progressBar": true,
+                        "positionClass": "toast-bottom-right",
+                        "preventDuplicates": false,
+                        "showDuration": "30000",
+                        "hideDuration": "10000",
+                        "timeOut": "50000",
+                        "extendedTimeOut": "50000",
+                        "showEasing": "swing",
+                        "hideEasing": "linear",
+                        "showMethod": "fadeIn",
+                        "hideMethod": "fadeOut"
+                    };
+
+
+                    if (preventivos.length > 0) {
+                        let nombres = preventivos.map(p =>
+                            `<a href='/inicio/preventivos/${p.activo.id}'  class="btn btn-secondary"'>${p.activo.nombre}</a>`
+                        ).join("<br>");
+
+                        let mensaje = `Tienes preventivos sin validar:<br>${nombres}`;
+
+                        // Mostramos la notificación
+                        let toast = toastr.warning(mensaje);
+
+
+                        if (toast) {
+                            toast.on('mouseenter', function () {
+                                $(this).css('cursor', 'default'); // Mantener flecha normal en el toastr
+                            });
+                        }
+                    }
+
+                    if (informes.length > 0) {
+
+                        // Mostramos la notificación
+                        let toast = toastr.warning(`Tienes informes para seleccionar y/o revisar:`);
+
+
+                    }
+                    /*]]>*/
+                </script>
+            </div>
+
+            <div sec:authorize="hasRole('ROLE_TECNICO')">
+
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+                <script th:inline="javascript">
+                    /*<![CDATA[*/
+                    var tareasInformes = [[${ tareasConInformesPendientesTecnico }]];
+
+                    toastr.options = {
+                        "closeButton": true,
+                        "debug": false,
+                        "newestOnTop": false,
+                        "progressBar": true,
+                        "positionClass": "toast-bottom-right",
+                        "preventDuplicates": false,
+                        "showDuration": "30000",
+                        "hideDuration": "10000",
+                        "timeOut": "50000",
+                        "extendedTimeOut": "50000",
+                        "showEasing": "swing",
+                        "hideEasing": "linear",
+                        "showMethod": "fadeIn",
+                        "hideMethod": "fadeOut"
+                    };
+
+
+                    if (tareasInformes.length > 0) {
+
+                        // Mostramos la notificación
+                        let toast = toastr.warning(`Tienes informes pendientes:`);
+
+
+                    }
+                    /*]]>*/
+                </script>
+            </div>
+
+
+            <div sec:authorize="hasRole('ROLE_MONITOR')&& not hasRole('ROLE_ADMIN')">
+                <script>
+
+
+                    $(document).ready(function () {
+                        $("#svg").attr("width", "60%");
+                        $("#svg").attr("height", "60%");
+                        $("#contenedorLayout").attr("class", "col-md-12");
+                        var navbar = $("#navbar");
+
+                        $("#fullscreen-button").click(function () {
+                            if (!document.fullscreenElement) {
+                                document.documentElement.requestFullscreen();
+                            } else {
+                                if (document.exitFullscreen) {
+                                    document.exitFullscreen();
+                                }
+                            }
+                        });
+
+                        $("body").mousemove(function (event) {
+                            if (event.clientY <= 100) {
+                                navbar.stop(true, true).show(500); // Mostrar con animación
+                            } else {
+                                navbar.stop(true, true).hide(500); // Ocultar con animación
+                            }
+                        });
+                    });
+
+
+                </script>
+
+            </div>
+
+
+        </div>
+    </div>
+
+
+    <script th:inline="javascript">
+
+
+        $(document).ready(function () {
+            // Seleccionamos todos los elementos <path> y los ponemos a la escucha del evento hover
+            traerEstados();
+
+            var funcionTimeout;
+
+            $("path").hover(function () {
+                // Esto se ejecuta al hacer hover (mouseenter)
+
+
+                var elementId = this.id;  // Obtenemos el id del elemento actual
+                var estadoElemento = this.dataset.estado;
+                if (estadoElemento === "disponible")
+                    funcionTimeout = setTimeout(function () {
+                        //jo estan encadenados los dos timeouts, esto hace que se vaya el card actual y luego entre el nuevo
+                        setTimeout(function () { ajax(elementId, estadoElemento); }, 500);
+
+                        ocultarCard();
+                    }, 500);
+            }, function () {
+                clearTimeout(funcionTimeout);
+                // Esto se ejecuta cuando se sale del hover (mouseleave)
+                // Si quieres hacer algo cuando el mouse sale, puedes añadir aquí tu lógica
+            });
+        });
+
+
+
+
+        function ajax(nombre, estado) {
+            $.ajax({
+                url: '/inicio/traerPreventivosAlLayout/',
+                type: 'GET',
+                data: {
+                    nombre: nombre,
+                    estado: estado
+                },
+                success: function (response) {
+                    let listaContainer = $("#listaPreventivos");
+                    listaContainer.empty();
+
+                    let preventivos = response.preventivos || (Array.isArray(response) ? response : []);
+                    let activoId = response.activoId || (preventivos.length > 0 && preventivos[0].activo ? preventivos[0].activo.id : null);
+                    let activoNombre = response.activoNombre || nombre;
+
+                    $("#popupActivoNombre").text(activoNombre);
+                    $("#popupBadgeCount").text(preventivos.length);
+
+                    let linkBtn = $("#popupVerLink");
+                    if (activoId) {
+                        linkBtn.attr("href", "/inicio/preventivos/" + activoId).removeClass("d-none");
+                    } else {
+                        linkBtn.addClass("d-none");
+                    }
+
+                    if (preventivos.length === 0) {
+                        let emptyHtml = `
+                            <div class="p-3 text-center rounded-3 border bg-surface-elevated">
+                                <i class="fas fa-check-circle text-success fs-3 mb-2 d-block"></i>
+                                <h6 class="fw-bold mb-1 text-body" style="font-size: 0.85rem;">Sin preventivos validados</h6>
+                                <p class="small text-muted mb-0" style="font-size: 0.75rem;">Este activo no posee preventivos ni mejoras validadas pendientes.</p>
+                                ${activoId ? `<a href="/inicio/preventivos/${activoId}" class="btn btn-sm btn-link text-decoration-none mt-2 p-0 d-inline-block" style="font-size: 0.75rem;"><i class="fas fa-list me-1"></i>Ver historial de preventivos</a>` : ''}
+                            </div>
+                        `;
+                        listaContainer.html(emptyHtml);
+                    } else {
+                        preventivos.forEach(function (objeto) {
+                            let isMejora = objeto.categoria && objeto.categoria.toLowerCase() === 'mejora';
+                            let catBadgeClass = isMejora ? 'bg-info text-dark' : 'bg-primary';
+                            let catIcon = isMejora ? 'fas fa-lightbulb' : 'fas fa-tools';
+                            let catLabel = objeto.categoria ? objeto.categoria.toUpperCase() : 'PREVENTIVO';
+                            let frecuenciaHtml = objeto.frecuencia ? `<span class="badge preventivo-frecuencia-badge ms-auto" style="font-size: 0.7rem;"><i class="far fa-clock me-1"></i>${objeto.frecuencia}</span>` : '';
+
+                            let itemHtml = `
+                                <div class="preventivo-item-card p-2 mb-2 rounded border shadow-sm text-start">
+                                    <div class="d-flex align-items-center justify-content-between mb-1">
+                                        <span class="badge ${catBadgeClass} px-2 py-1" style="font-size: 0.65rem;">
+                                            <i class="${catIcon} me-1"></i>${catLabel}
+                                        </span>
+                                        ${frecuenciaHtml}
+                                    </div>
+                                    <div class="fw-semibold text-wrap text-start preventivo-descripcion" style="font-size: 0.82rem; line-height: 1.3;">
+                                        ${objeto.descripcion}
+                                    </div>
+                                    ${objeto.solicita ? `<div class="preventivo-solicita mt-1 text-start" style="font-size: 0.72rem;"><i class="fas fa-user me-1"></i>${objeto.solicita}</div>` : ''}
+                                </div>
+                            `;
+                            listaContainer.append(itemHtml);
+                        });
+                    }
+                },
+                error: function (error) {
+                    console.error("Error en la petición", error);
+                    $("#listaPreventivos").html(`
+                        <div class="p-2 text-center text-danger small">
+                            <i class="fas fa-exclamation-triangle me-1"></i>Error al cargar datos
+                        </div>
+                    `);
+                }
+            });
+            mostrarCard();
+        }
+
+
+
+
+
+
+
+
+        document.addEventListener("click", (event) => {
+            // Si haces clic fuera del card y del path
+            if (!cardInfo.contains(event.target)) {
+                ocultarCard();
+            }
+        });
+
+
+
+        // Mostrar la tarjeta con animación
+        function mostrarCard() {
+
+            cardInfo.classList.remove("card-hidden");  // Quita la clase que la oculta
+            cardInfo.classList.add("card-visible");    // Añade la clase que la muestra
+        }
+
+        // Ocultar la tarjeta con animación
+        function ocultarCard() {
+            cardInfo.classList.remove("card-visible"); // Quita la clase que la muestra
+            cardInfo.classList.add("card-hidden");     // Añade la clase que la oculta
+        }
+
+
+    </script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,262 @@
+package mantenimiento.gestorTareas.modulo.tareas;
+
+import mantenimiento.gestorTareas.infraestructura.multitenant.TenantContext;
+import mantenimiento.gestorTareas.modulo.equipos.Activo;
+import mantenimiento.gestorTareas.modulo.tecnicos.Tecnico;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+public interface TareaService extends JpaRepository<Tarea, Long> {
+
+  // DMS limito las tareas que levanta a un año atrás para cuando crezca mucho la
+  // base de datos
+  @Query("SELECT t FROM Tarea t WHERE " +
+      "t.estado != 'cerrada' AND " +
+      "t.estado != 'disponible' AND " +
+      "t.estado != 'finDisponible' AND " +
+      "t.estado != 'cancelado' AND " +
+      "t.afectaProduccion = 'si' AND " +
+      "t.momentoDetencion BETWEEN :fechaInicio AND :fechaFin AND " +
+      "t.tenant.id = :tenantId")
+
+  public List<Tarea> traerNoCerradas(@Param("fechaInicio") LocalDateTime fechaInicio,
+      @Param("fechaFin") LocalDateTime fechaFin,
+      @Param("tenantId") Long tenantId);
+
+  @Query("SELECT t FROM Tarea t WHERE " +
+      "t.estado = 'cerrada' AND " +
+      "t.afectaProduccion = 'si' AND " +
+      "t.momentoDetencion BETWEEN :fechaInicio AND :fechaFin AND " +
+      "t.tenant.id = :tenantId")
+  List<Tarea> traerCerradas(@Param("fechaInicio") LocalDateTime fechaInicio,
+      @Param("fechaFin") LocalDateTime fechaFin,
+      @Param("tenantId") Long tenantId);
+
+  @Query("SELECT t FROM Tarea t WHERE " +
+      "t.estado = 'cerrada' AND " +
+      "t.activo = :activo AND " +
+      "t.afectaProduccion = 'si' AND " +
+      "t.momentoDetencion BETWEEN :fechaInicio AND :fechaFin AND " +
+      "t.tenant.id = :tenantId")
+  List<Tarea> traerCerradasPorActivo(@Param("activo") Activo activo,
+      @Param("fechaInicio") LocalDateTime fechaInicio,
+      @Param("fechaFin") LocalDateTime fechaFin,
+      @Param("tenantId") Long tenantId);
+
+  @Query("SELECT t FROM Tarea t WHERE " +
+      "t.estado = 'disponible' AND " +
+      "t.activo = :activo AND " +
+      "(:tenantId IS NULL OR t.tenant.id = :tenantId) " +
+      "ORDER BY t.momentoDetencion DESC")
+  List<Tarea> traerDisponiblePorActivo(@Param("activo") Activo activo,
+      @Param("tenantId") Long tenantId);
+
+  @Query("SELECT t FROM Tarea t WHERE " +
+      "t.estado <> 'cerrada' AND " +
+      "t.estado <> 'disponible' AND " +
+      "t.estado <> 'finDisponible' AND " +
+      "t.estado <> 'cancelado' AND " +
+      "t.activo = :activo AND (:tenantId IS NULL OR t.tenant.id = :tenantId)")
+  List<Tarea> traerNoCerradaPorActivo(@Param("activo") Activo activo, @Param("tenantId") Long tenantId);
+
+  @Query(value = """
+      SELECT
+        -- MTTR en minutos
+        SUM(
+          CASE
+            WHEN departamento_responsable = 'mantenimiento'
+                 AND estado NOT IN ('disponible', 'finDisponible', 'cancelado')
+            THEN TIMESTAMPDIFF(SECOND,
+                   GREATEST(momento_detencion, :inicio),
+                   LEAST(momento_liberacion, :fin)
+                 ) / 60.0
+            ELSE 0
+          END
+        ) / NULLIF(SUM(
+          CASE
+            WHEN departamento_responsable = 'mantenimiento'
+                 AND estado NOT IN ('disponible', 'finDisponible', 'cancelado')
+            THEN 1
+            ELSE 0
+          END
+        ), 0) AS mttr,
+
+        -- MTBF en minutos
+        (
+          TIMESTAMPDIFF(SECOND, :inicio, :fin) / 60.0
+
+          -- menos paradas no por falla
+          - SUM(
+              CASE
+                WHEN departamento_responsable <> 'mantenimiento'
+                     OR estado IN ('disponible', 'finDisponible', 'cancelado')
+                THEN TIMESTAMPDIFF(SECOND,
+                       GREATEST(momento_detencion, :inicio),
+                       LEAST(momento_liberacion, :fin)
+                     ) / 60.0
+                ELSE 0
+              END
+            )
+
+          -- menos tiempo de fallas reales
+          - SUM(
+              CASE
+                WHEN departamento_responsable = 'mantenimiento'
+                     AND estado NOT IN ('disponible', 'finDisponible', 'cancelado')
+                THEN TIMESTAMPDIFF(SECOND,
+                       GREATEST(momento_detencion, :inicio),
+                       LEAST(momento_liberacion, :fin)
+                     ) / 60.0
+                ELSE 0
+              END
+            )
+
+        ) / NULLIF(SUM(
+              CASE
+                WHEN departamento_responsable = 'mantenimiento'
+                     AND estado NOT IN ('disponible', 'finDisponible', 'cancelado')
+                THEN 1
+                ELSE 0
+              END
+            ), 0) AS mtbf
+      FROM tareas
+      WHERE
+        momento_liberacion > :inicio
+        AND momento_detencion < :fin
+         AND tareas.activo = :activo
+        AND tareas.tenant_id = :tenantId
+      """, nativeQuery = true)
+  Map<String, Object> calcularIndicadores(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin,
+      @Param("activo") Activo activo, @Param("tenantId") Long tenantId);
+
+  @Query("SELECT t FROM Tarea t WHERE " +
+      "t.estado = 'cerrada' AND " +
+      "t.departamentoResponsable = 'mantenimiento' AND " +
+      "t.activo = ?1 AND " +
+      "t.momentoDetencion >= STR_TO_DATE(?2, '%Y-%m-%dT%H:%i:%s') AND " +
+      "t.momentoDetencion <= STR_TO_DATE(?3, '%Y-%m-%dT%H:%i:%s') AND " +
+      "t.tenant.id = ?4")
+  List<Tarea> traerCerradasPorActivoEnRangoDeFecha(Activo activo, String fechaInicio, String fechaFin, Long tenantId);
+
+  @Query("SELECT t FROM Tarea t WHERE " +
+      "(t.estado = 'cerrada' OR t.estado = 'finDisponible') AND " +
+      "(t.departamentoResponsable <> 'mantenimiento' OR t.departamentoResponsable IS NULL) AND " +
+      "t.activo = ?1 AND " +
+      "t.momentoDetencion >= STR_TO_DATE(?2, '%Y-%m-%dT%H:%i:%s') AND " +
+      "t.momentoDetencion <= STR_TO_DATE(?3, '%Y-%m-%dT%H:%i:%s') AND " +
+      "t.tenant.id = ?4")
+  List<Tarea> traerNoMantenimientoPorActivoEnRangoDeFecha(Activo activo, String fechaInicio, String fechaFin,
+      Long tenantId);
+
+  @Query("SELECT t FROM Tarea t WHERE " +
+      "t.activo.nombre LIKE CONCAT('%', ?1, '%') AND " +
+      "t.momentoDetencion >= STR_TO_DATE(?2, '%Y-%m-%dT%H:%i:%s') AND " +
+      "t.momentoDetencion <= STR_TO_DATE(?3, '%Y-%m-%dT%H:%i:%s') AND " +
+      "t.tenant.id = ?4")
+  List<Tarea> traerPorLineaEnRangoDeFecha(String linea, String fechaInicio, String fechaFin, Long tenantId);
+
+  @Query("SELECT t FROM Tarea t JOIN t.asignaciones a WHERE " +
+      "a.tecnico = :tecnico AND t.estado = 'cerrada' AND " +
+      "t.momentoDetencion BETWEEN :fechaInicio AND :fechaFin AND t.tenant.id = :tenantId")
+  List<Tarea> traerPorTecnico(@Param("tecnico") Tecnico tecnico,
+      @Param("fechaInicio") LocalDateTime fechaInicio,
+      @Param("fechaFin") LocalDateTime fechaFin,
+      @Param("tenantId") Long tenantId);
+
+  @Query("SELECT t FROM Tarea t JOIN t.asignaciones a WHERE " +
+      "a.tecnico = :tecnico AND t.estado = 'cerrada' AND " +
+      "t.informe.estadoInforme = :estado AND " +
+      "t.momentoDetencion BETWEEN :fechaInicio AND :fechaFin AND t.tenant.id = :tenantId")
+  List<Tarea> traerPorTecnicoYEstadoInforme(@Param("tecnico") Tecnico tecnico,
+      @Param("estado") String estado,
+      @Param("fechaInicio") LocalDateTime fechaInicio,
+      @Param("fechaFin") LocalDateTime fechaFin,
+      @Param("tenantId") Long tenantId);
+
+  // @Query("SELECT t FROM Tarea t WHERE " +
+  // "t.estado = 'cerrada' AND " +
+  @Query("SELECT t FROM Tarea t JOIN t.asignaciones a WHERE " +
+      "a.tecnico is not null AND t.estado = 'cerrada' AND " +
+      "t.informe.estadoInforme = :estado AND " +
+      "t.momentoDetencion BETWEEN :fechaInicio AND :fechaFin AND t.tenant.id = :tenantId")
+  List<Tarea> traerPorEstadoInforme(@Param("estado") String estado,
+      @Param("fechaInicio") LocalDateTime fechaInicio,
+      @Param("fechaFin") LocalDateTime fechaFin,
+      @Param("tenantId") Long tenantId);
+
+  // =========================================================================
+  // CONSULTAS AGREGADAS EN BD PARA DASHBOARD (SOLAPA CORRECTIVOS)
+  // =========================================================================
+
+  @Query("SELECT COALESCE(t.estado, 'Sin Estado'), COUNT(t) FROM Tarea t WHERE t.momentoDetencion BETWEEN :inicio AND :fin AND t.estado NOT IN ('disponible', 'finDisponible', 'cancelado') AND (:tenantId IS NULL OR t.tenant.id = :tenantId) GROUP BY t.estado")
+  List<Object[]> contarCorrectivosPorEstado(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin,
+      @Param("tenantId") Long tenantId);
+
+  @Query("SELECT COALESCE(t.afectaProduccion, 'no'), COUNT(t) FROM Tarea t WHERE t.momentoDetencion BETWEEN :inicio AND :fin AND t.estado NOT IN ('disponible', 'finDisponible', 'cancelado') AND (:tenantId IS NULL OR t.tenant.id = :tenantId) GROUP BY t.afectaProduccion")
+  List<Object[]> contarCorrectivosPorAfectaProduccion(@Param("inicio") LocalDateTime inicio,
+      @Param("fin") LocalDateTime fin, @Param("tenantId") Long tenantId);
+
+  @Query(value = "SELECT DATE_FORMAT(t.momento_detencion, '%Y-%m') AS mes, COUNT(*) FROM tareas t WHERE t.momento_detencion BETWEEN :inicio AND :fin AND t.estado NOT IN ('disponible', 'finDisponible', 'cancelado') AND t.tenant_id = :tenantId GROUP BY DATE_FORMAT(t.momento_detencion, '%Y-%m') ORDER BY mes ASC", nativeQuery = true)
+  List<Object[]> contarCorrectivosEvolucionMensual(@Param("inicio") LocalDateTime inicio,
+      @Param("fin") LocalDateTime fin, @Param("tenantId") Long tenantId);
+
+  @Query(value = "SELECT COALESCE(a.nombre, 'Sin Equipo') AS nombre, COUNT(*) AS cantidad FROM tareas t LEFT JOIN activo a ON t.activo = a.id WHERE t.momento_detencion BETWEEN :inicio AND :fin AND t.estado NOT IN ('disponible', 'finDisponible', 'cancelado') AND t.tenant_id = :tenantId GROUP BY COALESCE(a.nombre, 'Sin Equipo') ORDER BY cantidad DESC", nativeQuery = true)
+  List<Object[]> contarCorrectivosPorEquipoTop(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin,
+      @Param("tenantId") Long tenantId);
+
+  @Query(value = "SELECT DATE_FORMAT(t.momento_detencion, '%Y-%m') AS mes, ROUND(AVG(TIMESTAMPDIFF(SECOND, t.momento_detencion, t.momento_liberacion) / 3600.0), 2) FROM tareas t WHERE t.momento_detencion BETWEEN :inicio AND :fin AND t.momento_liberacion IS NOT NULL AND t.estado NOT IN ('disponible', 'finDisponible', 'cancelado') AND t.tenant_id = :tenantId GROUP BY DATE_FORMAT(t.momento_detencion, '%Y-%m') ORDER BY mes ASC", nativeQuery = true)
+  List<Object[]> obtenerMttrMensual(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin,
+      @Param("tenantId") Long tenantId);
+
+  @Query("SELECT COALESCE(t.categoriaTecnica, 'Sin Categoría'), COUNT(t) FROM Tarea t WHERE t.momentoDetencion BETWEEN :inicio AND :fin AND t.estado NOT IN ('disponible', 'finDisponible', 'cancelado') AND (:tenantId IS NULL OR t.tenant.id = :tenantId) GROUP BY t.categoriaTecnica")
+  List<Object[]> contarCorrectivosPorCategoriaTecnica(@Param("inicio") LocalDateTime inicio,
+      @Param("fin") LocalDateTime fin, @Param("tenantId") Long tenantId);
+
+  @Query("SELECT COALESCE(t.departamentoResponsable, 'Sin Asignar'), COUNT(t) FROM Tarea t WHERE t.momentoDetencion BETWEEN :inicio AND :fin AND t.estado NOT IN ('disponible', 'finDisponible', 'cancelado') AND (:tenantId IS NULL OR t.tenant.id = :tenantId) GROUP BY t.departamentoResponsable")
+  List<Object[]> contarCorrectivosPorDepartamento(@Param("inicio") LocalDateTime inicio,
+      @Param("fin") LocalDateTime fin, @Param("tenantId") Long tenantId);
+
+  @Query(value = """
+      SELECT
+        SUM(CASE WHEN t.estado NOT IN ('cerrada', 'disponible', 'finDisponible', 'cancelado') THEN 1 ELSE 0 END) AS abiertos,
+        SUM(CASE WHEN t.estado = 'cerrada' THEN 1 ELSE 0 END) AS cerrados,
+
+        ROUND(COALESCE(
+          SUM(CASE WHEN t.estado = 'cerrada' AND t.momento_liberacion IS NOT NULL
+                   THEN TIMESTAMPDIFF(SECOND, GREATEST(t.momento_detencion, :inicio), LEAST(t.momento_liberacion, :fin)) / 3600.0
+                   ELSE 0 END)
+          / NULLIF(SUM(CASE WHEN t.estado = 'cerrada' THEN 1 ELSE 0 END), 0)
+        , 0), 2) AS mttrPromedioHoras,
+
+        ROUND(COALESCE(
+          ( (TIMESTAMPDIFF(SECOND, :inicio, :fin) / 3600.0) -
+            SUM(CASE WHEN t.estado NOT IN ('disponible', 'finDisponible', 'cancelado') AND t.momento_liberacion IS NOT NULL
+                     THEN TIMESTAMPDIFF(SECOND, GREATEST(t.momento_detencion, :inicio), LEAST(t.momento_liberacion, :fin)) / 3600.0
+                     ELSE 0 END)
+          ) / NULLIF(COUNT(t.id), 0)
+        , (TIMESTAMPDIFF(SECOND, :inicio, :fin) / 3600.0)), 1) AS mtbfHoras,
+
+        ROUND(COALESCE(
+          ( ( (TIMESTAMPDIFF(SECOND, :inicio, :fin) / 3600.0) -
+              SUM(CASE WHEN t.estado NOT IN ('disponible', 'finDisponible', 'cancelado') AND t.momento_liberacion IS NOT NULL
+                       THEN TIMESTAMPDIFF(SECOND, GREATEST(t.momento_detencion, :inicio), LEAST(t.momento_liberacion, :fin)) / 3600.0
+                       ELSE 0 END)
+            ) / (TIMESTAMPDIFF(SECOND, :inicio, :fin) / 3600.0)
+          ) * 100.0
+        , 100.0), 1) AS disponibilidad
+
+      FROM tareas t
+      WHERE t.momento_detencion BETWEEN :inicio AND :fin
+        AND t.estado NOT IN ('disponible', 'finDisponible', 'cancelado')
+        AND (:tenantId IS NULL OR t.tenant_id = :tenantId)
+      """, nativeQuery = true)
+  Map<String, Object> obtenerKpisCorrectivosGlobales(@Param("inicio") LocalDateTime inicio,
+      @Param("fin") LocalDateTime fin, @Param("tenantId") Long tenantId);
+
+}

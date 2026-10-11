@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="plantillas/plantilla::head">
+    <title>Informe de Intervención | SigmaWeb</title>
+</head>
+
+<body>
+    <header th:replace="plantillas/plantilla::header"></header>
+    <div th:replace="plantillas/plantilla::menu"></div>
+    <div th:replace="plantillas/plantilla::notificaciones"></div>
+
+    <div class="container my-4 animated-fadeIn">
+        
+        <!-- Header Hero Card -->
+        <div class="sigma-card mb-4">
+            <div class="sigma-card-header">
+                <h2 class="sigma-card-title mb-0">
+                    <i class="fas fa-file-pen text-primary"></i>
+                    <span>Informe de Intervención</span>
+                </h2>
+                <a th:href="@{/informes}" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-arrow-left me-1"></i> Volver a Informes
+                </a>
+            </div>
+
+            <!-- Banner Observaciones en Revisión -->
+            <div th:if="${informe.estadoInforme=='enRevision'}" class="alert alert-danger shadow-sm border-danger rounded-3 mb-4">
+                <h5 class="h6 font-weight-bold text-danger mb-2">
+                    <i class="fas fa-exclamation-triangle me-1"></i> Observaciones a Revisar:
+                </h5>
+                <textarea readonly class="form-control bg-body text-danger" th:text="${informe.revision}" rows="2"></textarea>
+            </div>
+
+            <!-- Main Form -->
+            <form th:action="@{/guardarInforme/}+${informe.id}" method="post" th:object="${informe}" enctype="multipart/form-data">
+                <input type="hidden" id="id" name="id" th:field="*{id}">
+                <input type="hidden" id="url1" name="url">
+
+                <!-- Section 1: Datos de Intervención -->
+                <div class="p-3 rounded-3 border mb-4" style="background: var(--bg-surface-elevated); border-color: var(--border-color) !important;">
+                    <h4 class="h5 font-weight-bold mb-3">
+                        <i class="fas fa-microchip text-primary me-2"></i> Datos de la Intervención
+                    </h4>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label detencion-label">Activo</label>
+                            <input type="text" class="form-control" id="activo" th:field="${tarea.activo.nombre}" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label detencion-label">Categoría Técnica</label>
+                            <input type="text" class="form-control" id="categoria" th:field="${tarea.categoriaTecnica}" readonly>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label detencion-label">Técnicos Interventores</label>
+                            <div class="p-2 border rounded-2 bg-body">
+                                <div th:each="asignacion : ${tarea.asignaciones}">
+                                    <span class="badge bg-primary me-1 mb-1" th:text="${asignacion.tecnico.apellido} + ' ' + ${asignacion.tecnico.nombre}"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label detencion-label">
+                                Tiempo Detenido Total
+                                <i class="fa-regular fa-circle-question text-primary ms-1 custom-popover" tabindex="0" data-container="body" data-trigger="focus" data-toggle="popover" data-placement="right" data-content="Tiempo total transcurrido desde la detención hasta la liberación."></i>
+                            </label>
+                            <input type="text" class="form-control" id="tiempoDetenido" th:value="${tiempoDetenido}" readonly>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label detencion-label">
+                            Descripción Inicial del Solicitante: <strong class="text-primary" th:text="${tarea.solicita}"></strong>
+                            <i class="fa-regular fa-circle-question text-primary ms-1 custom-popover" tabindex="0" data-container="body" data-trigger="focus" data-toggle="popover" data-placement="right" data-content="Descripción dada por el cliente interno al momento del aviso de detención."></i>
+                        </label>
+                        <textarea class="form-control" id="descripcionInicial" th:text="${tarea.descripcion}" readonly rows="2"></textarea>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label detencion-label">Departamento Responsable</label>
+                            <input type="text" class="form-control" id="responsable" th:field="${tarea.departamentoResponsable}" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Detalles del Informe Técnico -->
+                <div class="p-3 rounded-3 border mb-4" style="background: var(--bg-surface-elevated); border-color: var(--border-color) !important;">
+                    <h4 class="h5 font-weight-bold mb-3">
+                        <i class="fas fa-clipboard-check text-primary me-2"></i> Informe Técnico
+                    </h4>
+
+                    <div class="mb-3">
+                        <label for="descripcionInforme" class="form-label detencion-label">
+                            Descripción del Problema
+                            <i class="fa-regular fa-circle-question text-primary ms-1 custom-popover" tabindex="0" data-container="body" data-trigger="focus" data-toggle="popover" data-placement="right" data-content="Descripción detallada del diagnóstico del problema según el técnico interventor."></i>
+                        </label>
+                        <textarea class="form-control" id="descripcionInforme" th:field="*{descripcion}" rows="3" placeholder="Describa el diagnóstico técnico del problema..."></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="acciones" class="form-label detencion-label">
+                            Acciones Realizadas
+                            <i class="fa-solid fa-circle-exclamation text-warning ms-1 custom-popover" tabindex="0" data-container="body" data-trigger="focus" data-toggle="popover" data-placement="right" data-content="Acciones concretas para la solución. Sea claro y objetivo con los pasos efectuados."></i>
+                        </label>
+                        <textarea class="form-control" id="acciones" th:field="*{acciones}" rows="3" placeholder="Detalle las tareas y soluciones aplicadas..."></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="pruebas" class="form-label detencion-label">
+                            Pruebas Realizadas
+                            <i class="fa-regular fa-circle-question text-primary ms-1 custom-popover" tabindex="0" data-container="body" data-trigger="focus" data-toggle="popover" data-placement="right" data-content="Pruebas efectuadas para comprobar el correcto funcionamiento (ej: 5 ciclos en vacío)."></i>
+                        </label>
+                        <textarea class="form-control" id="pruebas" th:field="*{pruebas}" rows="2" placeholder="Ej: Se realizaron 5 ciclos de prueba sin producto y 2 con carga."></textarea>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="estado" class="form-label detencion-label">Estado Final del Activo</label>
+                            <select class="form-select" id="estado" th:field="*{estadoFinal}" required>
+                                <option value="reparado">Reparado</option>
+                                <option value="en observacion">En Observación</option>
+                                <option value="paliativo">Paliativo</option>
+                                <option th:if="*{estadoFinal == 'paliativo sugerido'}" value="paliativo sugerido">Paliativo Sugerido</option>
+                                <option value="irreparable">Irreparable</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Causa Raíz & 5 Por Qué -->
+                <div class="p-3 rounded-3 border mb-4" style="background: var(--bg-surface-elevated); border-color: var(--border-color) !important;">
+                    <h4 class="h5 font-weight-bold mb-3">
+                        <i class="fas fa-magnifying-glass-chart text-primary me-2"></i> Evaluación de Causa Raíz
+                    </h4>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="causaRaiz" class="form-label detencion-label">
+                                Causa Raíz
+                                <i class="fa-regular fa-circle-question text-primary ms-1 custom-popover" tabindex="0" data-container="body" data-trigger="focus" data-toggle="popover" data-placement="right" data-content="Indique la causa raíz identificada o utilice el método de los 5 por qué para determinarla."></i>
+                            </label>
+                            <input type="text" class="form-control" id="causaRaiz" th:field="*{causaRaiz}" placeholder="Causa fundamental del fallo...">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="categoriaCausaRaiz" class="form-label detencion-label">Categoría de Causa Raíz</label>
+                            <select class="form-select" id="categoriaCausaRaiz" th:field="*{categoriaCausaRaiz}" required>
+                                <option value="No determinada">No determinada</option>
+                                <option value="Humano">Humano</option>
+                                <option value="Técnico">Técnico</option>
+                                <option value="Ambiental">Ambiental</option>
+                                <option value="Organizacional">Organizacional</option>
+                                <option value="Suministros">Suministros</option>
+                                <option value="Diseño">Diseño</option>
+                                <option value="Operacional">Operacional</option>
+                                <option value="Software">Software</option>
+                                <option value="Formación/conocimientos">Formación/Conocimientos</option>
+                                <option value="Comunicación">Comunicación</option>
+                                <option value="Económico/presupuestario">Económico/Presupuestario</option>
+                                <option value="Energía/suministro">Energía/Suministro</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 5-Why Method Box -->
+                    <div class="p-3 rounded-3 border mb-3 bg-body" style="border-color: var(--border-color) !important;">
+                        <h5 class="h6 font-weight-bold text-primary mb-3">
+                            <i class="fas fa-network-wired me-2"></i> Análisis de los 5 Por Qué
+                            <i class="fa-regular fa-circle-question text-primary ms-1 custom-popover" tabindex="0" data-container="body" data-trigger="focus" data-toggle="popover" data-placement="right" data-content="Método iterativo: Pregunte ¿Por qué? al problema inicial y profundice sucesivamente en cada respuesta hasta aproximarse a la causa raíz subyacente."></i>
+                        </h5>
+
+                        <div class="row g-2 mb-2">
+                            <div class="col-md-6">
+                                <label for="pregunta1" class="form-label detencion-label small">1. ¿Por qué?</label>
+                                <input type="text" class="form-control form-control-sm" id="pregunta1" th:field="*{pregunta1}">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="pregunta2" class="form-label detencion-label small">2. ¿Por qué?</label>
+                                <input type="text" class="form-control form-control-sm" id="pregunta2" th:field="*{pregunta2}">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="pregunta3" class="form-label detencion-label small">3. ¿Por qué?</label>
+                                <input type="text" class="form-control form-control-sm" id="pregunta3" th:field="*{pregunta3}">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="pregunta4" class="form-label detencion-label small">4. ¿Por qué?</label>
+                                <input type="text" class="form-control form-control-sm" id="pregunta4" th:field="*{pregunta4}">
+                            </div>
+                            <div class="col-md-12">
+                                <label for="pregunta5" class="form-label detencion-label small">5. ¿Por qué?</label>
+                                <input type="text" class="form-control form-control-sm" id="pregunta5" th:field="*{pregunta5}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="seguimiento" class="form-label detencion-label">Requiere Seguimiento</label>
+                            <input type="text" class="form-control" id="seguimiento" th:field="*{seguimiento}" placeholder="Acciones o inspecciones de seguimiento necesarias...">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="recomendaciones" class="form-label detencion-label">
+                                Recomendaciones
+                                <i class="fa-regular fa-circle-question text-primary ms-1 custom-popover" tabindex="0" data-container="body" data-trigger="focus" data-toggle="popover" data-placement="right" data-content="Recomendaciones sugeridas para evitar la reincidencia del fallo."></i>
+                            </label>
+                            <input type="text" class="form-control" id="recomendaciones" th:field="*{recomendaciones}" placeholder="Recomendaciones preventivas...">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Submit Button -->
+                <div class="d-flex align-items-center justify-content-between pt-2">
+                    <button th:if="${tarea.informe.estadoInforme!='aprobado'}" sec:authorize="hasRole('ROLE_TECNICO')" type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i> Guardar Informe
+                    </button>
+                    <a th:href="@{/informes}" class="btn btn-secondary ms-auto">
+                        <i class="fas fa-arrow-left me-1"></i> Volver a Informes
+                    </a>
+                </div>
+            </form>
+
+            <!-- Revision Form for Mantenimiento Role -->
+            <div sec:authorize="hasRole('ROLE_MANT')" th:if="${informe.estadoInforme=='noAprobado'||informe.estadoInforme=='enRevision'}" class="mt-4 p-3 rounded-3 border bg-surface-elevated">
+                <form th:action="@{/enviarARevision/}+${informe.id}" method="post" th:object="${informe}">
+                    <input type="hidden" id="id" name="id" th:field="*{id}" />
+                    <input type="hidden" id="url" name="url" />
+
+                    <h5 class="h6 font-weight-bold text-warning mb-2">
+                        <i class="fas fa-triangle-exclamation me-1"></i> Solicitar Corrección / Enviar a Revisión
+                    </h5>
+                    <div class="mb-3">
+                        <label for="revision" class="form-label detencion-label">Observaciones a Corregir:</label>
+                        <textarea class="form-control" id="revision" th:field="*{revision}" rows="3" placeholder="Indique detalladamente las observaciones o correcciones requeridas..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-paper-plane me-1"></i> Enviar a Revisión
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            // Read URL search parameter if present
+            const url = new URL(window.location.href);
+            const urlParam = url.searchParams.get('url');
+            if (urlParam) {
+                const inputUrl = document.getElementById('url');
+                const inputUrl1 = document.getElementById('url1');
+                if (inputUrl) inputUrl.value = urlParam;
+                if (inputUrl1) inputUrl1.value = urlParam;
+            }
+
+            // Bootstrap Popover Initialization
+            if (typeof $ !== 'undefined' && $.fn.popover) {
+                $('[data-toggle="popover"]').popover({ trigger: 'focus' });
+            }
+        });
+    </script>
+</body>
+</html>

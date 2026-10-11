@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="plantillas/plantilla::head">
+        <title>Notificar Detención | SigmaWeb</title>
+        <meta charset="UTF-8"/>
+    </head>
+    <body>
+        <header th:replace="plantillas/plantilla::header"></header>
+        <div th:replace="plantillas/plantilla::menu"></div>
+        <div th:replace="plantillas/plantilla::notificaciones"></div>
+        <div th:replace="plantillas/plantilla::logo"></div>
+
+        <div class="container my-4 animated-fadeIn">
+            <div class="row justify-content-center">
+                <div class="col-lg-8 col-md-10">
+                    <div class="sigma-card p-0">
+                        <div class="sigma-card-header p-4 bg-primary text-white mb-0" style="border-radius: var(--radius-lg) var(--radius-lg) 0 0;">
+                            <h4 class="sigma-card-title text-white mb-0">
+                                <i class="fas fa-exclamation-triangle me-2"></i> Notificar Detención de Activo
+                            </h4>
+                        </div> 
+                        
+                        <form th:action="@{/guardar}" method="post" th:object="${tarea}" enctype="multipart/form-data" class="p-4">
+                            <div class="mb-3" hidden>
+                                <select th:field="*{activo}" class="form-select">
+                                    <option value="0">Seleccione</option>
+                                    <option th:each="activo : ${activos}" th:value="${activo.id}" th:text="${activo.nombre}"></option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="responsable" class="form-label font-weight-bold detencion-label">Departamento Responsable</label>
+                                <select th:field="*{departamentoResponsable}" id="responsable" onchange="mostrarCategoria()" class="form-select" required>
+                                    <option value="">Seleccione Departamento</option>
+                                    <option value="mantenimiento">Mantenimiento</option>
+                                    <option value="logistica">Logística</option>
+                                    <option value="calidad">Calidad</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3" id="categoriaDiv" style="display: none;">
+                                <label for="categoria" class="form-label font-weight-bold detencion-label">Categoría Técnica</label>
+                                <select th:field="*{categoriaTecnica}" id="categoria" class="form-select">
+                                    <option value="0">Seleccione Categoría</option>
+                                    <option value="mecánica">Mecánica</option>
+                                    <option value="hidráulica">Hidráulica</option>
+                                    <option value="neumática">Neumática</option>
+                                    <option value="electrónica">Electrónica</option>
+                                    <option value="programación">Programación</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Descripción formateada como Textarea multilínea amplio -->
+                            <div class="mb-3">
+                                <label for="descripcion" class="form-label font-weight-bold detencion-label">Descripción del Problema</label>
+                                <textarea th:field="*{descripcion}" id="descripcion" class="form-control" rows="5" placeholder="Describa el problema o falla detectada con el mayor detalle posible..." required></textarea>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="afectaProduccionSelect" class="form-label font-weight-bold detencion-label">Afecta Producción</label>
+                                <select class="form-select" id="afectaProduccionSelect" th:field="*{afectaProduccion}">
+                                    <option value="si" th:selected="${afectaProduccion == 'si'}">Sí</option>
+                                    <option value="no" th:selected="${afectaProduccion == 'no'}">No</option>
+                                </select>
+                            </div>
+
+                            <input type="file" name="file" hidden/>
+
+                            <div class="d-flex align-items-center justify-content-between pt-3 border-top">
+                                <a th:if="*{activo != null}" class="btn btn-secondary" th:href="@{/activoReturn/}+ ${activo.id}">
+                                    <i class="fas fa-arrow-left me-1"></i> Volver al Activo
+                                </a>
+                                <a th:if="*{activo == null}" class="btn btn-secondary" th:href="@{/tareas}">
+                                    <i class="fas fa-arrow-left me-1"></i> Regresar
+                                </a>
+
+                                <button class="btn btn-danger px-4" type="submit">
+                                    <i class="fas fa-paper-plane me-1"></i> Confirmar y Notificar
+                                </button>
+                            </div>                        
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            function mostrarCategoria() {
+                if ($("#responsable").val() == "mantenimiento") {
+                    $("#categoriaDiv").slideDown(250);
+                } else {
+                    $("#categoriaDiv").slideUp(250);
+                }
+            }
+
+            $(document).ready(function(){
+                mostrarCategoria();
+            });
+        </script>
+    </body>
+</html>

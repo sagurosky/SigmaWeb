@@ -118,6 +118,11 @@
                 
 
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.mercadopago</groupId>
             <artifactId>sdk-java</artifactId>
             <version>2.5.0</version>
@@ -160,5 +165,41 @@
         
         
     </build>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <profiles>
+        <profile>
+            <id>encrypt</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.github.core-lib</groupId>
+                        <artifactId>xjar-maven-plugin</artifactId>
+                        <version>4.0.2</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                                <phase>package</phase>
+                                <configuration>
+                                    <password>SigmawebSecretPass2026</password>
+                                    <includes>
+                                        <include>mantenimiento/**</include>
+                                    </includes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>
