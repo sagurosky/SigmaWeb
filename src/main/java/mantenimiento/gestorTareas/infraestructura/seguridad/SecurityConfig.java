@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.filter.ForwardedHeaderFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -29,6 +30,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(usuarioService).passwordEncoder(passwordEncoder());
+    }
+
+    /**
+     * Necesario para que Spring Security respete los headers X-Forwarded-Proto / X-Forwarded-Host
+     * enviados por Nginx como proxy inverso con SSL termination.
+     * Sin esto, el contexto de la petición queda como "http" aunque el cliente use HTTPS,
+     * lo que puede causar que el CSRF token sea rechazado con 403.
+     */
+    @Bean
+    public ForwardedHeaderFilter forwardedHeaderFilter() {
+        return new ForwardedHeaderFilter();
     }
 
     @Override

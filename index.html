@@ -1,0 +1,1862 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sigmaweb – CMMS Interactivo | Gestión de Mantenimiento Industrial</title>
+  <meta name="description"
+    content="Sigmaweb es un CMMS simple, adaptable y económico. Gestiona el mantenimiento desde el layout de tu planta. Prueba gratis sin tarjeta de crédito." />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;600;700;800&display=swap"
+    rel="stylesheet" />
+
+  <!-- AOS Animations -->
+  <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet" />
+
+  <!-- reCAPTCHA -->
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
+  <style>
+    /* =============================================
+       RESET & BASE
+    ============================================= */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --blue-950: #0a1628;
+      --blue-900: #0d1f40;
+      --blue-800: #102a5e;
+      --blue-700: #1a3a7a;
+      --blue-600: #1e4fad;
+      --blue-500: #2563eb;
+      --blue-400: #3b82f6;
+      --blue-300: #60a5fa;
+      --blue-200: #93c5fd;
+      --blue-100: #dbeafe;
+      --cyan-400: #22d3ee;
+      --cyan-300: #67e8f9;
+      --amber-400: #fbbf24;
+      --amber-300: #fcd34d;
+      --white: #ffffff;
+      --glass-bg: rgba(255, 255, 255, 0.07);
+      --glass-border: rgba(255, 255, 255, 0.15);
+      --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      --section-pad: 100px;
+      --radius-xl: 20px;
+      --radius-2xl: 32px;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--blue-950);
+      color: var(--white);
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* =============================================
+       NAVBAR
+    ============================================= */
+    #navbar {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 1000;
+      padding: 18px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.4s ease;
+    }
+
+    #navbar.scrolled {
+      background: rgba(10, 22, 40, 0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--glass-border);
+      padding: 12px 48px;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .nav-logo img {
+      height: 48px;
+      filter: brightness(0) invert(1);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: rgba(255, 255, 255, 0.8);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+      transition: color 0.2s;
+      position: relative;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--cyan-400);
+      transition: width 0.3s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--white);
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    .nav-cta {
+      background: linear-gradient(135deg, var(--blue-500), var(--cyan-400));
+      color: var(--white) !important;
+      padding: 10px 24px;
+      border-radius: 50px;
+      font-weight: 600 !important;
+      box-shadow: 0 4px 20px rgba(37, 99, 235, 0.4);
+      transition: transform 0.2s, box-shadow 0.2s !important;
+    }
+
+    .nav-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(37, 99, 235, 0.6) !important;
+    }
+
+    .nav-cta::after {
+      display: none !important;
+    }
+
+    /* =============================================
+       HERO – SLIDER
+    ============================================= */
+    #hero {
+      position: relative;
+      height: 100vh;
+      min-height: 700px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* Slides */
+    .slide {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      opacity: 0;
+      transition: opacity 1.2s ease;
+    }
+
+    .slide.active {
+      opacity: 1;
+    }
+
+    .slide::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg,
+          rgba(10, 22, 40, 0.82) 0%,
+          rgba(13, 31, 64, 0.65) 50%,
+          rgba(10, 22, 40, 0.78) 100%);
+    }
+
+    .slide-1 {
+      background-image: url('fondo1.png');
+    }
+
+    .slide-2 {
+      background-image: url('fondo3.png');
+    }
+
+    .slide-3 {
+      background-image: url('fondo2.png');
+    }
+
+    .slide-4 {
+      background-image: url('fondo4.png');
+    }
+
+    /* Particles canvas */
+    #particles-canvas {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    /* Hero content */
+    .hero-content {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 0 24px;
+      max-width: 900px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(34, 211, 238, 0.12);
+      border: 1px solid rgba(34, 211, 238, 0.35);
+      color: var(--cyan-300);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 20px;
+      border-radius: 50px;
+      margin-bottom: 28px;
+      letter-spacing: 0.5px;
+      animation: pulseGlow 3s ease-in-out infinite;
+    }
+
+    .hero-badge span {
+      width: 8px;
+      height: 8px;
+      background: var(--cyan-400);
+      border-radius: 50%;
+      display: block;
+      animation: blink 1.5s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: 0.3
+      }
+    }
+
+    @keyframes pulseGlow {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 rgba(34, 211, 238, 0);
+      }
+
+      50% {
+        box-shadow: 0 0 20px rgba(34, 211, 238, 0.25);
+      }
+    }
+
+    .hero-logo {
+      width: 220px;
+      margin: 0 auto 32px;
+      filter: brightness(0) invert(1) drop-shadow(0 0 20px rgba(34, 211, 238, 0.4));
+      animation: floatLogo 4s ease-in-out infinite;
+    }
+
+    @keyframes floatLogo {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-8px);
+      }
+    }
+
+    .hero-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(2.2rem, 5vw, 4rem);
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 22px;
+      letter-spacing: -1px;
+    }
+
+    .hero-title .gradient-text {
+      background: linear-gradient(135deg, var(--blue-300), var(--cyan-300), var(--amber-300));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-subtitle {
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      color: rgba(255, 255, 255, 0.75);
+      max-width: 640px;
+      margin: 0 auto 40px;
+      font-weight: 400;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--blue-500) 0%, var(--cyan-400) 100%);
+      color: var(--white);
+      font-weight: 700;
+      font-size: 15px;
+      padding: 16px 36px;
+      border-radius: 50px;
+      text-decoration: none;
+      box-shadow: 0 8px 30px rgba(37, 99, 235, 0.5);
+      transition: all 0.3s ease;
+      letter-spacing: 0.3px;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 16px 40px rgba(37, 99, 235, 0.65);
+    }
+
+    .btn-primary:active {
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--white);
+      font-weight: 600;
+      font-size: 15px;
+      padding: 15px 36px;
+      border-radius: 50px;
+      text-decoration: none;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(8px);
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.6);
+      transform: translateY(-3px);
+    }
+
+    .btn-amber {
+      background: linear-gradient(135deg, var(--amber-400), #f59e0b);
+      color: #1a1a1a;
+      font-weight: 700;
+      font-size: 15px;
+      padding: 16px 36px;
+      border-radius: 50px;
+      text-decoration: none;
+      box-shadow: 0 8px 30px rgba(251, 191, 36, 0.4);
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-amber:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 16px 40px rgba(251, 191, 36, 0.6);
+    }
+
+    /* Slider dots */
+    .slider-dots {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+      z-index: 20;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.35);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .dot.active {
+      width: 24px;
+      border-radius: 4px;
+      background: var(--cyan-400);
+    }
+
+    /* Scroll indicator */
+    .scroll-indicator {
+      position: absolute;
+      bottom: 44px;
+      right: 48px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      z-index: 20;
+      opacity: 0.6;
+    }
+
+    .scroll-indicator span {
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .scroll-arrow {
+      width: 24px;
+      height: 24px;
+      border-right: 2px solid rgba(255, 255, 255, 0.7);
+      border-bottom: 2px solid rgba(255, 255, 255, 0.7);
+      transform: rotate(45deg);
+      animation: scrollBounce 1.8s ease-in-out infinite;
+    }
+
+    @keyframes scrollBounce {
+
+      0%,
+      100% {
+        transform: rotate(45deg) translate(0, 0)
+      }
+
+      50% {
+        transform: rotate(45deg) translate(4px, 4px)
+      }
+    }
+
+    /* =============================================
+       STATS BAR
+    ============================================= */
+    #stats-bar {
+      background: linear-gradient(135deg, rgba(13, 31, 64, 0.95), rgba(16, 42, 94, 0.95));
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid var(--glass-border);
+      border-bottom: 1px solid var(--glass-border);
+      padding: 40px 0;
+    }
+
+    .stats-grid {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 48px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 20px;
+      position: relative;
+    }
+
+    .stat-item:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 20%;
+      height: 60%;
+      width: 1px;
+      background: var(--glass-border);
+    }
+
+    .stat-number {
+      font-family: 'Outfit', sans-serif;
+      font-size: 3rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--blue-300), var(--cyan-300));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.6);
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+
+    /* =============================================
+       SECTION COMMON
+    ============================================= */
+    section {
+      padding: var(--section-pad) 0;
+    }
+
+    .section-label {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--cyan-400);
+      margin-bottom: 14px;
+    }
+
+    .section-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 18px;
+      letter-spacing: -0.5px;
+    }
+
+    .section-subtitle {
+      font-size: 16px;
+      color: rgba(255, 255, 255, 0.65);
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    .container {
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 0 48px;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    /* =============================================
+       VIDEO DEMO
+    ============================================= */
+    #demos {
+      background: linear-gradient(180deg, var(--blue-950) 0%, var(--blue-900) 100%);
+    }
+
+    .videos-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      margin-top: 56px;
+    }
+
+    .video-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      transition: all 0.4s ease;
+      position: relative;
+    }
+
+    .video-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.15), transparent);
+      opacity: 0;
+      transition: opacity 0.4s;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .video-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(34, 211, 238, 0.4);
+      box-shadow: 0 20px 60px rgba(37, 99, 235, 0.3);
+    }
+
+    .video-card:hover::before {
+      opacity: 1;
+    }
+
+    .video-card iframe {
+      width: 100%;
+      height: 260px;
+      display: block;
+      border: none;
+    }
+
+    /* =============================================
+       FEATURES / BENEFICIOS
+    ============================================= */
+    #features {
+      background: var(--blue-900);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #features::before {
+      content: '';
+      position: absolute;
+      top: -200px;
+      right: -200px;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(37, 99, 235, 0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    #features::after {
+      content: '';
+      position: absolute;
+      bottom: -200px;
+      left: -200px;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(34, 211, 238, 0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+      margin-top: 64px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .feature-card {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xl);
+      padding: 40px 32px;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--blue-500), var(--cyan-400));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s ease;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-8px);
+      border-color: rgba(34, 211, 238, 0.35);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(34, 211, 238, 0.1);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.04) 100%);
+    }
+
+    .feature-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .feature-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin-bottom: 24px;
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.3), rgba(34, 211, 238, 0.2));
+      border: 1px solid rgba(34, 211, 238, 0.2);
+    }
+
+    .feature-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .feature-desc {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.6);
+      line-height: 1.7;
+    }
+
+    /* =============================================
+       HOW IT WORKS – STEPS
+    ============================================= */
+    #howto {
+      background: var(--blue-950);
+    }
+
+    .steps-wrapper {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+      margin-top: 64px;
+      position: relative;
+    }
+
+    .steps-wrapper::before {
+      content: '';
+      position: absolute;
+      top: 44px;
+      left: calc(16.66% + 16px);
+      right: calc(16.66% + 16px);
+      height: 2px;
+      background: linear-gradient(90deg, var(--blue-500), var(--cyan-400), var(--blue-500));
+      z-index: 0;
+    }
+
+    .step-item {
+      text-align: center;
+      padding: 24px 32px;
+      position: relative;
+      z-index: 1;
+      transition: transform 0.3s ease;
+    }
+
+    .step-item:hover {
+      transform: translateY(-6px);
+    }
+
+    .step-number {
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue-600), var(--cyan-400));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Outfit', sans-serif;
+      font-size: 2rem;
+      font-weight: 800;
+      margin: 0 auto 24px;
+      position: relative;
+      box-shadow: 0 8px 30px rgba(37, 99, 235, 0.5);
+    }
+
+    .step-number::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 2px solid rgba(34, 211, 238, 0.3);
+      animation: rotateBorder 4s linear infinite;
+    }
+
+    @keyframes rotateBorder {
+      from {
+        transform: rotate(0deg) scale(1);
+      }
+
+      to {
+        transform: rotate(360deg) scale(1);
+      }
+    }
+
+    .step-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .step-desc {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    /* =============================================
+       PLANS / PRICING
+    ============================================= */
+    #pricing {
+      background: linear-gradient(180deg, var(--blue-900) 0%, var(--blue-950) 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #pricing::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 50%, rgba(37, 99, 235, 0.12) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 50%, rgba(34, 211, 238, 0.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 420px);
+      gap: 32px;
+      justify-content: center;
+      margin-top: 64px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .price-card {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.03) 100%);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-2xl);
+      padding: 48px 44px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.4s ease;
+    }
+
+    .price-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--blue-500), var(--blue-400));
+    }
+
+    .price-card.featured {
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.2) 0%, rgba(34, 211, 238, 0.08) 100%);
+      border-color: rgba(34, 211, 238, 0.4);
+      box-shadow: 0 0 60px rgba(37, 99, 235, 0.25), 0 24px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .price-card.featured::before {
+      background: linear-gradient(90deg, var(--blue-400), var(--cyan-400));
+    }
+
+    .price-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+    }
+
+    .featured-badge {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, var(--cyan-400), var(--blue-400));
+      color: var(--blue-950);
+      font-size: 11px;
+      font-weight: 800;
+      padding: 5px 14px;
+      border-radius: 50px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .plan-name {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .plan-desc {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.55);
+      margin-bottom: 28px;
+    }
+
+    .plan-price {
+      font-family: 'Outfit', sans-serif;
+      font-size: 3.5rem;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 6px;
+      background: linear-gradient(135deg, var(--white), var(--blue-200));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .plan-price .currency {
+      font-size: 1.8rem;
+    }
+
+    .plan-period {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.45);
+      margin-bottom: 36px;
+    }
+
+    .plan-features {
+      list-style: none;
+      margin-bottom: 36px;
+    }
+
+    .plan-features li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.8);
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .plan-features li:last-child {
+      border-bottom: none;
+    }
+
+    .plan-features .check {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue-500), var(--cyan-400));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 10px;
+    }
+
+    /* =============================================
+       FORM SECTION
+    ============================================= */
+    #form-section {
+      background: var(--blue-950);
+      position: relative;
+    }
+
+    #form-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 1px;
+      height: 100%;
+      background: linear-gradient(180deg, transparent, rgba(34, 211, 238, 0.4), transparent);
+    }
+
+    .form-container {
+      max-width: 560px;
+      margin: 0 auto;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.03) 100%);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-2xl);
+      padding: 52px 48px;
+      position: relative;
+      overflow: hidden;
+      z-index: 2;
+      backdrop-filter: blur(10px);
+    }
+
+    .form-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--blue-500), var(--cyan-400), var(--amber-400));
+    }
+
+    .form-container::after {
+      content: '';
+      position: absolute;
+      bottom: -100px;
+      right: -100px;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(37, 99, 235, 0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .form-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.9rem;
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .form-subtitle {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.55);
+      text-align: center;
+      margin-bottom: 36px;
+    }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 6px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .input-group input {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      padding: 14px 18px;
+      color: var(--white);
+      font-size: 15px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    .input-group input::placeholder {
+      color: rgba(255, 255, 255, 0.3);
+    }
+
+    .input-group input:focus {
+      border-color: var(--cyan-400);
+      background: rgba(34, 211, 238, 0.05);
+      box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.12);
+    }
+
+    #password-strength {
+      font-size: 12px;
+      margin-top: 6px;
+      font-weight: 600;
+      height: 16px;
+    }
+
+    .strength-bar {
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255, 255, 255, 0.1);
+      margin-top: 6px;
+      overflow: hidden;
+    }
+
+    .strength-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: all 0.4s ease;
+      width: 0;
+    }
+
+    .recaptcha-wrapper {
+      display: flex;
+      justify-content: center;
+      margin: 20px 0;
+    }
+
+    .btn-submit {
+      width: 100%;
+      background: linear-gradient(135deg, var(--blue-500) 0%, var(--cyan-400) 100%);
+      color: var(--white);
+      font-weight: 700;
+      font-size: 16px;
+      padding: 16px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      letter-spacing: 0.3px;
+      box-shadow: 0 8px 30px rgba(37, 99, 235, 0.4);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-submit::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .btn-submit:hover::before {
+      left: 100%;
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 40px rgba(37, 99, 235, 0.6);
+    }
+
+    .btn-submit:active {
+      transform: translateY(0);
+    }
+
+    /* =============================================
+       FOOTER
+    ============================================= */
+    footer {
+      background: #050d1a;
+      border-top: 1px solid rgba(255, 255, 255, 0.07);
+      padding: 48px 0 28px;
+    }
+
+    .footer-inner {
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 0 48px;
+    }
+
+    .footer-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 40px;
+      padding-bottom: 40px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    .footer-logo img {
+      height: 40px;
+      filter: brightness(0) invert(1);
+      opacity: 0.8;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 28px;
+    }
+
+    .footer-links a {
+      color: rgba(255, 255, 255, 0.45);
+      text-decoration: none;
+      font-size: 13px;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--cyan-400);
+    }
+
+    .footer-bottom {
+      text-align: center;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.3);
+    }
+
+    /* =============================================
+       TESTIMONIALS / TRUST STRIP
+    ============================================= */
+    #trust {
+      background: linear-gradient(135deg, rgba(13, 31, 64, 0.8), rgba(16, 42, 94, 0.8));
+      border-top: 1px solid var(--glass-border);
+      border-bottom: 1px solid var(--glass-border);
+      padding: 60px 0;
+    }
+
+    .trust-strip {
+      display: flex;
+      gap: 48px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .trust-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.7);
+      font-weight: 500;
+    }
+
+    .trust-icon {
+      font-size: 22px;
+    }
+
+    /* =============================================
+       RESPONSIVE
+    ============================================= */
+    @media (max-width: 900px) {
+      :root {
+        --section-pad: 70px;
+      }
+
+      #navbar {
+        padding: 14px 24px;
+      }
+
+      #navbar.scrolled {
+        padding: 10px 24px;
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      .container {
+        padding: 0 24px;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .stat-item:nth-child(2)::after {
+        display: none;
+      }
+
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .videos-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .steps-wrapper {
+        grid-template-columns: 1fr;
+      }
+
+      .steps-wrapper::before {
+        display: none;
+      }
+
+      .pricing-grid {
+        grid-template-columns: 1fr;
+        max-width: 440px;
+      }
+
+      .footer-top {
+        flex-direction: column;
+        gap: 24px;
+        text-align: center;
+      }
+
+      .footer-links {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .hero-title {
+        font-size: 2rem;
+      }
+
+      .stat-number {
+        font-size: 2.2rem;
+      }
+
+      .form-container {
+        padding: 36px 24px;
+      }
+
+      .scroll-indicator {
+        display: none;
+      }
+    }
+
+    /* =============================================
+       GLOW EFFECTS & DECORATIVE
+    ============================================= */
+    .glow-dot {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Animated gradient line */
+    .gradient-line {
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--blue-400), var(--cyan-400), var(--blue-400), transparent);
+      background-size: 200% auto;
+      animation: lineMove 4s linear infinite;
+    }
+
+    @keyframes lineMove {
+      to {
+        background-position: 200% center;
+      }
+    }
+
+    /* Card hover glow */
+    .price-card.featured:hover {
+      box-shadow: 0 0 80px rgba(34, 211, 238, 0.2), 0 30px 80px rgba(0, 0, 0, 0.4);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ================================================
+       NAVBAR
+  ================================================ -->
+  <nav id="navbar">
+    <div class="nav-logo">
+      <img src="logoReg.png" alt="Sigmaweb Logo" />
+    </div>
+    <ul class="nav-links">
+      <li><a href="#demos">Demo</a></li>
+      <li><a href="#features">Beneficios</a></li>
+      <li><a href="#howto">¿Cómo funciona?</a></li>
+      <li><a href="#pricing">Planes</a></li>
+      <li><a href="#form" class="nav-cta">Probar gratis</a></li>
+    </ul>
+  </nav>
+
+  <!-- ================================================
+       HERO SECTION
+  ================================================ -->
+  <section id="hero">
+    <!-- Background slides -->
+    <div class="slide slide-1 active"></div>
+    <div class="slide slide-2"></div>
+    <div class="slide slide-3"></div>
+    <div class="slide slide-4"></div>
+
+    <!-- Particles -->
+    <canvas id="particles-canvas"></canvas>
+
+    <!-- Content -->
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span></span>
+        CMMS Industrial · Versión 2025
+      </div>
+      <img src="logoReg.png" alt="Sigmaweb" class="hero-logo" />
+      <h1 class="hero-title">
+        Gestiona el mantenimiento<br />
+        desde el <span class="gradient-text">layout de tu planta</span>
+      </h1>
+      <p class="hero-subtitle">
+        Sigmaweb es un CMMS simple, adaptable y económico. Centraliza órdenes de trabajo, activos e indicadores en
+        tiempo real.
+      </p>
+      <div class="hero-buttons">
+        <a href="#form" class="btn-primary" id="hero-btn-free">
+          🚀 Probar gratis
+        </a>
+        <a href="https://sigmawebapp.com/inicio/" target="_blank" class="btn-amber" id="hero-btn-cmms">
+          ⚡ Ir al CMMS
+        </a>
+        <a href="#demos" class="btn-secondary" id="hero-btn-demo">
+          ▶ Ver demo
+        </a>
+      </div>
+    </div>
+
+    <!-- Slider dots -->
+    <div class="slider-dots">
+      <div class="dot active" data-slide="0"></div>
+      <div class="dot" data-slide="1"></div>
+      <div class="dot" data-slide="2"></div>
+      <div class="dot" data-slide="3"></div>
+    </div>
+
+    <!-- Scroll indicator -->
+    <div class="scroll-indicator">
+      <span>Scroll</span>
+      <div class="scroll-arrow"></div>
+    </div>
+  </section>
+
+  <!-- ================================================
+       STATS BAR
+  ================================================ -->
+  <div id="stats-bar">
+    <div class="stats-grid">
+      <div class="stat-item" data-aos="fade-up" data-aos-delay="0">
+        <div class="stat-number" data-count="99">0</div>
+        <div class="stat-label">% Uptime garantizado</div>
+      </div>
+      <div class="stat-item" data-aos="fade-up" data-aos-delay="100">
+        <div class="stat-number" data-count="500" data-suffix="+">0</div>
+        <div class="stat-label">Activos gestionados</div>
+      </div>
+      <div class="stat-item" data-aos="fade-up" data-aos-delay="200">
+        <div class="stat-number" data-count="35" data-suffix="%">0</div>
+        <div class="stat-label">Reducción de fallas</div>
+      </div>
+      <div class="stat-item" data-aos="fade-up" data-aos-delay="300">
+        <div class="stat-number" data-count="0">$0</div>
+        <div class="stat-label">Para comenzar hoy</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================
+       VIDEO DEMOS
+  ================================================ -->
+  <section id="demos">
+    <div class="container">
+      <div class="text-center" data-aos="fade-up">
+        <span class="section-label">🎬 En acción</span>
+        <h2 class="section-title">Mira cómo funciona Sigmaweb</h2>
+        <p class="section-subtitle">Explora las principales funcionalidades en estos videos cortos de demostración.</p>
+      </div>
+      <div class="videos-grid">
+        <div class="video-card" data-aos="fade-up" data-aos-delay="0">
+          <iframe src="https://www.youtube.com/embed/29VUZAEQ3hw" title="Demo 1 – Layout interactivo"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen></iframe>
+        </div>
+        <div class="video-card" data-aos="fade-up" data-aos-delay="100">
+          <iframe src="https://www.youtube.com/embed/FR64gEMk878" title="Demo 2 – Órdenes de trabajo"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen></iframe>
+        </div>
+        <div class="video-card" data-aos="fade-up" data-aos-delay="200">
+          <iframe src="https://www.youtube.com/embed/paBfWeL9Hy8" title="Demo 3 – Indicadores"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen></iframe>
+        </div>
+        <div class="video-card" data-aos="fade-up" data-aos-delay="300">
+          <iframe src="https://www.youtube.com/embed/zaIsXj9XSN4" title="Demo 4 – Preventivos"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen></iframe>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================
+       TRUST STRIP
+  ================================================ -->
+  <div id="trust">
+    <div class="trust-strip">
+      <div class="trust-item"><span class="trust-icon">🏭</span> Industria manufacturera</div>
+      <div class="trust-item"><span class="trust-icon">⚙️</span> Plantas de producción</div>
+      <div class="trust-item"><span class="trust-icon">🔒</span> Datos seguros en la nube</div>
+      <div class="trust-item"><span class="trust-icon">📱</span> Acceso desde cualquier dispositivo</div>
+      <div class="trust-item"><span class="trust-icon">🆓</span> Sin tarjeta de crédito</div>
+    </div>
+  </div>
+
+  <!-- ================================================
+       FEATURES
+  ================================================ -->
+  <section id="features">
+    <div class="container">
+      <div class="text-center" data-aos="fade-up">
+        <span class="section-label">✨ Capacidades</span>
+        <h2 class="section-title">Todo lo que necesitas para gestionar el mantenimiento</h2>
+        <p class="section-subtitle">Herramientas potentes sin la complejidad de los sistemas tradicionales.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card" data-aos="fade-up" data-aos-delay="0">
+          <div class="feature-icon">🗺️</div>
+          <h3 class="feature-title">Layout interactivo</h3>
+          <p class="feature-desc">Accede a cualquier activo directamente desde el plano de tu planta. Consulta
+            historial, gráficos e indicadores en segundos sin salir de la vista del layout.</p>
+        </div>
+        <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
+          <div class="feature-icon">🔧</div>
+          <h3 class="feature-title">Preventivos inteligentes</h3>
+          <p class="feature-desc">Programa y gestiona mantenimientos preventivos con sugerencias automáticas. Mantén tus
+            equipos operativos y reduce las fallas imprevistas.</p>
+        </div>
+        <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
+          <div class="feature-icon">📊</div>
+          <h3 class="feature-title">Indicadores automáticos</h3>
+          <p class="feature-desc">Métricas claras en tiempo real: MTTR, MTBF, disponibilidad y más. Cálculo automático a
+            partir de las detenciones y OT registradas.</p>
+        </div>
+        <div class="feature-card" data-aos="fade-up" data-aos-delay="300">
+          <div class="feature-icon">📋</div>
+          <h3 class="feature-title">Órdenes de trabajo</h3>
+          <p class="feature-desc">Crea, asigna y rastrea órdenes de trabajo con estados en tiempo real. Prioridad,
+            técnico asignado y tiempo de resolución registrados automáticamente.</p>
+        </div>
+        <div class="feature-card" data-aos="fade-up" data-aos-delay="400">
+          <div class="feature-icon">🏪</div>
+          <h3 class="feature-title">Gestión de inventario</h3>
+          <p class="feature-desc">Controla el stock de repuestos vinculado a cada activo. Recibe alertas de bajo stock y
+            asocia consumos directamente a las órdenes de trabajo.</p>
+        </div>
+        <div class="feature-card" data-aos="fade-up" data-aos-delay="500">
+          <div class="feature-icon">☁️</div>
+          <h3 class="feature-title">100% en la nube</h3>
+          <p class="feature-desc">Sin instalaciones ni servidores propios. Accede desde cualquier dispositivo, en
+            cualquier momento, con actualizaciones automáticas incluidas.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================
+       HOW IT WORKS
+  ================================================ -->
+  <section id="howto">
+    <div class="container">
+      <div class="text-center" data-aos="fade-up">
+        <span class="section-label">🚀 Inicio rápido</span>
+        <h2 class="section-title">Comenzar es simple</h2>
+        <p class="section-subtitle">En 3 pasos ya estás gestionando el mantenimiento de tu planta de manera profesional.
+        </p>
+      </div>
+      <div class="steps-wrapper">
+        <div class="step-item" data-aos="fade-up" data-aos-delay="0">
+          <div class="step-number">1</div>
+          <h3 class="step-title">Regístrate gratis</h3>
+          <p class="step-desc">Crea tu cuenta en segundos. Sin tarjeta de crédito, sin contratos.</p>
+        </div>
+        <div class="step-item" data-aos="fade-up" data-aos-delay="150">
+          <div class="step-number">2</div>
+          <h3 class="step-title">Carga el layout</h3>
+          <p class="step-desc">Sube una imagen del plano de tu planta y posiciona tus activos.</p>
+        </div>
+        <div class="step-item" data-aos="fade-up" data-aos-delay="300">
+          <div class="step-number">3</div>
+          <h3 class="step-title">Gestiona en tiempo real</h3>
+          <p class="step-desc">Administra OT, preventivos e indicadores desde una sola plataforma.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================
+       PRICING
+  ================================================ -->
+  <section id="pricing">
+    <div class="container">
+      <div class="text-center" data-aos="fade-up">
+        <span class="section-label">💎 Planes</span>
+        <h2 class="section-title">Elige el plan ideal para tu empresa</h2>
+        <p class="section-subtitle">Precios transparentes sin sorpresas. Comienza gratis y escala cuando lo necesites.
+        </p>
+      </div>
+      <div class="pricing-grid">
+        <!-- Free plan -->
+        <div class="price-card" data-aos="fade-right" data-aos-delay="100">
+          <p class="plan-name">🆓 Gratis</p>
+          <p class="plan-desc">Perfecto para comenzar y explorar todas las funciones</p>
+          <div class="plan-price"><span class="currency">$</span>0</div>
+          <div class="plan-period">para siempre · sin tarjeta</div>
+          <ul class="plan-features">
+            <li><span class="check">✓</span> 1 usuario administrador</li>
+            <li><span class="check">✓</span> Layout interactivo</li>
+            <li><span class="check">✓</span> Órdenes de trabajo ilimitadas</li>
+            <li><span class="check">✓</span> Indicadores automáticos</li>
+            <li><span class="check">✓</span> Acceso completo a todas las funciones</li>
+          </ul>
+          <a href="#form" class="btn-primary" id="free-plan-btn"
+            style="display:block; text-align:center; text-decoration:none;">Comenzar gratis</a>
+        </div>
+
+        <!-- Business plan -->
+        <div class="price-card featured" data-aos="fade-left" data-aos-delay="200">
+          <div class="featured-badge">Más Popular</div>
+          <p class="plan-name">🏢 Empresas</p>
+          <p class="plan-desc">Para equipos de mantenimiento con múltiples técnicos</p>
+          <div class="plan-price"><span class="currency">$</span>10</div>
+          <div class="plan-period">por usuario / mes · facturación mensual</div>
+          <ul class="plan-features">
+            <li><span class="check">✓</span> Usuarios ilimitados</li>
+            <li><span class="check">✓</span> Múltiples plantas y layouts</li>
+            <li><span class="check">✓</span> Soporte prioritario</li>
+            <li><span class="check">✓</span> Reportes exportables (Excel/PDF)</li>
+            <li><span class="check">✓</span> Integraciones y API disponible</li>
+          </ul>
+          <a href="#form" class="btn-amber" id="business-plan-btn"
+            style="display:block; text-align:center; text-decoration:none;">Solicitar demo</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================
+       REGISTER FORM
+  ================================================ -->
+  <section id="form-section">
+    <div class="container">
+      <div class="form-container" data-aos="fade-up">
+        <h2 class="form-title">Crea tu cuenta gratis</h2>
+        <p class="form-subtitle">Acceso inmediato · Sin tarjeta de crédito · Sin compromisos</p>
+
+        <form id="registroForm" action="https://sigmawebapp.com/inicio/api/registro" method="POST">
+          <div class="input-group">
+            <label for="nombre">Nombre completo</label>
+            <input type="text" id="nombre" name="nombre" placeholder="Ej. Juan Pérez" required />
+          </div>
+          <div class="input-group">
+            <label for="email">Correo electrónico</label>
+            <input type="email" id="email" name="email" placeholder="juan@empresa.com" required />
+          </div>
+          <div class="input-group">
+            <label for="empresa">Empresa</label>
+            <input type="text" id="empresa" name="empresa" placeholder="Nombre de tu empresa" required />
+          </div>
+          <div class="input-group">
+            <label for="username">Nombre de usuario</label>
+            <input type="text" id="username" name="username" placeholder="usuario123" required />
+          </div>
+          <div class="input-group">
+            <label for="password">Contraseña</label>
+            <input type="password" id="password" name="password" placeholder="Mínimo 8 caracteres" required />
+            <div id="password-strength"></div>
+            <div class="strength-bar">
+              <div class="strength-fill" id="strength-fill"></div>
+            </div>
+          </div>
+
+          <div class="recaptcha-wrapper">
+            <div class="g-recaptcha" data-sitekey="6LdQyMIrAAAAABVkmh4w2OznwJHngyIWRtRqVZ3A"></div>
+          </div>
+
+          <button type="submit" class="btn-submit" id="submit-btn">
+            🚀 Crear cuenta gratuita
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================
+       FOOTER
+  ================================================ -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-top">
+        <div class="footer-logo">
+          <img src="logoReg.png" alt="Sigmaweb" />
+        </div>
+        <nav class="footer-links">
+          <a href="#demos">Demo</a>
+          <a href="#features">Beneficios</a>
+          <a href="#pricing">Planes</a>
+          <a href="#form">Registro</a>
+          <a href="https://sigmawebapp.com/inicio/" target="_blank">Acceder</a>
+        </nav>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2025 Sigmaweb · CMMS Interactivo Industrial · Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ================================================
+       SCRIPTS
+  ================================================ -->
+  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/zxcvbn/4.4.2/zxcvbn.js"></script>
+
+  <script>
+    // ── AOS
+    AOS.init({ duration: 900, once: true, easing: 'ease-out-cubic' });
+
+    // ── NAVBAR SCROLL
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    // ── HERO SLIDER
+    const slides = document.querySelectorAll('.slide');
+    const dots = document.querySelectorAll('.dot');
+    let currentSlide = 0;
+
+    function goToSlide(n) {
+      slides[currentSlide].classList.remove('active');
+      dots[currentSlide].classList.remove('active');
+      currentSlide = (n + slides.length) % slides.length;
+      slides[currentSlide].classList.add('active');
+      dots[currentSlide].classList.add('active');
+    }
+
+    dots.forEach(dot => {
+      dot.addEventListener('click', () => goToSlide(+dot.dataset.slide));
+    });
+
+    const sliderInterval = setInterval(() => goToSlide(currentSlide + 1), 5500);
+
+    // ── PARTICLES
+    (function () {
+      const canvas = document.getElementById('particles-canvas');
+      const ctx = canvas.getContext('2d');
+      let particles = [];
+      const COUNT = 55;
+
+      function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      function randomBetween(a, b) { return a + Math.random() * (b - a); }
+
+      class Particle {
+        constructor() { this.reset(); }
+        reset() {
+          this.x = randomBetween(0, canvas.width);
+          this.y = randomBetween(0, canvas.height);
+          this.r = randomBetween(1, 2.5);
+          this.vx = randomBetween(-0.3, 0.3);
+          this.vy = randomBetween(-0.5, -0.15);
+          this.alpha = randomBetween(0.2, 0.7);
+          this.color = Math.random() > 0.5 ? '34,211,238' : '96,165,250';
+        }
+        update() {
+          this.x += this.vx;
+          this.y += this.vy;
+          this.alpha -= 0.0012;
+          if (this.alpha <= 0 || this.y < -10) this.reset();
+        }
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${this.color},${this.alpha})`;
+          ctx.fill();
+        }
+      }
+
+      for (let i = 0; i < COUNT; i++) particles.push(new Particle());
+
+      // Connection lines
+      function drawLines() {
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 110) {
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              const opacity = (1 - dist / 110) * 0.15;
+              ctx.strokeStyle = `rgba(34,211,238,${opacity})`;
+              ctx.lineWidth = 0.8;
+              ctx.stroke();
+            }
+          }
+        }
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => { p.update(); p.draw(); });
+        drawLines();
+        requestAnimationFrame(animate);
+      }
+      animate();
+    })();
+
+    // ── COUNTER ANIMATION
+    function animateCounters() {
+      document.querySelectorAll('[data-count]').forEach(el => {
+        const target = +el.dataset.count;
+        const suffix = el.dataset.suffix || '';
+        const prefix = el.textContent.startsWith('$') ? '$' : '';
+        let current = 0;
+        const duration = 2000;
+        const step = target / (duration / 16);
+        const timer = setInterval(() => {
+          current = Math.min(current + step, target);
+          el.textContent = prefix + Math.round(current) + suffix;
+          if (current >= target) clearInterval(timer);
+        }, 16);
+      });
+    }
+
+    // Trigger counter on scroll into view
+    const statsBar = document.getElementById('stats-bar');
+    let countersStarted = false;
+    const observer = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && !countersStarted) {
+        countersStarted = true;
+        animateCounters();
+      }
+    }, { threshold: 0.4 });
+    observer.observe(statsBar);
+
+    // ── PASSWORD STRENGTH
+    const passwordInput = document.getElementById('password');
+    const strengthText = document.getElementById('password-strength');
+    const strengthFill = document.getElementById('strength-fill');
+
+    passwordInput.addEventListener('input', () => {
+      const val = passwordInput.value;
+      if (!val) {
+        strengthText.textContent = '';
+        strengthFill.style.width = '0';
+        return;
+      }
+      const result = zxcvbn(val);
+      const levels = ['Muy débil', 'Débil', 'Aceptable', 'Fuerte', 'Muy fuerte'];
+      const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4'];
+      const widths = ['20%', '40%', '60%', '80%', '100%'];
+      strengthText.textContent = 'Seguridad: ' + levels[result.score];
+      strengthText.style.color = colors[result.score];
+      strengthFill.style.width = widths[result.score];
+      strengthFill.style.background = colors[result.score];
+    });
+
+    // ── FORM SUBMIT
+    document.getElementById('registroForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const captchaResponse = grecaptcha.getResponse();
+      if (!captchaResponse) {
+        Swal.fire({ icon: 'error', title: 'Valida el captcha', text: 'Por favor completá el captcha antes de continuar.', background: '#0d1f40', color: '#fff', confirmButtonColor: '#2563eb' });
+        return;
+      }
+
+      const result = zxcvbn(passwordInput.value);
+      if (result.score < 2) {
+        Swal.fire({ icon: 'warning', title: 'Contraseña insegura', text: 'Usá mayúsculas, números o símbolos para hacerla más segura.', background: '#0d1f40', color: '#fff', confirmButtonColor: '#2563eb' });
+        return;
+      }
+
+      const form = document.getElementById('registroForm');
+      const formData = new FormData(form);
+
+      try {
+        const response = await fetch(form.action, { method: 'POST', body: formData });
+        const data = await response.json();
+
+        if (data.success) {
+          Swal.fire({
+            icon: 'success', title: '¡Registro exitoso!', text: data.message,
+            background: '#0d1f40', color: '#fff', confirmButtonColor: '#2563eb'
+          }).then(() => { window.location.href = 'https://sigmawebapp.com/inicio/'; });
+        } else {
+          Swal.fire({ icon: 'error', title: 'Oops...', text: data.message, background: '#0d1f40', color: '#fff', confirmButtonColor: '#2563eb' });
+          grecaptcha.reset();
+        }
+      } catch {
+        Swal.fire({ icon: 'error', title: 'Error de conexión', text: 'No se pudo procesar el registro. Intentá de nuevo.', background: '#0d1f40', color: '#fff', confirmButtonColor: '#2563eb' });
+        grecaptcha.reset();
+      }
+    });
+  </script>
+
+</body>
+
+</html>
