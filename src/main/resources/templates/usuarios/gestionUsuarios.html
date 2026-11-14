@@ -79,6 +79,19 @@
         font-size: 0.72rem;
         font-weight: 700;
     }
+    .alert-success {
+        background: rgba(16, 185, 129, 0.12);
+        border: 1px solid rgba(16, 185, 129, 0.35);
+        border-radius: var(--radius-md);
+        color: #059669;
+        padding: 0.85rem 1rem;
+        margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
     .alert-error {
         background: rgba(220, 38, 38, 0.1);
         border: 1px solid rgba(220, 38, 38, 0.3);
@@ -108,15 +121,26 @@
                     <i class="fas fa-users-cog text-primary"></i>
                     Gestión de Usuarios
                 </h1>
-                <a th:href="@{/crearUsuario}" class="btn btn-primary" id="btnCrearUsuario">
-                    <i class="fas fa-user-plus"></i> Crear usuario
-                </a>
+                <div class="d-flex gap-2 flex-wrap align-items-center">
+                    <button type="button" class="btn btn-outline-info" data-toggle="modal" data-target="#modalAyudaSuscripciones" data-bs-toggle="modal" data-bs-target="#modalAyudaSuscripciones" id="btnAyudaSuscripciones">
+                        <i class="fas fa-info-circle me-1"></i> Ayuda y Suscripciones
+                    </button>
+                    <a th:href="@{/crearUsuario}" class="btn btn-primary" id="btnCrearUsuario">
+                        <i class="fas fa-user-plus"></i> Crear usuario
+                    </a>
+                </div>
+            </div>
+
+            <!-- Mensaje de éxito -->
+            <div th:if="${mensaje != null}" class="alert-success" id="mensajeExito">
+                <i class="fas fa-check-circle"></i>
+                <span th:text="${mensaje}"></span>
             </div>
 
             <!-- Mensaje de error -->
-            <div th:if="${mensaje != null}" class="alert-error" id="mensajeError">
+            <div th:if="${error != null}" class="alert-error" id="mensajeError">
                 <i class="fas fa-exclamation-circle"></i>
-                <span th:text="${mensaje}"></span>
+                <span th:text="${error}"></span>
             </div>
 
             <!-- Tabla de usuarios -->
@@ -127,6 +151,7 @@
                             <th>Usuario</th>
                             <th sec:authorize="hasRole('ROLE_SUPERADMIN')">Empresa / Tenant</th>
                             <th>Roles</th>
+                            <th>Estado</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -186,9 +211,44 @@
                                 </div>
                             </td>
 
+                            <!-- Estado de suscripción / usuario -->
+                            <td>
+                                <span th:if="${usuario.estado == 'GRATUITO' or usuario.estado == 'SUPERADMIN'}"
+                                      class="badge bg-info text-dark" style="font-size:0.78rem; font-weight: 500;">
+                                    <i class="fas fa-gift me-1"></i> Usuario gratuito
+                                </span>
+                                <span th:if="${usuario.estado == 'ACTIVO' or usuario.estado == 'activo'}"
+                                      class="badge bg-success" style="font-size:0.78rem; font-weight: 500;">
+                                    <i class="fas fa-check-circle me-1"></i> Suscrito / Activo
+                                </span>
+                                <span th:if="${usuario.estado == 'PENDIENTE' or usuario.estado == 'inactivo'}"
+                                      class="badge bg-warning text-dark" style="font-size:0.78rem; font-weight: 500;">
+                                    <i class="fas fa-clock me-1"></i> Pendiente de pago
+                                </span>
+                                <span th:if="${usuario.estado != null and usuario.estado != 'GRATUITO' and usuario.estado != 'SUPERADMIN' and usuario.estado != 'ACTIVO' and usuario.estado != 'activo' and usuario.estado != 'PENDIENTE' and usuario.estado != 'inactivo'}"
+                                      class="badge bg-secondary" style="font-size:0.78rem;" th:text="${usuario.estado}">
+                                </span>
+                                <span th:if="${usuario.estado == null}" class="badge bg-secondary" style="font-size:0.78rem;">
+                                    Activo
+                                </span>
+                            </td>
+
                             <!-- Acciones -->
                             <td>
                                 <div class="d-flex gap-2 flex-wrap align-items-center">
+                                    <a th:if="${usuario.estado == 'PENDIENTE'}"
+                                       th:href="@{/usuario/activarSuscripcion/{id}(id=${usuario.idUsuario})}"
+                                       class="btn btn-warning btn-sm text-dark"
+                                       title="Reactivar y suscribir en Mercado Pago">
+                                        <i class="fas fa-credit-card me-1"></i> Activar
+                                    </a>
+                                    <a th:if="${(usuario.estado == 'ACTIVO' or usuario.estado == 'activo') and usuario.preapprovalId != null and usuario.username != usuarioActual}"
+                                       th:href="@{/usuario/cancelarSuscripcion/{id}(id=${usuario.idUsuario})}"
+                                       class="btn btn-outline-danger btn-sm"
+                                       onclick="return confirm('¿Seguro que deseas cancelar la suscripción mensual de este usuario? Ya no se cobrará el próximo mes en Mercado Pago y el usuario quedará inactivo.')"
+                                       title="Cancelar suscripción mensual en Mercado Pago">
+                                        <i class="fas fa-ban"></i> Dar de baja
+                                    </a>
                                     <a th:href="@{/editarUsuario/{id}(id=${usuario.idUsuario})}"
                                        class="btn btn-secondary btn-sm"
                                        th:id="'btnEditar-' + ${usuario.idUsuario}">
@@ -220,6 +280,116 @@
             </div>
         </div>
 
+    </div>
+
+    <!-- Modal de Ayuda y Transparencia de Suscripciones -->
+    <div class="modal fade" id="modalAyudaSuscripciones" tabindex="-1" role="dialog" aria-labelledby="modalAyudaTitle" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" role="document">
+            <div class="modal-content" style="border-radius: var(--radius-lg); border: 1px solid var(--border-color); background: var(--bg-surface-elevated, #fff);">
+                
+                <div class="modal-header d-flex align-items-center justify-content-between" style="border-bottom: 1px solid var(--border-color); padding: 1.25rem 1.5rem;">
+                    <div class="d-flex align-items-center gap-2">
+                        <div style="width: 38px; height: 38px; border-radius: 50%; background: rgba(14, 165, 233, 0.15); display: flex; align-items: center; justify-content: center; color: #0284c7;">
+                            <i class="fas fa-shield-alt fa-lg"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title mb-0" id="modalAyudaTitle" style="font-weight: 700;">Guía y Transparencia: Planes y Usuarios</h5>
+                            <small class="text-muted">Información sobre tu cuenta, facturación y suscripciones</small>
+                        </div>
+                    </div>
+                    <button type="button" class="close btn btn-link text-muted p-0" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close" style="font-size: 1.5rem; text-decoration: none;">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body" style="padding: 1.5rem; font-size: 0.93rem; line-height: 1.6;">
+
+                    <!-- Bloque 1: Cuenta Administradora Gratuita -->
+                    <div class="p-3 mb-3 rounded" style="background: rgba(14, 165, 233, 0.08); border-left: 4px solid #0284c7;">
+                        <h6 style="font-weight: 700; color: #0284c7;" class="mb-1">
+                            <i class="fas fa-gift me-2"></i> 1. Tu Usuario Administrador Gratuito
+                        </h6>
+                        <p class="mb-0 text-muted">
+                            Al registrar tu empresa en <strong>SigmaWeb</strong>, obtienes de forma inmediata y automática un <strong>usuario Administrador con acceso completo 100% gratuito y de por vida</strong>. Con él puedes configurar layouts, máquinas, ver indicadores y gestionar tu planta sin costos obligatorios ni tarjetas requeridas.
+                        </p>
+                    </div>
+
+                    <!-- Bloque 2: Suscripción de Usuarios Adicionales -->
+                    <div class="p-3 mb-3 rounded" style="background: rgba(16, 185, 129, 0.08); border-left: 4px solid #10b981;">
+                        <h6 style="font-weight: 700; color: #059669;" class="mb-1">
+                            <i class="fas fa-credit-card me-2"></i> 2. Usuarios Operativos Adicionales y Cobro Automático
+                        </h6>
+                        <p class="mb-2 text-muted">
+                            Para sumar a tu equipo de trabajo (operarios de Mantenimiento, Producción, Técnicos o Monitores), cada nuevo usuario se vincula a una suscripción mensual recurrente:
+                        </p>
+                        <ul class="mb-0 ps-3 text-muted">
+                            <li><strong>Débito automático mensual:</strong> Mercado Pago procesa el cobro mes a mes de forma automática. Ni tú ni tus operarios deben realizar transferencias o pagos manuales cada ciclo.</li>
+                            <li><strong>Activación inmediata:</strong> Una vez confirmado el primer abono en Mercado Pago, el usuario pasa automáticamente a estado <strong>Suscrito / Activo</strong> y puede iniciar sesión enseguida.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Bloque 3: Estados de los Usuarios -->
+                    <div class="mb-3">
+                        <h6 style="font-weight: 700;" class="mb-2">
+                            <i class="fas fa-tags text-primary me-2"></i> 3. ¿Qué significa el estado de cada usuario?
+                        </h6>
+                        <div class="d-flex flex-column gap-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge bg-info text-dark" style="min-width: 140px; padding: 0.45rem;">
+                                    <i class="fas fa-gift me-1"></i> Usuario gratuito
+                                </span>
+                                <span class="text-muted small">Es tu cuenta principal de empresa. Acceso total permanente sin vencimiento ni cargos.</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge bg-success" style="min-width: 140px; padding: 0.45rem;">
+                                    <i class="fas fa-check-circle me-1"></i> Suscrito / Activo
+                                </span>
+                                <span class="text-muted small">Suscripción al día y activa. El colaborador puede operar normalmente en la planta.</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge bg-warning text-dark" style="min-width: 140px; padding: 0.45rem;">
+                                    <i class="fas fa-clock me-1"></i> Pendiente de pago
+                                </span>
+                                <span class="text-muted small">Usuario creado pero aún no se completó el pago. Puedes presionar <strong>"Activar"</strong> en cualquier momento para completar la suscripción.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bloque 4: Libertad para Dar de Baja o Desuscribirse -->
+                    <div class="p-3 mb-3 rounded" style="background: rgba(239, 68, 68, 0.08); border-left: 4px solid #ef4444;">
+                        <h6 style="font-weight: 700; color: #dc2626;" class="mb-1">
+                            <i class="fas fa-door-open me-2"></i> 4. Control Total: ¿Cómo cancelar una suscripción o dar de baja?
+                        </h6>
+                        <p class="mb-2 text-muted">
+                            En SigmaWeb <strong>no tienes contratos de permanencia ni penalizaciones</strong>. Tienes libertad absoluta de cancelar suscripciones en cualquier momento:
+                        </p>
+                        <ul class="mb-0 ps-3 text-muted">
+                            <li><strong>Botón "Dar de baja" (Recomendado):</strong> Cancela el débito automático en Mercado Pago de inmediato y desactiva el acceso del usuario, pero <strong>mantiene intacto todo su historial de trabajo, tareas realizadas e informes</strong> en tu base de datos. Si más adelante vuelve a la empresa, solo haces clic en "Activar".</li>
+                            <li><strong>Botón "Eliminar":</strong> Cancela la suscripción en Mercado Pago y remueve el usuario del listado.</li>
+                            <li><strong>Desde tu cuenta de Mercado Pago:</strong> Como titular del medio de pago, puedes ingresar a tu app o web de Mercado Pago > <em>Suscripciones</em> y cancelar cualquier débito cuando desees. Nuestro sistema se sincronizará automáticamente.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Bloque 5: Seguridad y Privacidad Garantizada -->
+                    <div class="p-3 rounded" style="background: rgba(100, 116, 139, 0.08); border: 1px solid var(--border-color);">
+                        <h6 style="font-weight: 700;" class="mb-1">
+                            <i class="fas fa-lock text-success me-2"></i> 5. Seguridad de nivel bancario con Mercado Pago
+                        </h6>
+                        <p class="mb-0 text-muted small">
+                            Tus transacciones y datos de tarjeta de crédito están protegidos con los estándares internacionales más rigurosos (certificación PCI-DSS Nivel 1). <strong>SigmaWeb nunca tiene acceso ni almacena tus números de tarjeta, claves ni datos financieros.</strong> Toda la operación se realiza en los servidores seguros y encriptados de Mercado Pago.
+                        </p>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer" style="border-top: 1px solid var(--border-color); padding: 0.9rem 1.5rem;">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal" data-bs-dismiss="modal">
+                        <i class="fas fa-check me-1"></i> Entendido
+                    </button>
+                </div>
+
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

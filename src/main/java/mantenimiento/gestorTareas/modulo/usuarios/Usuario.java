@@ -33,6 +33,12 @@ public class Usuario implements Serializable, TenantSupport{
 
     private String passwordClaro; // para pruebas
 
+    private java.time.LocalDateTime fechaSuscripcionInicial;
+
+    private Double montoSuscripcion;
+
+    private java.time.LocalDateTime fechaUltimoPago;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "tenant_id", nullable = true)
     private Tenant tenant;

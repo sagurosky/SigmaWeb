@@ -10,69 +10,89 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Map;
 
-
-@RestController
+@Controller
 @Slf4j
 public class Pago {
 
     @Autowired
-    MpService mpService;
+    private MpService mpService;
 
     @Autowired
-    UsuarioService usuarioService;
+    private UsuarioService usuarioService;
 
     @Autowired
-    RolDao rolDao;
+    private RolDao rolDao;
 
     @GetMapping("/api/usuario/pagoExitoso")
-    public String pagoExitoso(@RequestParam("preapproval_id") String preapprovalId, Model model) {
+    public String pagoExitoso(@RequestParam(value = "preapproval_id", required = false) String preapprovalId,
+                             RedirectAttributes redirectAttributes) {
 
-        log.info("retorno de mp, preaprovalID: "+preapprovalId);
+        log.info("Retorno de Mercado Pago tras suscripción. preapproval_id: {}", preapprovalId);
+
+        if (preapprovalId == null || preapprovalId.trim().isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "No se recibió identificador de suscripción de Mercado Pago.");
+            return "redirect:/gestionUsuarios";
+        }
 
         boolean aprobado = mpService.validarPreapproval(preapprovalId);
 
         if (!aprobado) {
-            model.addAttribute("mensaje", "Pago no aprobado, usuario no creado");
-            return "usuarios/gestionUsuarios";
+            log.warn("El preapproval {} no se encuentra autorizado en Mercado Pago", preapprovalId);
+            redirectAttributes.addFlashAttribute("error", "El pago de la suscripción no fue aprobado.");
+            return "redirect:/gestionUsuarios";
         }
 
         Usuario usuario = mpService.obtenerUsuarioTemporal(preapprovalId);
 
         if (usuario == null) {
-            model.addAttribute("mensaje", "Usuario temporal no encontrado");
-            return "usuarios/gestionUsuarios";
+            log.warn("No se encontró usuario asociado al preapprovalId: {}", preapprovalId);
+            redirectAttributes.addFlashAttribute("error", "Usuario no encontrado para la suscripción recibida.");
+            return "redirect:/gestionUsuarios";
         }
-
-        // Asignar roles definitivos si es necesario
-        List<Rol> roles = rolDao.findByUsuario(usuario);
-        roles.forEach(rol -> rol.setUsuario(usuario)); // si quieres refrescar referencias
 
         usuario.setEstado("ACTIVO");
+        usuario.setFechaUltimoPago(java.time.LocalDateTime.now());
+        if (usuario.getFechaSuscripcionInicial() == null) {
+            usuario.setFechaSuscripcionInicial(java.time.LocalDateTime.now());
+        }
         usuarioService.guardar(usuario);
+        log.info("Usuario {} activado exitosamente tras confirmación de suscripción", usuario.getUsername());
 
-        model.addAttribute("mensaje", "Pago exitoso, usuario creado correctamente");
-        return "usuarios/gestionUsuarios"; // página del listado de usuarios
+        redirectAttributes.addFlashAttribute("mensaje", "¡Suscripción confirmada! Usuario '" + usuario.getUsername() + "' activado con éxito.");
+        return "redirect:/gestionUsuarios";
     }
+
     @PostMapping("/api/usuario/pagoWebhook")
-    public ResponseEntity<String> pagoWebhook(@RequestBody Map<String,Object> payload) {
-        log.info("Webhook MP: {}", payload);
+    @ResponseBody
+    public ResponseEntity<String> pagoWebhook(@RequestBody Map<String, Object> payload) {
+        log.info("Webhook recibido de Mercado Pago: {}", payload);
 
-        // Ejemplo de lectura de campos
-        String type = (String) payload.get("type");
-        Map<String,Object> data = (Map<String,Object>) payload.get("data");
-        String id = data != null ? (String) data.get("id") : null;
+        try {
+            String type = (String) payload.get("type");
+            Map<String, Object> data = (Map<String, Object>) payload.get("data");
+            String id = data != null ? (String) data.get("id") : null;
 
-        // Aquí tu lógica: por ejemplo validar que sea subscription_preapproval
-        if ("subscription_preapproval".equals(type)) {
-            // llamar a mpService.validarPreapproval(id);
+            if ("subscription_preapproval".equals(type) && id != null) {
+                boolean autorizado = mpService.validarPreapproval(id);
+                Usuario usuario = mpService.obtenerUsuarioTemporal(id);
+                if (usuario != null) {
+                    usuario.setEstado(autorizado ? "ACTIVO" : "PENDIENTE");
+                    if (autorizado) {
+                        usuario.setFechaUltimoPago(java.time.LocalDateTime.now());
+                    }
+                    usuarioService.guardar(usuario);
+                    log.info("Webhook: Estado de usuario {} actualizado a {}", usuario.getUsername(), usuario.getEstado());
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error procesando Webhook de Mercado Pago", e);
         }
 
-        // MP requiere una respuesta 200 OK en <22s
         return ResponseEntity.ok("ok");
     }
-
 }

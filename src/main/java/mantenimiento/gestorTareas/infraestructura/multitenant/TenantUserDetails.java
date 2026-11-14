@@ -14,6 +14,13 @@ public class TenantUserDetails extends org.springframework.security.core.userdet
         this.tenantId = tenantId;
     }
 
+    public TenantUserDetails(String username, String password, boolean enabled,
+                             Collection<? extends GrantedAuthority> authorities,
+                             Long tenantId) {
+        super(username, password, enabled, true, true, true, authorities);
+        this.tenantId = tenantId;
+    }
+
     public Long getTenantId() {
         return tenantId;
     }

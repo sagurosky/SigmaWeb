@@ -33,9 +33,12 @@ public class UsuarioService implements UserDetailsService {
         List<GrantedAuthority> roles = new ArrayList<>();
         for (Rol rol : usuario.getRoles()) roles.add(new SimpleGrantedAuthority(rol.getNombre()));
 
+        boolean habilitado = !"PENDIENTE".equalsIgnoreCase(usuario.getEstado());
+
         return new TenantUserDetails(
                 usuario.getUsername(),
                 usuario.getPassword(),
+                habilitado,
                 roles,
                 usuario.getTenant() != null ? usuario.getTenant().getId() : null
         );

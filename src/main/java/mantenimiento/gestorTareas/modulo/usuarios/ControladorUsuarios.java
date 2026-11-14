@@ -87,32 +87,6 @@ public class ControladorUsuarios {
         return "usuarios/crearUsuario";
     }
 
-    // Flujo con integración a MercadoPago (preservado para uso futuro)
-    public String gestionarMercadoPago(@Valid Usuario usuario, Errors errores, Rol rol, Model model) {
-        Boolean yaExiste = usuarioDao.findByUsername(usuario.getUsername()) != null;
-        if (errores.hasErrors() || yaExiste) {
-            if (yaExiste) {
-                errores.rejectValue("username", "500", "ya existe ese usuario");
-            }
-            model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
-            return "usuarios/crearUsuario";
-        }
-
-        usuario.setPasswordClaro(usuario.getPassword());
-        usuario.setPassword(EncriptarPassword.encriptarPassword(usuario.getPassword()));
-        usuario.setEstado("PENDIENTE");
-        usuarioService.guardar(usuario);
-
-        rol.setUsuario(usuario);
-        rolDao.save(rol);
-
-        Double monto = Double.parseDouble(ArchivoExterno.getString("monto"));
-        String initPoint = mpService.crearPreapproval(usuario,
-                tenantDao.findById(TenantContext.getTenantId()).orElse(null).getEmailContacto(), monto);
-
-        return "redirect:" + initPoint;
-    }
-
     @PostMapping("/gestionar")
     public String gestionar(@Valid Usuario usuario, Errors errores, Rol rol,
                             @RequestParam(value = "nombreEmpresa", required = false) String nombreEmpresa,
@@ -175,8 +149,74 @@ public class ControladorUsuarios {
             nuevoTenant = tenantDao.save(nuevoTenant);
             usuario.setTenant(nuevoTenant);
             rol.setTenant(nuevoTenant);
+            usuario.setEstado("GRATUITO");
+        } else if (!isSuperAdmin) {
+            Long currentTenantId = TenantContext.getTenantId();
+            if (currentTenantId != null) {
+                Tenant currentTenant = tenantDao.findById(currentTenantId).orElse(null);
+                usuario.setTenant(currentTenant);
+                rol.setTenant(currentTenant);
+            }
         }
 
+        boolean mpHabilitado = "si".equalsIgnoreCase(ArchivoExterno.getString("mp_habilitado"));
+
+        // Si no es SuperAdmin y la monetización con Mercado Pago está habilitada, cobrar suscripción
+        if (!isSuperAdmin && mpHabilitado) {
+            Double monto = 15000.0;
+            try {
+                String montoStr = ArchivoExterno.getString("monto");
+                if (montoStr != null && !montoStr.trim().isEmpty()) {
+                    monto = Double.parseDouble(montoStr.trim());
+                }
+            } catch (Exception e) {
+                log.warn("Monto inválido en configuración, usando 15000.0 por defecto");
+            }
+
+            usuario.setEstado("PENDIENTE");
+            usuario.setFechaSuscripcionInicial(LocalDateTime.now());
+            usuario.setMontoSuscripcion(monto);
+            usuarioService.guardar(usuario);
+            usuario = usuarioDao.findByUsername(usuario.getUsername());
+            rol.setUsuario(usuario);
+            if (usuario.getTenant() != null) {
+                rol.setTenant(usuario.getTenant());
+            }
+            rolDao.save(rol);
+
+            if ("ROLE_ADMIN".equals(rol.getNombre())) {
+                String[] rolesAdmin = {"ROLE_MANT", "ROLE_PROD", "ROLE_TECNICO", "ROLE_MONITOR"};
+                for (String rName : rolesAdmin) {
+                    Rol rAux = new Rol();
+                    rAux.setUsuario(usuario);
+                    rAux.setNombre(rName);
+                    if (usuario.getTenant() != null) {
+                        rAux.setTenant(usuario.getTenant());
+                    }
+                    rolDao.save(rAux);
+                }
+            }
+
+            String emailContacto = (usuario.getTenant() != null && usuario.getTenant().getEmailContacto() != null && !usuario.getTenant().getEmailContacto().trim().isEmpty())
+                    ? usuario.getTenant().getEmailContacto()
+                    : usuario.getUsername().toLowerCase() + "@sigmawebapp.com";
+
+            try {
+                String initPoint = mpService.crearPreapproval(usuario, emailContacto, monto);
+                return "redirect:" + initPoint;
+            } catch (Exception e) {
+                log.error("Error al generar suscripción de Mercado Pago", e);
+                model.addAttribute("error", "Error al conectar con Mercado Pago: " + e.getMessage());
+                model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
+                model.addAttribute("isSuperAdmin", isSuperAdmin);
+                return "usuarios/crearUsuario";
+            }
+        }
+
+        usuario.setEstado(isSuperAdmin && "ROLE_ADMIN".equals(rol.getNombre()) ? "GRATUITO" : "ACTIVO");
+        usuario.setFechaSuscripcionInicial(LocalDateTime.now());
+        usuario.setMontoSuscripcion(0.0);
+        usuario.setFechaUltimoPago(LocalDateTime.now());
         usuarioService.guardar(usuario);
         usuario = usuarioDao.findByUsername(usuario.getUsername());
         rol.setUsuario(usuario);
@@ -317,8 +357,81 @@ public class ControladorUsuarios {
                 if (tecnico != null) {
                     tecnicoService.delete(tecnico);
                 }
+
+                // Si tenía una suscripción de Mercado Pago asociada, la cancelamos automáticamente
+                if (usuarioReq.getPreapprovalId() != null && !usuarioReq.getPreapprovalId().trim().isEmpty()) {
+                    log.info("Cancelando suscripción en Mercado Pago ({}) para usuario eliminado: {}", usuarioReq.getPreapprovalId(), usuarioReq.getUsername());
+                    mpService.cancelarPreapproval(usuarioReq.getPreapprovalId());
+                }
+
                 usuarioDao.delete(usuarioReq);
             }
+        }
+        return "redirect:/gestionUsuarios";
+    }
+
+    @GetMapping("/usuario/activarSuscripcion/{idUsuario}")
+    public String activarSuscripcion(@PathVariable("idUsuario") Long idUsuario, RedirectAttributes redirectAttributes) {
+        Usuario usuario = usuarioDao.findById(idUsuario).orElse(null);
+        if (usuario == null) {
+            if (redirectAttributes != null) {
+                redirectAttributes.addFlashAttribute("error", "Usuario no encontrado.");
+            }
+            return "redirect:/gestionUsuarios";
+        }
+
+        Double monto = 15000.0;
+        if (usuario.getMontoSuscripcion() != null && usuario.getMontoSuscripcion() > 0) {
+            monto = usuario.getMontoSuscripcion();
+        } else {
+            try {
+                String montoStr = ArchivoExterno.getString("monto");
+                if (montoStr != null && !montoStr.trim().isEmpty()) {
+                    monto = Double.parseDouble(montoStr.trim());
+                }
+            } catch (Exception e) {
+                log.warn("Monto inválido en configuración, usando 15000.0 por defecto");
+            }
+            usuario.setMontoSuscripcion(monto);
+            usuarioService.guardar(usuario);
+        }
+
+        String emailContacto = (usuario.getTenant() != null && usuario.getTenant().getEmailContacto() != null && !usuario.getTenant().getEmailContacto().trim().isEmpty())
+                ? usuario.getTenant().getEmailContacto()
+                : usuario.getUsername().toLowerCase() + "@sigmawebapp.com";
+
+        try {
+            String initPoint = mpService.crearPreapproval(usuario, emailContacto, monto);
+            return "redirect:" + initPoint;
+        } catch (Exception e) {
+            log.error("Error al reactivar suscripción de Mercado Pago", e);
+            if (redirectAttributes != null) {
+                redirectAttributes.addFlashAttribute("error", "Error al conectar con Mercado Pago: " + e.getMessage());
+            }
+            return "redirect:/gestionUsuarios";
+        }
+    }
+
+    @GetMapping("/usuario/cancelarSuscripcion/{idUsuario}")
+    public String cancelarSuscripcion(@PathVariable("idUsuario") Long idUsuario, RedirectAttributes redirectAttributes) {
+        Usuario usuario = usuarioDao.findById(idUsuario).orElse(null);
+        if (usuario == null) {
+            if (redirectAttributes != null) {
+                redirectAttributes.addFlashAttribute("error", "Usuario no encontrado.");
+            }
+            return "redirect:/gestionUsuarios";
+        }
+
+        if (usuario.getPreapprovalId() != null && !usuario.getPreapprovalId().trim().isEmpty()) {
+            boolean cancelado = mpService.cancelarPreapproval(usuario.getPreapprovalId());
+            log.info("Cancelación de suscripción para usuario {}: {}", usuario.getUsername(), cancelado);
+        }
+
+        usuario.setEstado("PENDIENTE");
+        usuarioService.guardar(usuario);
+
+        if (redirectAttributes != null) {
+            redirectAttributes.addFlashAttribute("mensaje", "Suscripción cancelada para el usuario '" + usuario.getUsername() + "'. El usuario ha quedado inactivo.");
         }
         return "redirect:/gestionUsuarios";
     }

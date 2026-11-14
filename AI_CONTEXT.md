@@ -19,7 +19,7 @@ Aplicación web para gestión de mantenimiento de fabricas
     - indicadores y estadisticas
 
 ## Estado actual
-- Orden, limpieza en el codigo, optimización de código, revision de configuración y seguridades, etc
+- ejecutando MVP en la nube, version compatible con on-premise docerizado
 
 ## Próximos pasos
-- mejorar frontend de todas las pantallas manteniendo estilo en todas ellas
+- trabajar en monetizacion automatica en aws

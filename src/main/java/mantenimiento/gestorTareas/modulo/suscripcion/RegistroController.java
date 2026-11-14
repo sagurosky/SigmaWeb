@@ -75,6 +75,10 @@ public class RegistroController {
         usuario.setPassword(EncriptarPassword.encriptarPassword(password));
         usuario.setPasswordClaro(password);
         usuario.setTenant(tenant);
+        usuario.setEstado("GRATUITO");
+        usuario.setFechaSuscripcionInicial(LocalDateTime.now());
+        usuario.setMontoSuscripcion(0.0);
+        usuario.setFechaUltimoPago(LocalDateTime.now());
         usuario.setRoles(crearRoles(usuario));
         usuarioService.guardar(usuario);
 

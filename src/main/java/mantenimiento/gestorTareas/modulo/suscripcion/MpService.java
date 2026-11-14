@@ -32,68 +32,115 @@ public class MpService {
     private UsuarioService usuarioService;
 
     private final RestTemplate restTemplate = new RestTemplate();
-    private final String accessToken = ArchivoExterno.getString("mp_access_token");
+
+    public String getAccessToken() {
+        return ArchivoExterno.getString("mp_access_token");
+    }
 
     public String crearPreapproval(Usuario usuario, String email, Double monto) {
         try {
+            String token = getAccessToken();
+            if (token == null || token.trim().isEmpty() || token.contains("TU-TOKEN")) {
+                throw new IllegalStateException("Token de Mercado Pago no configurado en recursos/configuracion.properties");
+            }
+
             String url = "https://api.mercadopago.com/preapproval";
-            log.info("Usando token MP: {}", accessToken);
-            log.info("token mp: "+ArchivoExterno.getString("mp_access_token"));
+            String payerEmail = email;
+            String testPayer = ArchivoExterno.getString("mp_test_payer_email");
+            if (testPayer != null && !testPayer.trim().isEmpty()) {
+                payerEmail = testPayer.trim();
+            }
+
+            log.info("Iniciando creación de preapproval para usuario: {}, email pagador: {}, monto: {}", usuario.getUsername(), payerEmail, monto);
+
             Map<String, Object> json = new HashMap<>();
-            json.put("reason", "Usuario agregado - " + usuario.getUsername());
-            json.put("payer_email", email); // MP valida este email
+            json.put("reason", "Suscripción Usuario - " + usuario.getUsername());
+            json.put("payer_email", payerEmail);
             Map<String, Object> autoRecurring = new HashMap<>();
             autoRecurring.put("frequency", 1);
             autoRecurring.put("frequency_type", "months");
-//            autoRecurring.put("repetitions", 12);
             autoRecurring.put("transaction_amount", monto);
             autoRecurring.put("currency_id", "ARS");
-//            autoRecurring.put("free_trial", Map.of(
-//                    "frequency", 1,
-//                    "frequency_type", "months"
-//            ));
             json.put("auto_recurring", autoRecurring);
 
-            json.put("payment_methods_allowed", Map.of(
-                    "payment_types", List.of(Map.of("id", "credit_card")),
-                    "payment_methods", List.of(Map.of("id", "bolbradesco"))
-            ));
-
-//            json.put("back_url", "https://sigmawebapp.com/api/usuario/pagoExitoso");
-            json.put("back_url", "https://30c719d7b2a1.ngrok-free.app/api/usuario/pagoExitoso");
+            String backUrl = ArchivoExterno.getString("mp_back_url");
+            if (backUrl == null || backUrl.trim().isEmpty()) {
+                backUrl = "https://sigmawebapp.com/inicio/api/usuario/pagoExitoso";
+            }
+            json.put("back_url", backUrl);
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(accessToken);
+            headers.setBearerAuth(token);
 
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(json, headers);
 
             ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
             Map<String, Object> body = response.getBody();
-            log.info("Preapproval response: {}", body);
+            log.info("Respuesta de Mercado Pago preapproval: {}", body);
 
             if (body != null && body.containsKey("init_point")) {
                 usuario.setPreapprovalId(body.get("id").toString());
                 usuarioService.guardar(usuario);
-                log.info("respuesta de MP: "+body.get("init_point").toString());
-                return body.get("init_point").toString();
+                String initPoint = body.get("init_point").toString();
+                log.info("Preapproval creado exitosamente. init_point: {}", initPoint);
+                return initPoint;
             }
 
-            throw new RuntimeException("No se pudo crear la preaprobación");
+            throw new RuntimeException("No se recibió init_point en la respuesta de Mercado Pago");
 
         } catch (Exception e) {
-            log.error("Error creando preapproval", e);
-            throw new RuntimeException("No se pudo iniciar la suscripción en MP");
+            log.error("Error creando preapproval en Mercado Pago", e);
+            throw new RuntimeException("No se pudo iniciar la suscripción en MP: " + e.getMessage(), e);
         }
     }
 
     public boolean validarPreapproval(String preapprovalId) {
-        // Aquí podrías llamar a GET /preapproval_plan/{id} si quieres validar estado real
-        return true; // temporal
+        if (preapprovalId == null || preapprovalId.trim().isEmpty()) {
+            return false;
+        }
+        try {
+            String url = "https://api.mercadopago.com/preapproval/" + preapprovalId;
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBearerAuth(getAccessToken());
+            HttpEntity<Void> request = new HttpEntity<>(headers);
+            ResponseEntity<Map> response = restTemplate.exchange(url, org.springframework.http.HttpMethod.GET, request, Map.class);
+            Map<String, Object> body = response.getBody();
+            if (body != null) {
+                String status = (String) body.get("status");
+                log.info("Validación preapproval {} - estado MP: {}", preapprovalId, status);
+                return "authorized".equalsIgnoreCase(status);
+            }
+        } catch (Exception e) {
+            log.error("Error al validar preapproval " + preapprovalId + " con MP", e);
+        }
+        return false;
     }
 
     public Usuario obtenerUsuarioTemporal(String preapprovalId) {
         return usuarioDao.findByPreapprovalId(preapprovalId);
+    }
+
+    public boolean cancelarPreapproval(String preapprovalId) {
+        if (preapprovalId == null || preapprovalId.trim().isEmpty()) {
+            return false;
+        }
+        try {
+            String url = "https://api.mercadopago.com/preapproval/" + preapprovalId;
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(getAccessToken());
+
+            Map<String, Object> body = Map.of("status", "cancelled");
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+
+            ResponseEntity<Map> response = restTemplate.exchange(url, org.springframework.http.HttpMethod.PUT, request, Map.class);
+            log.info("Cancelación de suscripción MP para {}: status {}", preapprovalId, response.getStatusCode());
+            return response.getStatusCode().is2xxSuccessful();
+        } catch (Exception e) {
+            log.error("Error al cancelar suscripción en Mercado Pago para " + preapprovalId, e);
+            return false;
+        }
     }
 }
 
