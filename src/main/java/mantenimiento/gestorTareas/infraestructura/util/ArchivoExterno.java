@@ -19,9 +19,13 @@ import java.util.List;
 import java.util.Properties;
 @Slf4j
 public class ArchivoExterno {
+    private static final String CONFIG_PATH_AWS_APP_REC = "/home/ubuntu/app/recursos/configuracion.properties";
+    private static final String CONFIG_PATH_AWS_APP = "/home/ubuntu/app/configuracion.properties";
+    private static final String CONFIG_PATH_AWS_HOME_REC = "/home/ubuntu/recursos/configuracion.properties";
     private static final String CONFIG_PATH_LOCAL = "recursos/configuracion.properties";
-    private static final String CONFIG_PATH_CLOUD = "/media/sf_personal/sigmaweb/recursos/configuracion.properties";
+    private static final String CONFIG_PATH_ROOT = "configuracion.properties";
     private static final String CONFIG_PATH_DOCKER = "/app/recursos/configuracion.properties";
+    private static final String CONFIG_PATH_CLOUD_LEGACY = "/media/sf_personal/sigmaweb/recursos/configuracion.properties";
     
     private static final Properties properties = new Properties();
 
@@ -30,12 +34,24 @@ public class ArchivoExterno {
     }
 
     private static void loadProperties() {
-        String[] paths = {CONFIG_PATH_LOCAL, CONFIG_PATH_CLOUD, CONFIG_PATH_DOCKER};
+        String[] paths = {
+            CONFIG_PATH_AWS_APP_REC,
+            CONFIG_PATH_AWS_APP,
+            CONFIG_PATH_AWS_HOME_REC,
+            CONFIG_PATH_LOCAL,
+            CONFIG_PATH_ROOT,
+            CONFIG_PATH_DOCKER,
+            CONFIG_PATH_CLOUD_LEGACY
+        };
         boolean loaded = false;
         for (String path : paths) {
             try (FileInputStream fis = new FileInputStream(path)) {
                 properties.load(fis);
-                log.info("Archivo de configuración cargado desde: " + path);
+                log.info("Archivo de configuración cargado con éxito desde: {}", path);
+                log.info("Configuracion cargada - mp_habilitado: '{}', nube: '{}', monto: '{}'",
+                        properties.getProperty("mp_habilitado"),
+                        properties.getProperty("nube"),
+                        properties.getProperty("monto"));
                 loaded = true;
                 break;
             } catch (IOException e) {
@@ -43,7 +59,7 @@ public class ArchivoExterno {
             }
         }
         if (!loaded) {
-            log.warn("No se pudo cargar ningún archivo de configuración externa. Usando valores por defecto.");
+            log.warn("No se pudo cargar ningún archivo de configuración externa. Se buscaron las siguientes rutas: {}. Usando valores por defecto.", java.util.Arrays.toString(paths));
             // Valores por defecto para local
             properties.setProperty("nube", "no");
             properties.setProperty("editorLayout", "si");
@@ -78,10 +94,12 @@ public class ArchivoExterno {
     }
 
     public static String getBasePath() {
-        if ("si".equals(getString("nube"))) {
-            return "/media/sf_personal/sigmaweb/recursos/";
+        if (Files.exists(Paths.get("/home/ubuntu/app/recursos"))) {
+            return "/home/ubuntu/app/recursos/";
         } else if (Files.exists(Paths.get("/app/recursos"))) {
             return "/app/recursos/";
+        } else if ("si".equals(getString("nube")) && Files.exists(Paths.get("/media/sf_personal/sigmaweb/recursos"))) {
+            return "/media/sf_personal/sigmaweb/recursos/";
         } else {
             Path localRecursos = Paths.get("recursos");
             if (!Files.exists(localRecursos)) {

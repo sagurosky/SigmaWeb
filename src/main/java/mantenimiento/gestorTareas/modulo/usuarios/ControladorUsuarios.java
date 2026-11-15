@@ -160,6 +160,8 @@ public class ControladorUsuarios {
         }
 
         boolean mpHabilitado = "si".equalsIgnoreCase(ArchivoExterno.getString("mp_habilitado"));
+        log.info("Intento de creación de usuario '{}' con rol '{}'. isSuperAdmin: {}, mpHabilitado: {} (mp_habilitado en config: '{}')",
+                usuario.getUsername(), rol.getNombre(), isSuperAdmin, mpHabilitado, ArchivoExterno.getString("mp_habilitado"));
 
         // Si no es SuperAdmin y la monetización con Mercado Pago está habilitada, cobrar suscripción
         if (!isSuperAdmin && mpHabilitado) {
