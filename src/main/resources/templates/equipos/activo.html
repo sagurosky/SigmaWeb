@@ -272,7 +272,7 @@
                                         <input type="hidden" name="id" id="id" th:value="${tecnico.id}">
                                         <button type="submit" class="btn btn-secondary btn-sm">
                                             <i class="fas fa-user-tie me-1"></i> <span
-                                                th:text="${tecnico.nombre}+' '+${tecnico.apellido}"></span>
+                                                th:text="${tecnico.nombreCompleto}"></span>
                                         </button>
                                     </form>
                                     <a th:if="${tarea.estado=='abierto' || tarea.estado=='enProceso'}"
@@ -280,7 +280,7 @@
                                         th:href="@{/desasignarTecnico(tareaId=${tarea.id}, tecnicoId=${tecnico.id}, activoReq=${activo.id})}"
                                         class="btn btn-outline-danger btn-sm desasignar-tecnico-btn"
                                         title="Quitar interventor"
-                                        th:attr="data-tecnico-nombre=${tecnico.nombre + ' ' + tecnico.apellido}">
+                                        th:attr="data-tecnico-nombre=${tecnico.nombreCompleto}">
                                         <i class="fas fa-times"></i>
                                     </a>
                                 </div>
@@ -708,7 +708,7 @@
                                     <label th:for="'tech_' + ${tecnico.id}" class="tech-chip-card">
                                         <i class="fas fa-user-tie text-primary"></i>
                                         <span class="tech-name"
-                                            th:text="${tecnico.apellido} + ' ' + ${tecnico.nombre}"></span>
+                                            th:text="${tecnico.nombreCompleto}"></span>
                                         <i class="fas fa-check-circle check-mark"></i>
                                     </label>
                                 </div>

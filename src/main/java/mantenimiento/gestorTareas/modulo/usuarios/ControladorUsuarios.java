@@ -249,8 +249,18 @@ public class ControladorUsuarios {
     @GetMapping("/tecnicoDatosEmpresa/{idUsuario}")
     public String tecnicoDatosEmpresa(@PathVariable("idUsuario") Long idUsuario, Model model) {
         Usuario usuario = usuarioDao.findById(idUsuario).orElse(null);
-        Tecnico tecnico = new Tecnico();
-        tecnico.setUsuario(usuario);
+        if (usuario == null) {
+            return "redirect:/gestionUsuarios";
+        }
+        Long tenantId = usuario.getTenant() != null ? usuario.getTenant().getId() : TenantContext.getTenantId();
+        Tecnico tecnico = tecnicoService.traerPorUsuario(usuario, tenantId);
+        if (tecnico == null) {
+            tecnico = new Tecnico();
+            tecnico.setUsuario(usuario);
+            tecnico.setTenant(usuario.getTenant());
+            tecnico.setEstado("activo");
+            tecnico = tecnicoService.save(tecnico);
+        }
         model.addAttribute("tecnico", tecnico);
         model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
         return "tecnicos/tecnicoDatosEmpresa";

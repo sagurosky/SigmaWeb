@@ -61,7 +61,7 @@
                             <label class="form-label detencion-label">Técnicos Interventores</label>
                             <div class="p-2 border rounded-2 bg-body">
                                 <div th:each="asignacion : ${tarea.asignaciones}">
-                                    <span class="badge bg-primary me-1 mb-1" th:text="${asignacion.tecnico.apellido} + ' ' + ${asignacion.tecnico.nombre}"></span>
+                                    <span class="badge bg-primary me-1 mb-1" th:text="${asignacion.tecnico.nombreCompleto}"></span>
                                 </div>
                             </div>
                         </div>

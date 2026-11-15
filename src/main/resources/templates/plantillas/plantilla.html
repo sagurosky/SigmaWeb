@@ -489,7 +489,7 @@
                             <div class="mb-2">
                                 <select name="id" class="form-select">
                                     <option th:each="tecnico : ${tecnicos}" th:if="${tecnico.nombre != null}"
-                                        th:value="${tecnico.id}" th:text="${tecnico.nombre + ' ' + tecnico.apellido}">
+                                        th:value="${tecnico.id}" th:text="${tecnico.nombreCompleto}">
                                     </option>
                                 </select>
                             </div>

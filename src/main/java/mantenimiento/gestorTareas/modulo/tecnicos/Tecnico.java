@@ -127,6 +127,23 @@ public class Tecnico implements Serializable , TenantSupport{
         }
         return Period.between(this.fechaNacimiento, LocalDate.now()).getYears();
     }
+
+    public String getNombreCompleto() {
+        boolean tieneNombre = this.nombre != null && !this.nombre.trim().isEmpty();
+        boolean tieneApellido = this.apellido != null && !this.apellido.trim().isEmpty();
+
+        if (tieneNombre && tieneApellido) {
+            return this.apellido + " " + this.nombre;
+        } else if (tieneNombre) {
+            return this.nombre;
+        } else if (tieneApellido) {
+            return this.apellido;
+        } else if (this.usuario != null && this.usuario.getUsername() != null && !this.usuario.getUsername().trim().isEmpty()) {
+            return this.usuario.getUsername() + " (registro pendiente)";
+        } else {
+            return "Técnico en registro";
+        }
+    }
     
     // Método para actualizar la fecha y hora de la última actualización
     @PreUpdate

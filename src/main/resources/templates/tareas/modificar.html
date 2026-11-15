@@ -80,7 +80,7 @@
                                 <select id="tecnicos" name="tecnicosIds" multiple class="form-control">
                                     <option th:each="tecnico : ${todosLosTecnicos}" 
                                             th:value="${tecnico.id}" 
-                                            th:text="${tecnico.apellido} + ' ' + ${tecnico.nombre}"
+                                            th:text="${tecnico.nombreCompleto}"
                                              th:selected="${#lists.contains(idsTecnicosAsignados, tecnico.id)}">
                                     </option>
                                 </select>

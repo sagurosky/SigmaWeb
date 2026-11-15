@@ -110,11 +110,22 @@ public class Controlador {
         if (isSuperAdmin) {
             return "redirect:/gestionUsuarios";
         }
-        if (usuario.getRoles().get(0).getNombre().equals("ROLE_TECNICO")) {
+        boolean esTecnico = usuario.getRoles().stream()
+                .anyMatch(r -> "ROLE_TECNICO".equals(r.getNombre()));
 
+        if (esTecnico) {
             Tecnico tecnico = tecnicoService.traerPorUsuario(usuario, TenantContext.getTenantId());
 
-            if (tecnico.getApellido() == null) {
+            if (tecnico == null) {
+                // Si no se guardó ficha de empresa, inicializamos el técnico automáticamente
+                tecnico = new Tecnico();
+                tecnico.setUsuario(usuario);
+                tecnico.setTenant(usuario.getTenant());
+                tecnico.setEstado("activo");
+                tecnico = tecnicoService.save(tecnico);
+            }
+
+            if (tecnico.getApellido() == null || tecnico.getApellido().trim().isEmpty()) {
                 model.addAttribute("tecnico", tecnico);
                 model.addAttribute("nombresLayouts", ArchivoExterno.nombresLayouts());
                 return "tecnicos/tecnicoDatosPersonales";

@@ -201,7 +201,7 @@
                                             th:id="'tech_' + ${preventivo.id} + '_' + ${tecnico.id}" class="tech-checkbox-input" />
                                         <label th:for="'tech_' + ${preventivo.id} + '_' + ${tecnico.id}" class="tech-chip-card">
                                             <i class="fas fa-user-tie text-primary"></i>
-                                            <span class="tech-name" th:text="${tecnico.apellido} + ' ' + ${tecnico.nombre}"></span>
+                                            <span class="tech-name" th:text="${tecnico.nombreCompleto}"></span>
                                             <i class="fas fa-check-circle check-mark"></i>
                                         </label>
                                     </div>

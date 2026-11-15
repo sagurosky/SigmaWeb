@@ -85,7 +85,7 @@
                             <td sec:authorize="hasRole('ROLE_MANT')">
                                 <div class="form-control-static w-100">
                                     <div th:each="asignacion : ${tarea.asignaciones}">
-                                        <span class="small font-weight-bold" th:text="${asignacion.tecnico.apellido} + ' ' + ${asignacion.tecnico.nombre}"></span>
+                                        <span class="small font-weight-bold" th:text="${asignacion.tecnico.nombreCompleto}"></span>
                                     </div>
                                 </div>
                             </td>
@@ -169,7 +169,7 @@
                                             Informe <span th:if="${tarea.informe.estadoInforme=='pendiente'}">pendiente</span><span th:if="${tarea.informe.estadoInforme=='enRevision'}">en revisión</span> de:
                                         </strong>
                                         <div th:each="asignacion : ${tarea.asignaciones}">
-                                            <span class="text-secondary" th:text="${asignacion.tecnico.apellido} + ' ' + ${asignacion.tecnico.nombre}"></span>
+                                            <span class="text-secondary" th:text="${asignacion.tecnico.nombreCompleto}"></span>
                                         </div>
                                     </div>
                                 </td>
@@ -214,7 +214,7 @@
                             <td>
                                 <div class="form-control-static w-100">
                                     <div th:each="asignacion : ${tarea.asignaciones}">
-                                        <span class="small font-weight-bold" th:text="${asignacion.tecnico.apellido} + ' ' + ${asignacion.tecnico.nombre}"></span>
+                                        <span class="small font-weight-bold" th:text="${asignacion.tecnico.nombreCompleto}"></span>
                                     </div>
                                 </div>
                             </td>
