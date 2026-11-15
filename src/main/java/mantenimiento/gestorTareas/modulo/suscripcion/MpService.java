@@ -49,6 +49,10 @@ public class MpService {
             String testPayer = ArchivoExterno.getString("mp_test_payer_email");
             if (testPayer != null && !testPayer.trim().isEmpty()) {
                 payerEmail = testPayer.trim();
+            } else if (token.contains("2684416608")) {
+                // Fallback automático para la cuenta de prueba de Mercado Pago
+                payerEmail = "test_user_4798818165579077916@testuser.com";
+                log.info("Usando email de pagador de prueba automático: {}", payerEmail);
             }
 
             log.info("Iniciando creación de preapproval para usuario: {}, email pagador: {}, monto: {}", usuario.getUsername(), payerEmail, monto);
