@@ -249,6 +249,14 @@
                                        title="Cancelar suscripción mensual en Mercado Pago">
                                         <i class="fas fa-ban"></i> Dar de baja
                                     </a>
+                                    <th:block th:each="r : ${usuario.roles}">
+                                        <a th:if="${r.nombre == 'ROLE_TECNICO'}"
+                                           th:href="@{/tecnicoDatosEmpresa/{id}(id=${usuario.idUsuario})}"
+                                           class="btn btn-outline-info btn-sm"
+                                           title="Ver o completar datos de empresa del técnico">
+                                            <i class="fas fa-id-card me-1"></i> Ficha técnica
+                                        </a>
+                                    </th:block>
                                     <a th:href="@{/editarUsuario/{id}(id=${usuario.idUsuario})}"
                                        class="btn btn-secondary btn-sm"
                                        th:id="'btnEditar-' + ${usuario.idUsuario}">

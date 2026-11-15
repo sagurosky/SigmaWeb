@@ -63,6 +63,15 @@ public class Pago {
         usuarioService.guardar(usuario);
         log.info("Usuario {} activado exitosamente tras confirmación de suscripción", usuario.getUsername());
 
+        // Si es un técnico, redirigir a cargar sus datos de empresa
+        boolean esTecnico = rolDao.findByUsuario(usuario).stream()
+                .anyMatch(rol -> "ROLE_TECNICO".equals(rol.getNombre()));
+
+        if (esTecnico) {
+            redirectAttributes.addFlashAttribute("mensaje", "¡Suscripción confirmada! Usuario '" + usuario.getUsername() + "' activado con éxito. Por favor completa sus datos de empresa a continuación.");
+            return "redirect:/tecnicoDatosEmpresa/" + usuario.getIdUsuario();
+        }
+
         redirectAttributes.addFlashAttribute("mensaje", "¡Suscripción confirmada! Usuario '" + usuario.getUsername() + "' activado con éxito.");
         return "redirect:/gestionUsuarios";
     }
