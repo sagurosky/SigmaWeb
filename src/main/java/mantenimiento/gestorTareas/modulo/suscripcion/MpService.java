@@ -44,34 +44,26 @@ public class MpService {
                 throw new IllegalStateException("Token de Mercado Pago no configurado en recursos/configuracion.properties");
             }
 
-            String url = "https://api.mercadopago.com/preapproval";
-            String payerEmail = email;
-            String testPayer = ArchivoExterno.getString("mp_test_payer_email");
-            if (testPayer != null && !testPayer.trim().isEmpty()) {
-                payerEmail = testPayer.trim();
-            } else if (token.contains("2684416608")) {
-                // Fallback automático para la cuenta de prueba de Mercado Pago
-                payerEmail = "test_user_4798818165579077916@testuser.com";
-                log.info("Usando email de pagador de prueba automático: {}", payerEmail);
-            }
+            // Usamos preapproval_plan para no imponer restricciones de payer_email en el checkout
+            String url = "https://api.mercadopago.com/preapproval_plan";
 
-            log.info("Iniciando creación de preapproval para usuario: {}, email pagador: {}, monto: {}", usuario.getUsername(), payerEmail, monto);
+            log.info("Iniciando creación de plan de suscripción para usuario: {}, monto: {}", usuario.getUsername(), monto);
+
+            String backUrl = ArchivoExterno.getString("mp_back_url");
+            if (backUrl == null || backUrl.trim().isEmpty()) {
+                backUrl = "https://sigmawebapp.com/inicio/api/usuario/pagoExitoso";
+            }
 
             Map<String, Object> json = new HashMap<>();
             json.put("reason", "Suscripción Usuario - " + usuario.getUsername());
-            json.put("payer_email", payerEmail);
+            json.put("back_url", backUrl);
+
             Map<String, Object> autoRecurring = new HashMap<>();
             autoRecurring.put("frequency", 1);
             autoRecurring.put("frequency_type", "months");
             autoRecurring.put("transaction_amount", monto);
             autoRecurring.put("currency_id", "ARS");
             json.put("auto_recurring", autoRecurring);
-
-            String backUrl = ArchivoExterno.getString("mp_back_url");
-            if (backUrl == null || backUrl.trim().isEmpty()) {
-                backUrl = "https://sigmawebapp.com/inicio/api/usuario/pagoExitoso";
-            }
-            json.put("back_url", backUrl);
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -81,27 +73,28 @@ public class MpService {
 
             ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
             Map<String, Object> body = response.getBody();
-            log.info("Respuesta de Mercado Pago preapproval: {}", body);
+            log.info("Respuesta de Mercado Pago preapproval_plan: {}", body);
 
             if (body != null && body.containsKey("init_point")) {
-                usuario.setPreapprovalId(body.get("id").toString());
+                String planId = body.get("id").toString();
+                usuario.setPreapprovalId(planId);
                 usuarioService.guardar(usuario);
                 String initPoint = body.get("init_point").toString();
-                log.info("Preapproval creado exitosamente. init_point: {}", initPoint);
+                log.info("Plan de suscripción creado exitosamente. plan_id: {}, init_point: {}", planId, initPoint);
                 return initPoint;
             }
 
             throw new RuntimeException("No se recibió init_point en la respuesta de Mercado Pago");
 
         } catch (Exception e) {
-            log.error("Error creando preapproval en Mercado Pago", e);
+            log.error("Error creando preapproval_plan en Mercado Pago", e);
             throw new RuntimeException("No se pudo iniciar la suscripción en MP: " + e.getMessage(), e);
         }
     }
 
-    public boolean validarPreapproval(String preapprovalId) {
+    public Map<String, Object> obtenerPreapprovalMP(String preapprovalId) {
         if (preapprovalId == null || preapprovalId.trim().isEmpty()) {
-            return false;
+            return null;
         }
         try {
             String url = "https://api.mercadopago.com/preapproval/" + preapprovalId;
@@ -109,20 +102,57 @@ public class MpService {
             headers.setBearerAuth(getAccessToken());
             HttpEntity<Void> request = new HttpEntity<>(headers);
             ResponseEntity<Map> response = restTemplate.exchange(url, org.springframework.http.HttpMethod.GET, request, Map.class);
-            Map<String, Object> body = response.getBody();
-            if (body != null) {
-                String status = (String) body.get("status");
-                log.info("Validación preapproval {} - estado MP: {}", preapprovalId, status);
-                return "authorized".equalsIgnoreCase(status);
-            }
+            return response.getBody();
         } catch (Exception e) {
-            log.error("Error al validar preapproval " + preapprovalId + " con MP", e);
+            log.error("Error al obtener detalle de preapproval " + preapprovalId + " de MP", e);
+            return null;
+        }
+    }
+
+    public boolean validarPreapproval(String preapprovalId) {
+        Map<String, Object> body = obtenerPreapprovalMP(preapprovalId);
+        if (body != null) {
+            String status = (String) body.get("status");
+            log.info("Validación preapproval {} - estado MP: {}", preapprovalId, status);
+            return "authorized".equalsIgnoreCase(status);
         }
         return false;
     }
 
+    public Usuario obtenerUsuarioPorSuscripcion(String preapprovalId, String planId) {
+        // 1. Si vino el plan_id directamente desde el callback
+        if (planId != null && !planId.trim().isEmpty()) {
+            Usuario u = usuarioDao.findByPreapprovalId(planId.trim());
+            if (u != null) {
+                return u;
+            }
+        }
+
+        // 2. Intentar buscar por el preapproval_id directo
+        if (preapprovalId != null && !preapprovalId.trim().isEmpty()) {
+            Usuario u = usuarioDao.findByPreapprovalId(preapprovalId.trim());
+            if (u != null) {
+                return u;
+            }
+
+            // 3. Consultar a Mercado Pago para extraer el preapproval_plan_id asociado
+            Map<String, Object> mpData = obtenerPreapprovalMP(preapprovalId.trim());
+            if (mpData != null && mpData.containsKey("preapproval_plan_id")) {
+                Object mpPlanId = mpData.get("preapproval_plan_id");
+                if (mpPlanId != null) {
+                    u = usuarioDao.findByPreapprovalId(mpPlanId.toString().trim());
+                    if (u != null) {
+                        return u;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
     public Usuario obtenerUsuarioTemporal(String preapprovalId) {
-        return usuarioDao.findByPreapprovalId(preapprovalId);
+        return obtenerUsuarioPorSuscripcion(preapprovalId, null);
     }
 
     public boolean cancelarPreapproval(String preapprovalId) {

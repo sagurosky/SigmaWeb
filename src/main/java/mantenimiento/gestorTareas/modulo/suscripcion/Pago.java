@@ -30,9 +30,14 @@ public class Pago {
 
     @GetMapping("/api/usuario/pagoExitoso")
     public String pagoExitoso(@RequestParam(value = "preapproval_id", required = false) String preapprovalId,
+                             @RequestParam(value = "preapproval_plan_id", required = false) String preapprovalPlanId,
+                             @RequestParam(value = "plan_id", required = false) String planId,
                              RedirectAttributes redirectAttributes) {
 
-        log.info("Retorno de Mercado Pago tras suscripción. preapproval_id: {}", preapprovalId);
+        log.info("Retorno de Mercado Pago tras suscripción. preapproval_id: {}, preapproval_plan_id: {}, plan_id: {}",
+                preapprovalId, preapprovalPlanId, planId);
+
+        String idPlan = (preapprovalPlanId != null && !preapprovalPlanId.trim().isEmpty()) ? preapprovalPlanId : planId;
 
         if (preapprovalId == null || preapprovalId.trim().isEmpty()) {
             redirectAttributes.addFlashAttribute("error", "No se recibió identificador de suscripción de Mercado Pago.");
@@ -47,21 +52,23 @@ public class Pago {
             return "redirect:/gestionUsuarios";
         }
 
-        Usuario usuario = mpService.obtenerUsuarioTemporal(preapprovalId);
+        Usuario usuario = mpService.obtenerUsuarioPorSuscripcion(preapprovalId, idPlan);
 
         if (usuario == null) {
-            log.warn("No se encontró usuario asociado al preapprovalId: {}", preapprovalId);
+            log.warn("No se encontró usuario asociado al preapprovalId {} ni al planId {}", preapprovalId, idPlan);
             redirectAttributes.addFlashAttribute("error", "Usuario no encontrado para la suscripción recibida.");
             return "redirect:/gestionUsuarios";
         }
 
+        // Actualizamos al ID de suscripción definitivo para cancelaciones y webhooks
+        usuario.setPreapprovalId(preapprovalId);
         usuario.setEstado("ACTIVO");
         usuario.setFechaUltimoPago(java.time.LocalDateTime.now());
         if (usuario.getFechaSuscripcionInicial() == null) {
             usuario.setFechaSuscripcionInicial(java.time.LocalDateTime.now());
         }
         usuarioService.guardar(usuario);
-        log.info("Usuario {} activado exitosamente tras confirmación de suscripción", usuario.getUsername());
+        log.info("Usuario {} activado exitosamente con preapproval_id definitivo: {}", usuario.getUsername(), preapprovalId);
 
         // Si es un técnico, redirigir a cargar sus datos de empresa
         boolean esTecnico = rolDao.findByUsuario(usuario).stream()
