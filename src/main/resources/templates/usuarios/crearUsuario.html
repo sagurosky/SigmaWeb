@@ -185,6 +185,16 @@
                         <div class="form-text text-muted small ms-1">Si se deja vacío, se identificará como "Empresa [usuario]".</div>
                     </div>
 
+                    <!-- Email de la cuenta Mercado Pago (opcional para Administradores de empresa) -->
+                    <div sec:authorize="!hasRole('ROLE_SUPERADMIN')" class="form-floating mb-3">
+                        <input type="email" class="control form-control" id="emailMercadoPagoInput" name="emailMercadoPago"
+                            placeholder="titular@ejemplo.com">
+                        <label for="emailMercadoPagoInput"><i class="fas fa-envelope me-1"></i> Email de cuenta Mercado Pago del pagador (opcional)</label>
+                        <div class="form-text text-muted small ms-1">
+                            Ingresa el correo con el que inicias sesión en Mercado Pago para asegurar la coincidencia. Si se deja vacío, se usa el email registrado de la empresa.
+                        </div>
+                    </div>
+
                     <!-- Selector de Rol -->
                     <div class="mb-4">
                         <label class="form-label detencion-label text-uppercase small mb-2">

@@ -90,6 +90,7 @@ public class ControladorUsuarios {
     @PostMapping("/gestionar")
     public String gestionar(@Valid Usuario usuario, Errors errores, Rol rol,
                             @RequestParam(value = "nombreEmpresa", required = false) String nombreEmpresa,
+                            @RequestParam(value = "emailMercadoPago", required = false) String emailMercadoPago,
                             Model model) {
         Boolean yaExiste = usuarioDao.findByUsername(usuario.getUsername()) != null;
 
@@ -199,9 +200,19 @@ public class ControladorUsuarios {
                 }
             }
 
-            String emailContacto = (usuario.getTenant() != null && usuario.getTenant().getEmailContacto() != null && !usuario.getTenant().getEmailContacto().trim().isEmpty())
-                    ? usuario.getTenant().getEmailContacto()
-                    : usuario.getUsername().toLowerCase() + "@sigmawebapp.com";
+            String emailContacto;
+            if (emailMercadoPago != null && !emailMercadoPago.trim().isEmpty()) {
+                emailContacto = emailMercadoPago.trim();
+                // Si el tenant tenía un email ficticio, actualizarlo con el email real de contacto
+                if (usuario.getTenant() != null) {
+                    usuario.getTenant().setEmailContacto(emailContacto);
+                    tenantDao.save(usuario.getTenant());
+                }
+            } else if (usuario.getTenant() != null && usuario.getTenant().getEmailContacto() != null && !usuario.getTenant().getEmailContacto().trim().isEmpty()) {
+                emailContacto = usuario.getTenant().getEmailContacto();
+            } else {
+                emailContacto = usuario.getUsername().toLowerCase() + "@sigmawebapp.com";
+            }
 
             try {
                 String initPoint = mpService.crearPreapproval(usuario, emailContacto, monto);
